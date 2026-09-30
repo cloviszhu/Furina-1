@@ -5,6 +5,7 @@ import pathlib
 import runpy
 import shutil
 import sys
+import hashlib
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 
@@ -59,13 +60,17 @@ def main():
         host = request.headers.get("host", "")
         if host != f"127.0.0.1:{args.port}" or request.headers.get("origin") not in (None, f"http://{host}") or request.headers.get("sec-fetch-site") == "cross-site":
             return JSONResponse({"error": "Local origin required"}, status_code=403)
-        allowed = request.url.path == "/openapi.json" and request.method == "GET"
+        allowed = request.url.path in ("/openapi.json", "/health") and request.method == "GET"
         allowed |= request.url.path == "/tts" and request.method == "POST" and request.headers.get("content-type", "").startswith("application/json")
         if not allowed:
             return JSONResponse({"error": "This local service exposes only JSON synthesis"}, status_code=403)
         return await call_next(request)
 
     # Upstream control and arbitrary weight switching routes are unreachable.
+    @app.get("/health")
+    async def exo_health():
+        return {"service": "project-exo-tts", "pid": os.getpid(), "rootId": hashlib.sha256(str(ROOT).lower().encode()).hexdigest(), "ready": True}
+
     uvicorn.run(app, host="127.0.0.1", port=args.port, workers=1, access_log=False)
 
 

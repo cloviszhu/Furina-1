@@ -1,13 +1,14 @@
 import './style.css';
 import { CharacterStage } from './stage.js';
 import { SpeechController } from './speech.js';
+import { initReferences } from './reference-import.js';
 
 const $ = id => document.getElementById(id);
 const element = (tag, className, text) => { const node = document.createElement(tag); if (className) node.className = className; if (text !== undefined) node.textContent = text; return node; };
 let stage;
 try { stage = new CharacterStage($('viewport'), text => { $('model-state').textContent = text; }); }
 catch { $('model-state').textContent = '三维渲染不可用，请检查浏览器 WebGL。'; }
-const speech = new SpeechController({ onState: text => { $('speech-state').textContent = text; }, onMouth: value => { if (stage) stage.mouth = value; }, onExpression: value => stage?.setExpression?.(value) });
+const speech = new SpeechController({ onState: text => { $('speech-state').textContent = text; }, onMouth: value => { if (stage) stage.mouth = value; }, onExpression: value => stage?.setExpression?.(value), onStop: preservePreview => { if (!preservePreview) $('reference-preview')?.pause(); } });
 let status, memorySourceId, providers = [], busy = false;
 let contextGeneration = 0;
 function resetMemorySource(clearText = false) {
@@ -38,6 +39,7 @@ const announceMemoryMutation = () => memoryChannel?.postMessage({ type: 'memory-
 const config = () => ({ provider: $('provider').value, model: $('model-name').value.trim(), baseUrl: $('base-url').value.trim(), apiKey: $('api-key').value });
 const character = () => ({ timeline: $('character-timeline').value || 'aftermath', style: $('character-style').value || 'natural' });
 const historyPath = () => { const chosen = character(); return chosen.timeline === 'aftermath' && chosen.style === 'natural' ? '/api/history' : `/api/history?timeline=${chosen.timeline}&style=${chosen.style}`; };
+const sourcePath = id => { const chosen = character(); return `/api/sources/${encodeURIComponent(id)}?timeline=${chosen.timeline}&style=${chosen.style}`; };
 const speechOptions = () => ({ emotion: $('voice-emotion').value, speed: Number($('voice-speed').value) });
 function replySpeechOptions(result) {
   const options = speechOptions();
@@ -83,7 +85,11 @@ async function refreshHistory() {
   const rows = await api(historyPath());
   if (generation !== contextGeneration) return;
   $('messages').replaceChildren(); rows.forEach(row => message(row));
-  if (memorySourceId && !rows.some(row => row.id === memorySourceId && row.role === 'user')) resetMemorySource(true);
+  if (memorySourceId && !rows.some(row => row.id === memorySourceId && row.role === 'user')) {
+    const sourceId = memorySourceId;
+    const source = await api(sourcePath(sourceId));
+    if (generation === contextGeneration && memorySourceId === sourceId && !source.valid) resetMemorySource(false);
+  }
   if (!rows.length) $('messages').append(element('div', 'empty', '今天的故事还没有开始。她会听见你的声音，也会记住你选择留下的片段。'));
 }
 function updateBudget(budget) {
@@ -167,12 +173,13 @@ function voiceDetails() {
   if (voice?.emotions?.includes(previous)) $('voice-emotion').value = previous;
   $('voice-emotion').disabled = voice?.engine !== 'gpt-sovits';
   $('voice-speed').disabled = voice?.engine !== 'gpt-sovits';
+  const reference = voice?.referenceInfo?.[$('voice-emotion').value] || voice;
   $('voice-details').textContent = voice?.engine === 'gpt-sovits'
-    ? `本地测试参考：${voice.source} · ${voice.license}。角色相似度待验收，人工听感未验证；表达来自登记录音。`
+    ? `本地${voice.managed ? '用户登记' : '测试'}参考：${reference.source} · ${reference.license}。角色相似度待验收，人工听感未验证；表达来自登记录音。`
     : `${speech.localStatus?.error || '成熟 TTS 可在声音列表选择。'} ${voice ? '当前为系统临时备用声。' : '尚未选择可用声音；系统备用声需要你显式选择。'}`;
 }
 $('voice-select').onchange = () => { speech.stop(); voiceDetails(); };
-$('voice-emotion').onchange = () => { speech.stop(); stage?.setExpression?.($('voice-emotion').value); };
+$('voice-emotion').onchange = () => { speech.stop(); stage?.setExpression?.($('voice-emotion').value); voiceDetails(); };
 $('voice-speed').onchange = () => speech.stop();
 $('expression-mode').onchange = () => { speech.stop(); $('expression-state').textContent = $('expression-mode').value === 'reply' ? '下一条回复使用经验证的表达字段；演示/纯文本为 neutral。' : '下一条回复使用手动选择的参考表达。'; };
 $('voice-test').onclick = () => void speech.speak('你终于来了。下一幕，就由我们一起写吧。', $('voice-select').value, speechOptions());
@@ -215,9 +222,11 @@ $('memory-form').onsubmit = async event => {
   try {
     // Revalidate immediately before saving, including changes from another tab.
     if (memorySourceId) {
-      const rows = await api(historyPath());
-      if (!rows.some(row => row.id === memorySourceId && row.role === 'user')) {
-        resetMemorySource(true);
+      const generation = contextGeneration, sourceId = memorySourceId;
+      const source = await api(sourcePath(sourceId));
+      if (generation !== contextGeneration || memorySourceId !== sourceId) return;
+      if (!source.valid) {
+        resetMemorySource(false);
         throw new Error('原聊天来源已失效，请重新选择消息或选择手动记录后填写。');
       }
     }
@@ -241,3 +250,4 @@ async function boot() {
   await Promise.all([refreshHistory(), memories(), voices()]);
 }
 void boot().catch(fail);
+initReferences({ api, speech, voices });

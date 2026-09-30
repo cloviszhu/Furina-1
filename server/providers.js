@@ -104,5 +104,8 @@ export async function complete(config, messages, { fetchImpl = fetch, maxTokens 
   // Provider bodies/usage can echo request credentials. Reject echoed keys and
   // whitelist numeric usage before returning or persisting anything.
   if (config.apiKey && typeof content === 'string' && content.includes(config.apiKey)) throw new Error('模型响应安全检查失败。');
-  return { ...parseReply(content), usage: safeUsage(result) };
+  const reply = parseReply(content);
+  // JSON decoding can turn unicode escapes into an echoed credential.
+  if (config.apiKey && reply.text.includes(config.apiKey)) throw new Error('模型响应安全检查失败。');
+  return { text: reply.text, emotion: reply.emotion, expressionSource: reply.expressionSource, usage: safeUsage(result) };
 }

@@ -5,6 +5,21 @@ import { MemoryStore } from '../server/memory.js';
 import { RemoteBudget, PRICING } from '../server/budget.js';
 
 const messages = messagesFor('你好', []);
+test('decoded structured/fenced reply refuses unicode-escaped fake credentials and returns only allowlisted usage', async () => {
+  const fakeKey = 'fake-qa-key-only';
+  const escaped = [...fakeKey].map(c => `\\u${c.charCodeAt(0).toString(16).padStart(4, '0')}`).join('');
+  for (const protocol of ['openai', 'claude', 'ollama']) for (const fenced of [false, true]) {
+    const json = `{"text":"${escaped}","emotion":"neutral"}`;
+    const content = fenced ? `\`\`\`json\n${json}\n\`\`\`` : json;
+    const result = protocol === 'claude' ? { content: [{ type: 'text', text: content }] } : protocol === 'ollama' ? { message: { content } } : { choices: [{ message: { content } }] };
+    await assert.rejects(complete({ provider: protocol, model: 'fixture', apiKey: fakeKey }, messages, { fetchImpl: async () => Response.json(result) }), /安全检查/);
+  }
+  const result = await complete({ provider: 'openai', model: 'fixture', apiKey: fakeKey }, messages, {
+    fetchImpl: async () => Response.json({ choices: [{ message: { content: '{"text":"safe","emotion":"neutral"}' } }], credential: fakeKey, usage: { prompt_tokens: 3, completion_tokens: 2, secret: fakeKey } }),
+  });
+  assert.deepEqual(Object.keys(result).sort(), ['emotion', 'expressionSource', 'text', 'usage']);
+  assert.deepEqual(result.usage, { prompt_tokens: 3, completion_tokens: 2 }); assert(!JSON.stringify(result).includes(fakeKey));
+});
 test('OpenAI-compatible provider request/response contract, local stub only', async () => {
   for (const provider of ['openai', 'glm', 'deepseek', 'kimi', 'compatible']) {
     let call;

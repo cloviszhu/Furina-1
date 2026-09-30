@@ -28,12 +28,38 @@
         </section>
       </aside>
     </main>
-    <footer class="app-footer"><span>本机保存共同经历 · 模型与声音可替换</span><span>第三阶段 · 本地 TTS / 表达参考 / 对话演示</span></footer>
+    <footer class="app-footer"><span>本机保存共同经历 · 模型与声音可替换</span><button id="open-references" class="quiet">导入我的参考录音 →</button></footer>
   </div>
   <dialog id="settings"><form method="dialog" class="dialog-heading"><div><span class="eyebrow">THE BACKSTAGE</span><h2>幕后设置</h2></div><button aria-label="关闭设置" class="close-button">×</button></form>
     <div class="settings-body"><section><h3>角色与对话</h3><label for="character-timeline">剧情时点（含枫丹剧情）</label><select id="character-timeline"><option value="aftermath">主线落幕后 · 私人日常</option><option value="performer">重返舞台 · 传说任务后</option></select><label for="character-style">语言风格</label><select id="character-style"><option value="natural">自然交谈</option><option value="theatrical">舞台感</option><option value="quiet">安静陪伴</option></select><p id="character-details">官方背景、你确认的经历与主观感受分开；不会自动把回复存成事实。切换时隔离旧聊天，共同经历保留。配置刷新后恢复默认。</p><p>模型与密钥默认空。密钥只在此页面内存中使用，刷新即清除；不保存、不日志、不读取文件或其他应用。</p><label for="provider">提供商</label><select id="provider"></select><label for="model-name">模型名称</label><input id="model-name" autocomplete="off" placeholder="由你填写官方模型名"><label for="base-url">API 基地址</label><input id="base-url" type="url" autocomplete="off"><label for="api-key">API key · 由你本人输入</label><input id="api-key" type="password" autocomplete="off" spellcheck="false" placeholder="空 · 不自动读取任何凭证"><button id="clear-key" class="quiet">清除页面密钥</button><p id="provider-status">协议替身测试不等于真实服务验证。</p>
     <div class="budget-card"><strong>一次短测试</strong><p id="budget-state">本轮人民币 9 元上限；最多 3 次，128 输出 token/次。正常聊天不会自动调用远程 API。</p><button id="remote-test">用当前输入执行一次 DeepSeek 测试</button><small>用户醒来并亲自输入密钥后再使用。不自动重试、不充值，其他远程服务当前禁用。</small></div></section>
     <section><h3>声音与表达</h3><p>本地 TTS 使用登记录音的声线与表达；当前 RAVDESS 不是芙宁娜声线，角色相似度与人工听感未验证。系统声音是临时备用。</p><label for="voice-select">本机可用声音</label><select id="voice-select"></select><label for="expression-mode">回复表达</label><select id="expression-mode"><option value="manual">手动选择参考表达</option><option value="reply">随回复的表达字段</option></select><label for="voice-emotion">表达</label><select id="voice-emotion"><option value="neutral">参考原表达</option></select><label for="voice-speed">语速</label><input id="voice-speed" type="number" min="0.7" max="1.3" step="0.1" value="1"><div class="setting-actions"><button id="voice-test">试听一句</button><button id="refresh-voices">刷新声音</button></div><p id="voice-details"></p><p id="expression-state" role="status">表达为参考表演控制，不等于真实情绪理解。</p></section></div>
+    <details id="reference-tools" class="reference-tools"><summary>导入我的参考录音 · 先预览，再确认</summary>
+      <p>只选取你有权用于本地语音合成的录音。不下载角色录音。首版支持 3–10 秒、最多 4 MiB 的 PCM16 WAV（8–96 kHz，单/双声道）。MP3、FLAC、浮点 WAV 请先用本机音频工具导出 PCM16；不能只改扩展名。</p>
+      <label for="reference-file">1 · 选择本机录音</label><input id="reference-file" type="file" accept=".wav,audio/wav"><button id="reference-check" type="button">检查并生成本机预览</button>
+      <p id="reference-state" role="status">文件只在本机处理；尚未登记。当前 RAVDESS 是非商业测试声，不是芙宁娜。</p>
+      <div id="reference-confirmation" hidden>
+        <audio id="reference-preview" controls preload="metadata" aria-label="规范化参考录音预览"></audio>
+        <p>输出单声道 32 kHz PCM16，只降低过高峰值，不放大低音量噪声、不修复削波、不自动裁剪。请试听完整录音，检查音质和转写。不同表达须是同一个说话人；不能把不同声线混进同一 profile。声纹身份由你确认。登记已有表达会替换该表达的参考；其他表达保留。</p>
+        <div class="reference-grid">
+          <div><label for="reference-profile">2 · 所属声线</label><select id="reference-profile"><option value="">新建声线（先导入 neutral）</option></select>
+            <label for="reference-id">声线 ID</label><input id="reference-id" maxlength="40" placeholder="my-reference（小写字母/数字/-/_）">
+            <label for="reference-speaker">说话人 ID · 每人唯一</label><input id="reference-speaker" maxlength="40" placeholder="speaker-one">
+            <label for="reference-label">声线显示名称</label><input id="reference-label" maxlength="100" placeholder="我的许可参考声线">
+          </div>
+          <div><label for="reference-language">录音语言</label><select id="reference-language"><option value="zh">中文</option><option value="en">英语</option><option value="ja">日语</option><option value="ko">韩语</option><option value="yue">粤语</option></select>
+            <label for="reference-emotion">录音实际表达</label><select id="reference-emotion"><option value="neutral">neutral · 新声线必须先登记</option><option value="calm">calm</option><option value="happy">happy</option><option value="sad">sad</option><option value="angry">angry</option><option value="surprised">surprised</option></select>
+            <label for="reference-text">准确转写 · 只写录音中的话</label><textarea id="reference-text" rows="3" maxlength="1000"></textarea>
+          </div>
+        </div>
+        <label for="reference-source">来源说明 · 由你填写，不读取路径</label><input id="reference-source" maxlength="500" placeholder="例如：本人今日录制；或授权者与授权出处">
+        <label for="reference-license">使用许可和限制</label><input id="reference-license" maxlength="500" placeholder="例如：本人同意仅用于本机私人测试">
+        <label class="reference-check"><input id="reference-rights" type="checkbox"> 我有权将这份录音用于本地语音合成，并遵守许可限制。</label>
+        <label class="reference-check"><input id="reference-same-speaker" type="checkbox"> 我确认它与该声线其他表达来自同一个说话人。</label>
+        <label class="reference-check"><input id="reference-listened" type="checkbox"> 我已完整试听规范化预览，核对音质、转写、语言和表达。</label>
+        <div class="setting-actions"><button id="reference-confirm" type="button" class="primary">3 · 确认登记并选择声音</button><button id="reference-discard" type="button">放弃预览</button></div>
+      </div>
+    </details>
   </dialog>
   <script type="module" src="/src/main.js"></script>
 </body></html>

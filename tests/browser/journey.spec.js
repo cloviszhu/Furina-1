@@ -134,3 +134,35 @@ test('memory mutation in another tab clears rendered context and source, and res
     await expect(other.locator('#speech-state')).toContainText('已停止');
   } finally { await other.close(); await app.close(); }
 });
+
+test('early visible message remains a valid memory source after ten conversation turns', async ({ page }) => {
+  const app = await isolated();
+  try {
+    await ready(page, app.url); await page.locator('#auto-speak').uncheck();
+    for (let i = 0; i < 10; i++) {
+      await page.locator('#chat-input').fill(i === 0 ? '第一轮值得保留的来源' : `后续轮次 ${i}`); await page.locator('#send').click();
+      await expect(page.locator('.message.assistant')).toHaveCount(i + 1);
+    }
+    const history = await (await page.request.get(app.url + '/api/history')).json(); expect(history).toHaveLength(16); expect(history.some(e => e.text.includes('第一轮'))).toBe(false);
+    await page.locator('.message.user button').first().click();
+    await page.locator('#memory-text').fill('我确认的第一轮记录'); await page.locator('#memory-form button[type=submit]').click();
+    await expect(page.locator('.memory-card')).toContainText('我确认的第一轮记录'); await page.locator('.memory-card summary').click(); await expect(page.locator('.memory-card details')).toContainText('第一轮值得保留的来源');
+  } finally { await app.close(); }
+});
+
+test('unicode-escaped fake key never reaches browser reply, SQLite history or speech', async ({ page }) => {
+  const fakeKey = 'fake-qa-key-only'; let speeches = [];
+  const content = '```json\n{"text":"fake-qa-key-\\u006fnly","emotion":"neutral"}\n```';
+  const app = await isolated({
+    fetchImpl: async () => Response.json({ message: { content }, usage: { prompt_tokens: 1, completion_tokens: 1, secret: fakeKey } }),
+    localTtsImpl: { status: async () => ({ ready: true, voices: [{ id: 'fixture', name: 'Synthetic QA only', engine: 'gpt-sovits', localService: true, emotions: ['neutral'] }] }), synthesize: async input => { speeches.push(input.text); throw Error('fixture no audio'); } },
+  });
+  try {
+    await ready(page, app.url); await page.locator('#open-settings').click(); await page.locator('#provider').selectOption('ollama'); await page.locator('#model-name').fill('fixture'); await page.locator('#api-key').fill(fakeKey); await page.locator('.close-button').click();
+    await page.locator('#chat-input').fill('安全测试'); await page.locator('#send').click(); await expect(page.locator('.message.assistant')).toHaveCount(1); await expect(page.locator('#app-error')).toContainText('未成功回应');
+    await expect(page.locator('.message.assistant')).not.toContainText(fakeKey);
+    expect(JSON.stringify(app.context.store.history(100))).not.toContain(fakeKey);
+    expect(JSON.stringify(app.context.store.db.prepare('SELECT text FROM events').all())).not.toContain(fakeKey);
+    expect(JSON.stringify(speeches)).not.toContain(fakeKey); expect(speeches.length).toBe(1);
+  } finally { await app.close(); }
+});

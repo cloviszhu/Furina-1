@@ -1,5 +1,7 @@
 # Project Exo · 数字芙宁娜
 
+**直接操作见 [START](START.md)**：普通权限启动/停止/健康检查，以及「导入我的参考录音」的本机检查、规范化试听和确认登记。密钥最后由用户本人填写。
+
 第三阶段可运行：真实 PMX、待机/眨眼/招呼/点头与基础表情、本地 GPT-SoVITS v2ProPlus、六种表达参考、真实音频振幅口型、聊天与持久共同经历；已修复记忆纠改竞态，提供角色时点/风格及回复表达契约。
 
 **默认对话是有限规则演示，不是真实 LLM。成熟 TTS 已跑通，但当前为 RAVDESS 非商业测试女声，未验收芙宁娜相似度或人工情绪自然度。系统声只是临时备用。** 见 [本地 TTS 安装与许可](docs/local-tts.md)。
@@ -13,10 +15,11 @@
 ```powershell
 npm.cmd ci
 npm.cmd run build
-npm.cmd start
+npm.cmd run local:start
+npm.cmd run local:status
 ```
 
-打开 **http://127.0.0.1:3000**。服务仅监听本机。Ctrl+C 停止。开发可用 `npm.cmd run dev`，验收用生产构建与 `start`。
+打开 **http://127.0.0.1:3000**。服务仅监听本机。`npm.cmd run local:stop` 停止已核验项目进程，其他程序占用端口时拒绝操作。命令不下载、不提权、不改执行策略，GPU 冷启动时重复 start 会复用；仅演示用 `npm.cmd run local:start -- --app-only`。开发时仍可 `npm.cmd run dev`，或手动 `npm.cmd start` 后 Ctrl+C 停止自有终端；相对路径手工服务需在原终端停止后再迁移到工具。
 
 ## 本地资产
 
@@ -57,3 +60,4 @@ npm.cmd run test:browser
 共同经历和无密钥预算记录在忽略目录 `data/exo.sqlite`。临时语音文本/WAV 随后清理。素材、声音数据、权重、凭证、运行数据均不提交。
 
 OpenSpec 变更：`stage-one-interactive-furina`、`stage-two-local-expressive-tts`、`stage-three-journey-quality`。见 [第一阶段验收](docs/stage-one-validation.md)、[第二阶段实测](docs/stage-two-validation.md)、[第三阶段验收](docs/stage-three-validation.md)、[交接](docs/handoff.md)。
+第四阶段变更 `stage-four-product-entry` 与 [第四阶段验证](docs/stage-four-validation.md) 记录参考导入、普通权限服务管理和新增 review 回归。

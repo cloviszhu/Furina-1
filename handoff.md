@@ -1,3 +1,3 @@
-# 第三阶段交接
+# 第四阶段交接
 
-最新服务、Git、截图和下一步见 [docs/handoff.md](docs/handoff.md)。已集成独立 QA，41 单元/10 浏览器通过；真实模型及角色声线/人工听感未验收，凭证仍留待用户本人操作。
+最新服务、Git、截图和边界见 [docs/handoff.md](docs/handoff.md)，用户直接操作见 [START.md](START.md)。安全参考导入、普通权限服务管理与 review 修复已完成；真实 LLM、角色声线/人工听感未验收，密钥留待用户本人最后操作。

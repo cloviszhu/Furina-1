@@ -32,12 +32,14 @@ async function ui() {
   const document = { getElementById: id => nodes[id], createElement: tag => new Element(tag), querySelectorAll: () => [] };
   const context = vm.createContext({
     document, console, confirm: () => true, addEventListener() {},
+    initReferences() {},
     CharacterStage: class { trigger() {} resetCamera() {} },
     SpeechController: class { stop() { ++stops; } async listVoices() { return []; } async speak(text) { spoken.push(text); } },
     fetch: async (path, options = {}) => {
       let data;
       if (path === '/api/status') data = { providers: [], models: [], budget };
       else if (path === '/api/history') data = history.map(e => ({ ...e }));
+      else if (path.startsWith('/api/sources/')) data = { valid: history.some(e => path.includes(e.id)) };
       else if (path === '/api/memories' && options.method === 'POST') { posts.push(JSON.parse(options.body)); data = memories; }
       else if (path === '/api/memories') data = memories.map(m => ({ ...m }));
       else if (path === '/api/chat') return await pending.promise;
@@ -92,7 +94,7 @@ test('UI revalidates vanished source before POST and allows explicit manual reco
   await nodes['memory-form'].onsubmit({ preventDefault() {} });
   assert.deepEqual(app.posts, []);
   assert(nodes['app-error'].textContent.includes('来源已失效'));
-  assert.equal(nodes['memory-text'].value, '');
+  assert.equal(nodes['memory-text'].value, event.text);
   nodes['memory-text'].value = '我确认的手动记录'; nodes['memory-manual'].onclick();
   await nodes['memory-form'].onsubmit({ preventDefault() {} });
   assert.deepEqual(app.posts, [{ text: '我确认的手动记录', sourceId: null }]);
@@ -113,10 +115,27 @@ test('UI history refresh drops a source removed in another tab', async () => {
   const app = await ui(); const { nodes } = app;
   button(nodes.messages, '保存为共同经历').onclick(); app.clearHistory();
   await vm.runInContext('refreshHistory()', app.context);
-  assert.equal(nodes['memory-text'].value, '');
+  assert.equal(nodes['memory-text'].value, event.text);
   nodes['memory-text'].value = '新记录';
   await nodes['memory-form'].onsubmit({ preventDefault() {} });
   assert.equal(app.posts[0].sourceId, null);
+});
+
+test('UI validates early selected source outside the latest history window and preserves draft on lookup failure', async () => {
+  const app = await ui(), { nodes, context } = app;
+  button(nodes.messages, '保存为共同经历').onclick();
+  const fetch = context.fetch;
+  context.fetch = async (path, options) => path === '/api/history'
+    ? { ok: true, json: async () => Array.from({ length: 16 }, (_, i) => ({ id: `later-${i}`, role: 'user', text: 'later' })) }
+    : fetch(path, options);
+  await vm.runInContext('refreshHistory()', context);
+  assert.equal(nodes['memory-source'].textContent, '来源：这条用户消息');
+  await nodes['memory-form'].onsubmit({ preventDefault() {} });
+  assert.deepEqual(app.posts, [{ text: event.text, sourceId: event.id }]);
+  vm.runInContext(`memorySourceId = '${event.id}'`, context); nodes['memory-text'].value = '保留这份编辑草稿';
+  context.fetch = async path => { throw new Error('offline'); };
+  await nodes['memory-form'].onsubmit({ preventDefault() {} });
+  assert.equal(nodes['memory-text'].value, '保留这份编辑草稿');
 });
 
 for (const path of ['/api/history', '/api/memories']) {

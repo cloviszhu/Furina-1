@@ -55,6 +55,10 @@ export class MemoryStore {
       FROM memories m JOIN events e ON e.id=m.source_id ORDER BY m.updated_at DESC, m.rowid DESC`).all();
   }
 
+  sourceExists(id, contextKey) {
+    return Boolean(this.db.prepare("SELECT 1 FROM events WHERE id=? AND role='user' AND kind='conversation' AND context_key=?").get(id, contextKey));
+  }
+
   save(text, sourceId) {
     text = validText(text);
     this.db.exec('BEGIN IMMEDIATE');

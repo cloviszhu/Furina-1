@@ -1,7 +1,8 @@
 export class SpeechController {
-  constructor({ onState, onMouth, onExpression = () => {} }) {
+  constructor({ onState, onMouth, onExpression = () => {}, onStop = () => {} }) {
     this.onState = onState; this.onMouth = onMouth; this.sequence = 0; this.voices = [];
     this.onExpression = onExpression;
+    this.onStop = onStop;
     globalThis.speechSynthesis?.addEventListener('voiceschanged', () => this.onVoicesChanged?.());
   }
   async listVoices() {
@@ -13,7 +14,7 @@ export class SpeechController {
     }));
     this.voices = [...windows, ...browser]; return this.voices;
   }
-  stop() {
+  stop({ preservePreview = false } = {}) {
     ++this.sequence;
     this.abort?.abort(); this.abort = null;
     try { this.source?.stop(); } catch { /* Already ended. */ }
@@ -21,6 +22,7 @@ export class SpeechController {
     globalThis.speechSynthesis?.cancel();
     if (this.frame) cancelAnimationFrame(this.frame);
     this.frame = null; this.onMouth(0); this.onExpression('neutral'); this.onState('已停止 · 生成中的旧音频不会播放');
+    this.onStop(preservePreview);
   }
   async speak(text, value, { emotion = 'neutral', speed = 1 } = {}) {
     this.stop(); const sequence = this.sequence;

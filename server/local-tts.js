@@ -45,21 +45,29 @@ async function readAudio(response) {
   return validateWav(Buffer.concat(chunks));
 }
 
-export async function loadTtsConfig(dataDir) {
-  const filename = join(dataDir, 'tts-config.json');
+export async function loadTtsConfig(dataDir, filename = join(dataDir, 'tts-config.json')) {
   let content;
-  try { if ((await stat(filename)).size > 32000) throw fault('TTS 配置过大。'); content = await readFile(filename, 'utf8'); }
+  try {
+    const canonical = await realpath(filename);
+    if (canonical.toLowerCase() !== resolve(filename).toLowerCase()) throw fault('TTS 配置不能使用越界或重定向路径。');
+    if ((await stat(canonical)).size > 32000) throw fault('TTS 配置过大。');
+    content = await readFile(canonical, 'utf8');
+  }
   catch (error) { if (error.code === 'ENOENT') return null; throw error; }
   const config = JSON.parse(content);
   config.endpoint = localEndpoint(config.endpoint);
   if (!Array.isArray(config.profiles) || config.profiles.length > 12) throw fault('TTS 声音登记无效。');
   const root = await realpath(join(dataDir, 'tts-references'));
+  const canonicalData = await realpath(dataDir);
+  if (!root.startsWith(canonicalData + sep)) throw fault('参考目录不能越过本机数据目录。');
   const ids = new Set();
   for (const profile of config.profiles) {
     if (!/^[a-z0-9_-]{1,40}$/.test(profile.id) || ids.has(profile.id) || typeof profile.label !== 'string' || profile.label.length > 100 || profile.usageAllowed !== true || !profile.source?.trim() || !profile.license?.trim()) throw fault('参考录音必须有唯一 ID、来源和允许使用的许可登记。');
     ids.add(profile.id);
+    if (profile.managed === true && !/^[a-z0-9][a-z0-9_-]{0,39}$/.test(profile.speakerId || '')) throw fault('用户声线需要有效的说话人 ID。');
     if (!profile.references || !profile.references.neutral || Object.keys(profile.references).length > 6) throw fault('参考录音需要 neutral 表达。');
     for (const [emotion, reference] of Object.entries(profile.references)) {
+      if (profile.managed === true && reference?.speakerId !== profile.speakerId) throw fault('同一声线的表达参考必须属于同一说话人。');
       if (!EMOTIONS.has(emotion) || !reference || typeof reference.file !== 'string' || isAbsolute(reference.file) || !['zh', 'en', 'ja', 'ko', 'yue'].includes(reference.language) || typeof reference.text !== 'string' || !reference.text.trim() || reference.text.length > 1000) throw fault('表达参考配置无效。');
       const file = await realpath(resolve(root, reference.file));
       if (!file.startsWith(root + sep) || !(await stat(file)).isFile()) throw fault('参考录音不能越过本地登记目录。');
@@ -78,7 +86,8 @@ export class LocalTts {
     this.queue = []; this.active = false; this.quarantined = false;
   }
   voices() {
-    return (this.config?.profiles || []).map(profile => ({ id: profile.id, name: profile.label, engine: 'gpt-sovits', localService: true, language: 'zh', emotions: Object.keys(profile.references), source: profile.source, license: profile.license }));
+    return (this.config?.profiles || []).map(profile => ({ id: profile.id, name: profile.label, engine: 'gpt-sovits', localService: true, language: 'zh', emotions: Object.keys(profile.references), source: profile.source, license: profile.license, speakerId: profile.speakerId || null, managed: profile.managed === true,
+      referenceInfo: Object.fromEntries(Object.entries(profile.references).map(([emotion, r]) => [emotion, { source: r.source || profile.source, license: r.license || profile.license, language: r.language }])) }));
   }
   async status() {
     if (!this.config) return { ready: false, error: '成熟 TTS 未登记；请按 docs/local-tts.md 登记许可参考并重启项目。系统声音仍是临时备用。', voices: [] };
