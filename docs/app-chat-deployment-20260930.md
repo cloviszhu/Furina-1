@@ -16,6 +16,20 @@
 
 本机证据位于 `artifacts/explicit-chat-mode/deployment/`：`before/quiet/after.json` 记录 health、静态 SHA256、表行数/摘要、schema、报告摘要和预算；不会在文档中导出私人消息或凭据。`mock-tts-cancel.log`、`unit-incremental.log`、`build-incremental.log`、`rollback-smoke.log` 保存隔离结果。部署结果完成后补充在此。
 
+2026-09-30 21:50:17 UTC：已部署运行时代码 `325314126d5404c0f2971c3daf2d2a53053a3d31`，同一 SHA 已通过远端 `ls-remote` 核验。app 新 PID **92240**，创建时间 `2026-09-30T21:50:15.0160510Z`，health ready；旧 app PID 69452 经 launcher 的路径/创建时间/health 身份确认后停止。TTS worker **67988** 未停止或重启。主聊天浏览器增量回归另 1/1 通过（33.1 秒，`chat-incremental.log`），验证显式启用、复用自定义模型/保存密钥源、每次发送、连击、失败无重试、取消、切模式、刷新和保存记忆来源；均为隔离 mock。
+
+最终安静检查通过后才替换 dist，服务返回与磁盘及审查包三者逐字节 SHA256 一致：
+
+| 文件 | SHA256 |
+| --- | --- |
+| HTML | `8a76e24e138f6404f326977997b00373f7e0a333074da415edeff04a64f69431` |
+| `/assets/index-D9DDwwwa.js` | `4c4163b43971ffacec8859c8e63a2818f403a7f42f5bc524e3093ee8225ab1de` |
+| `/assets/index-6cOOsfGq.css` | `e677c043902edd7e0b7c9e595ca4ea8bb7c23082bb0a74c4fbc1c7ebb56bcc61` |
+
+前后 events 11 行、memories 1 行、remote_usage 44 行的全行摘要完全相同；schema、两份已完成报告、TTS 配置摘要、完整预算记录也相同。预算仍 44 completed、reserve 4.27920 元、剩余 4.72080 元。只做只读保留核验，没有拷贝/恢复数据库、读取凭据、调用模型、触碰 TTS 或操作用户浏览器。app 日志无启动错误。
+
+回滚材料：`rollback/runtime-source.tar` 及已解压的 `rollback/runtime-source/`，`rollback/dist/` 和实际替换前移动保留的 `rollback/dist-pre-swap/`。如需回滚，应重新检查用户请求/测试/TTS 队列为空，再身份校验 app-only 停止，恢复归档的 server 代码与旧 dist，仅启动 app；保留当前 data 与 TTS。本次仅完成隔离恢复 smoke，没有对生产执行回滚。此后的交接文档提交不改变部署运行时代码。
+
 ## 维护与验收边界
 
 价格校验固定于 `2026-09-30T10:15:00Z`，24 小时后（10 月 1 日 10:15 UTC）会阻止付费调用。应届时通过官方来源重新核价并审查更新，不能无依据延长有效期。
