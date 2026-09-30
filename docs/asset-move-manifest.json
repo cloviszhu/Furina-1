@@ -1,0 +1,152 @@
+[
+  {
+    "source": "sph\\hair_s.bmp",
+    "destination": "assets\\characters\\furina\\source\\mmd\\sph\\hair_s.bmp",
+    "length": 196662,
+    "sha256": "5A9B024BD19B06F228C4E33514D5A5047DD03C01277EE42F6F5AB6D9C6668DDB"
+  },
+  {
+    "source": "sph\\s1.bmp",
+    "destination": "assets\\characters\\furina\\source\\mmd\\sph\\s1.bmp",
+    "length": 196662,
+    "sha256": "351911392DEAC43E4A1F812E84B8227AD522E56D6DE8CD2BE26B8895C2053DA3"
+  },
+  {
+    "source": "tex\\场景.png",
+    "destination": "assets\\characters\\furina\\source\\mmd\\tex\\场景.png",
+    "length": 1891657,
+    "sha256": "58F9F5DAAF5996A8093C3FC34EDB80F1F7ACD9D383EFCF641D9D58DA9CD2FAF8"
+  },
+  {
+    "source": "tex\\蛋糕1.png",
+    "destination": "assets\\characters\\furina\\source\\mmd\\tex\\蛋糕1.png",
+    "length": 364902,
+    "sha256": "A93B264EE91909559CBCE9B6F04F272D2ED5B1A7C10F67F3C94AEC478C78B0FB"
+  },
+  {
+    "source": "tex\\蛋糕2_1.png",
+    "destination": "assets\\characters\\furina\\source\\mmd\\tex\\蛋糕2_1.png",
+    "length": 101617,
+    "sha256": "EFC4FC3CC4F4C0F3145F4800621A925AAD6BCD4C32C0C367582C7C76FD7ED948"
+  },
+  {
+    "source": "tex\\蛋糕2_2.png",
+    "destination": "assets\\characters\\furina\\source\\mmd\\tex\\蛋糕2_2.png",
+    "length": 87491,
+    "sha256": "6E933324C6C428357133BAEBAECE0E146DB984523E0746B94F580E03A9B0B172"
+  },
+  {
+    "source": "tex\\蛋糕2_3.png",
+    "destination": "assets\\characters\\furina\\source\\mmd\\tex\\蛋糕2_3.png",
+    "length": 97368,
+    "sha256": "B63B9BE459BB7610FE2DDB97AAB61E2D310EF1A6DC216685EA1E48B42C37AC38"
+  },
+  {
+    "source": "tex\\髮_1.png",
+    "destination": "assets\\characters\\furina\\source\\mmd\\tex\\髮_1.png",
+    "length": 1740795,
+    "sha256": "42CE4EF7B82214BD640EEAA292EEFDAE0CD1B178BC8A9C53EAE41507F2387C4C"
+  },
+  {
+    "source": "tex\\髮.png",
+    "destination": "assets\\characters\\furina\\source\\mmd\\tex\\髮.png",
+    "length": 1764735,
+    "sha256": "2E6D0264D72806ED0F29B689CA773E575795F12D96A9D529BCAAE01391903598"
+  },
+  {
+    "source": "tex\\髮2.png",
+    "destination": "assets\\characters\\furina\\source\\mmd\\tex\\髮2.png",
+    "length": 736640,
+    "sha256": "DF0005225DF4A719ABCE0C4D764F7702EAFF1E196996BDC6831D48770597B75A"
+  },
+  {
+    "source": "tex\\海马.png",
+    "destination": "assets\\characters\\furina\\source\\mmd\\tex\\海马.png",
+    "length": 553367,
+    "sha256": "5AC5A34DA378DF5D6A0F7D6ED3040B351608C911DDAA59767D9EA8D46171C219"
+  },
+  {
+    "source": "tex\\寄居蟹.png",
+    "destination": "assets\\characters\\furina\\source\\mmd\\tex\\寄居蟹.png",
+    "length": 2929496,
+    "sha256": "2ABD3E98CAA34D98E41BC8FAF04E2C5283976BDE0ABB6849EFB75892D3BC5AD7"
+  },
+  {
+    "source": "tex\\神像.png",
+    "destination": "assets\\characters\\furina\\source\\mmd\\tex\\神像.png",
+    "length": 906127,
+    "sha256": "6D543A121EEF566B3BECAE4494DBC05F0BF76DB7153E94B90CD35ECC905F0309"
+  },
+  {
+    "source": "tex\\体_1.png",
+    "destination": "assets\\characters\\furina\\source\\mmd\\tex\\体_1.png",
+    "length": 2848864,
+    "sha256": "A5517DE5740164A9DA83B03E4A8CE1FE8C1BC956790A9BA6290BD2F0DCF8018A"
+  },
+  {
+    "source": "tex\\体.png",
+    "destination": "assets\\characters\\furina\\source\\mmd\\tex\\体.png",
+    "length": 2856074,
+    "sha256": "8EED399949E98C901DF605DD17C25FEA56AB3C75AEC43CC81AF681C9CB3421FE"
+  },
+  {
+    "source": "tex\\颜.png",
+    "destination": "assets\\characters\\furina\\source\\mmd\\tex\\颜.png",
+    "length": 741656,
+    "sha256": "A77B9508883BE4F53B2F56FDF3D87355B0630718FBE373584F9265B613AD6D8B"
+  },
+  {
+    "source": "tex\\章鱼.png",
+    "destination": "assets\\characters\\furina\\source\\mmd\\tex\\章鱼.png",
+    "length": 1064747,
+    "sha256": "C8C973ABE7DD3DA43A421651CD362D98971697FD74221175B27C52DB16D3CCFA"
+  },
+  {
+    "source": "tex\\spa_h.png",
+    "destination": "assets\\characters\\furina\\source\\mmd\\tex\\spa_h.png",
+    "length": 46289,
+    "sha256": "06FC0C53C397E3032A3CE467CE34EDF40AC1619A95E1D9CEB8279C32239220F8"
+  },
+  {
+    "source": "【芙宁娜_荒】.pmx",
+    "destination": "assets\\characters\\furina\\source\\mmd\\【芙宁娜_荒】.pmx",
+    "length": 3440499,
+    "sha256": "35A81923031AA3D578C4F896ADA6D26A023D13C7BE1D645F9B9F125EB436CD27"
+  },
+  {
+    "source": "【芙宁娜】.pmx",
+    "destination": "assets\\characters\\furina\\source\\mmd\\【芙宁娜】.pmx",
+    "length": 3570379,
+    "sha256": "B975976E65769D93A84BC78BE865398AF3DEA6FEFF14A9C181413552FBAE74A1"
+  },
+  {
+    "source": "附件.zip",
+    "destination": "assets\\characters\\furina\\source\\mmd\\附件.zip",
+    "length": 603624,
+    "sha256": "2F9551FEE2A3CB3C19A59AE9A64FFA358FD389A9E53B2C5849F1A12AAC0F3F1E"
+  },
+  {
+    "source": "hair.bmp",
+    "destination": "assets\\characters\\furina\\source\\mmd\\hair.bmp",
+    "length": 3126,
+    "sha256": "D9D25D9A313F0828F1A8A14DC534C51E1B84FFB52E7E1874044B3173AE3654E4"
+  },
+  {
+    "source": "readme【一定要看】.txt",
+    "destination": "assets\\characters\\furina\\source\\mmd\\readme【一定要看】.txt",
+    "length": 636,
+    "sha256": "78B25E862EB859B14DB9CC20B14C09972C0A9F02C541E9A9F6DC18793B717B60"
+  },
+  {
+    "source": "skin.bmp",
+    "destination": "assets\\characters\\furina\\source\\mmd\\skin.bmp",
+    "length": 3126,
+    "sha256": "02D7360CA41412D8A7D44F9930D73C700668511AFDAAD6B19976D09D3B477F99"
+  },
+  {
+    "source": "toon_defo.bmp",
+    "destination": "assets\\characters\\furina\\source\\mmd\\toon_defo.bmp",
+    "length": 822,
+    "sha256": "9588C05A177DDDEA99ECA5B7AFBE05BC23E2F740AEFFE574580FFE3ACA3BE1A5"
+  }
+]

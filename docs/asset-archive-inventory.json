@@ -1,0 +1,62 @@
+{
+  "archive": "assets/characters/furina/source/mmd/附件.zip",
+  "legacyNameEncoding": "Shift-JIS (932), UTF-8 flags honored by .NET",
+  "entries": [
+    {
+      "name": "场景.pmx",
+      "length": 95337,
+      "readable": true
+    },
+    {
+      "name": "寄居蟹.pmx",
+      "length": 275468,
+      "readable": true
+    },
+    {
+      "name": "海马.pmx",
+      "length": 257446,
+      "readable": true
+    },
+    {
+      "name": "神像.pmx",
+      "length": 317940,
+      "readable": true
+    },
+    {
+      "name": "章鱼.pmx",
+      "length": 253656,
+      "readable": true
+    },
+    {
+      "name": "蛋糕1_1.pmx",
+      "length": 42679,
+      "readable": true
+    },
+    {
+      "name": "蛋糕1_2.pmx",
+      "length": 42679,
+      "readable": true
+    },
+    {
+      "name": "蛋糕1_3.pmx",
+      "length": 42679,
+      "readable": true
+    },
+    {
+      "name": "蛋糕2_1.pmx",
+      "length": 80455,
+      "readable": true
+    },
+    {
+      "name": "蛋糕2_2.pmx",
+      "length": 80455,
+      "readable": true
+    },
+    {
+      "name": "蛋糕2_3.pmx",
+      "length": 80455,
+      "readable": true
+    }
+  ],
+  "note": "Read/decompression check only; not PMX render or CRC audit"
+}

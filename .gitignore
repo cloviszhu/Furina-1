@@ -1,0 +1,35 @@
+# User-supplied restricted assets: NEVER redistribute in Git.
+/assets/
+*.pmx
+*.pmd
+*.vmd
+*.vpd
+*.moc3
+*.zip
+*.7z
+*.rar
+*.wav
+*.mp3
+*.flac
+*.ogg
+*.safetensors
+*.gguf
+*.ckpt
+*.pth
+*.onnx
+# Runtime memories, test recordings, personal data, credentials.
+/data/
+/artifacts/
+/training/
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+# Reproducible dependencies/build output.
+node_modules/
+dist/
+coverage/
+playwright-report/
+test-results/
+*.log
