@@ -6,6 +6,8 @@ import { createApp } from '../../server/index.js';
 import { WindowsCredentials, credentialError } from '../../server/credentials.js';
 
 test('isolated settings reload preserves ordinary options and context; user-only mocked credentials never leak or charge', async ({ page }) => {
+  test.setTimeout(90000);
+  await page.route('**/character-assets/**', route => route.abort());
   const dataDir = await mkdtemp(join(tmpdir(), 'exo-settings-browser-'));
   let savedKey, calls = 0, saves = 0, unavailable = false;
   const credentials = new WindowsCredentials({ bridge: async (action, key) => {
@@ -15,7 +17,7 @@ test('isolated settings reload preserves ordinary options and context; user-only
     if (action === 'delete') { savedKey = undefined; return { ok: true }; }
     if (!savedKey) throw credentialError('NOT_FOUND'); return { ok: true, key: savedKey };
   } });
-  const app = await createApp({ dataDir, credentials, localTtsImpl: { status: async () => ({ ready: true, voices: [
+  const app = await createApp({ dev: true, dataDir, credentials, localTtsImpl: { status: async () => ({ ready: true, voices: [
     { id: 'furina-community-reference-test', engine: 'gpt-sovits', name: 'Fixture Furina', localService: true, emotions: ['neutral', 'calm'], source: 'fixture', license: 'fixture' },
     { id: 'ravdess-24-test', engine: 'gpt-sovits', name: 'Fixture RAVDESS', localService: true, emotions: ['neutral', 'happy'], source: 'fixture', license: 'fixture' },
   ] }) }, fetchImpl: async () => { calls++; throw Error('no real network'); } });

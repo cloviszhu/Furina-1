@@ -2,7 +2,7 @@ export const SETTINGS_KEY = 'project-exo.settings';
 export const SETTINGS_VERSION = 2;
 const providers = ['offline', 'openai', 'glm', 'deepseek', 'claude', 'kimi', 'compatible', 'ollama'];
 const emotions = ['neutral', 'calm', 'happy', 'sad', 'angry', 'surprised'];
-const defaults = { provider: 'offline', model: '', baseUrl: '', voice: '', emotion: 'neutral', speed: 1, timeline: 'aftermath', style: 'natural', expressionMode: 'manual' };
+const defaults = { provider: 'offline', credentialSource: 'input', model: '', baseUrl: '', voice: '', emotion: 'neutral', speed: 1, timeline: 'aftermath', style: 'natural', expressionMode: 'manual' };
 const member = (value, choices, fallback) => choices.includes(value) ? value : fallback;
 const secretLike = value => /(?:sk[-_]|api[-_]?key|bearer|password|token=)/i.test(value);
 export function cleanSettings(value, secret = '') {
@@ -17,6 +17,7 @@ export function cleanSettings(value, secret = '') {
   }
   return {
     provider: member(input.provider, providers, defaults.provider),
+    credentialSource: member(input.credentialSource, ['input', 'saved'], 'input'),
     model: safeText(input.model) && /^[a-zA-Z0-9][a-zA-Z0-9._:/-]{0,99}$/.test(input.model) ? input.model : '',
     baseUrl,
     // Stable project profile ids only. Browser numeric indexes are not identities.

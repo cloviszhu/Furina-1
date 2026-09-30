@@ -6,3 +6,8 @@
 /* Keep the character's face and feet clear of text and controls. */
 #viewport{bottom:105px}
 @media(max-width:820px){.stage{height:54dvh;min-height:440px}.stage-caption{top:16px;left:20px}.stage-caption .eyebrow{display:none}.stage-caption h1{font-size:18px;line-height:1.5;margin:0;letter-spacing:1px}.stage-caption h1 br{display:none}.model-state{top:50px}#viewport{top:76px;bottom:85px}}
+
+.chat-mode-controls { padding: 10px 16px; border: 1px solid #7598bd; border-radius: 10px; background: #102844; }
+.chat-mode-controls p { font-size: 12px; margin: 8px 0 0; }
+.chat-mode-controls button { margin: 4px; }
+#send { white-space: normal; }

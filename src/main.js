@@ -11,7 +11,7 @@ try { savedSettings = loadSettings(globalThis.localStorage); } catch { savedSett
 let settingsReady = false;
 function persistSettings() {
   if (!settingsReady) return;
-  const value = { provider: $('provider').value, model: $('model-name').value.trim(), baseUrl: $('base-url').value.trim(), voice: $('voice-select').value,
+  const value = { provider: $('provider').value, credentialSource: $('credential-source').value, model: $('model-name').value.trim(), baseUrl: $('base-url').value.trim(), voice: $('voice-select').value,
     emotion: $('voice-emotion').value, speed: Number($('voice-speed').value), timeline: $('character-timeline').value, style: $('character-style').value, expressionMode: $('expression-mode').value };
   let saved = false;
   try { saved = saveSettings(globalThis.localStorage, value, $('api-key').value); } catch { /* no plaintext fallback */ }
@@ -23,6 +23,18 @@ try { stage = new CharacterStage($('viewport'), text => { $('model-state').textC
 catch { $('model-state').textContent = '三维渲染不可用，请检查浏览器 WebGL。'; }
 const speech = new SpeechController({ onState: text => { $('speech-state').textContent = text; }, onMouth: value => { if (stage) stage.mouth = value; }, onExpression: value => stage?.setExpression?.(value), onStop: preservePreview => { if (!preservePreview) $('reference-preview')?.pause(); } });
 let status, memorySourceId, providers = [], busy = false, batchRunner;
+let realChat = false, chatController;
+function renderChatMode() {
+  $('mode-status').textContent = realChat ? '真实聊天 · DeepSeek · 发送会收费' : '演示模式 · 不调用远程模型';
+  $('provider-note').textContent = realChat ? '真实 DeepSeek · ' + ($('model-name').value || '未配置模型') + '。每次发送调用一次，无自动重试。' : '当前为本地规则演示；快捷提示只填文字。';
+  $('send').textContent = realChat ? '发送 · 调用 DeepSeek（收费）' : '发送 · 演示';
+  $('enable-real-chat').textContent = realChat ? '切回演示' : '启用真实聊天（发送会收费）';
+  $('cancel-chat').disabled = !busy;
+}
+function cancelChat() {
+  chatController?.abort(); speech.stop();
+  $('app-error').textContent = '已取消等待；已发出的调用可能计费，预算预留不退。不自动重试。';
+}
 let contextGeneration = 0;
 let memorySaving = false;
 function resetMemorySource(clearText = false) {
@@ -31,6 +43,7 @@ function resetMemorySource(clearText = false) {
   $('memory-source').textContent = '来源：你的手动记录';
 }
 function invalidateConversation(clearText = true) {
+  if (busy) cancelChat();
   ++contextGeneration;
   speech.stop();
   resetMemorySource(clearText);
@@ -71,10 +84,10 @@ const fail = error => { $('app-error').textContent = error.message || String(err
 async function api(path, options = {}) {
   let response;
   try { response = await fetch(path, { ...options, headers: { 'Content-Type': 'application/json', 'X-Exo-Credentials': '1', ...options.headers } }); }
-  catch { throw new Error('项目服务无法连接；请运行 npm.cmd start，确认 127.0.0.1:3000 后刷新页面。'); }
+  catch (error) { if (options.signal?.aborted) throw error; throw new Error('项目服务无法连接；请运行 npm.cmd start，确认 127.0.0.1:3000 后刷新页面。'); }
   let data;
   try { data = await response.json(); } catch { throw new Error('项目服务未返回有效数据，请重启项目后刷新。'); }
-  if (!response.ok) throw new Error(data.error || '本机请求失败。'); return data;
+  if (!response.ok) { if (data.budget) updateBudget(data.budget); throw new Error(data.error || '本机请求失败。'); } return data;
 }
 function showTab(name) {
   document.querySelectorAll('.tab').forEach(node => node.classList.toggle('active', node.dataset.tab === name));
@@ -107,22 +120,26 @@ async function refreshHistory() {
   if (!rows.length) $('messages').append(element('div', 'empty', '今天的故事还没有开始。她会听见你的声音，也会记住你选择留下的片段。'));
 }
 function updateBudget(budget) {
+  $('chat-budget-state').textContent = '累计 ' + budget.limits.cny + ' 元上限 · 已预留 ¥' + budget.reservedCny.toFixed(4) + ' · 剩余 ¥' + budget.remainingCny.toFixed(4) + (budget.pricingCurrent ? '' : ' · 价格核实已过期，真实调用禁用');
   $('budget-state').textContent = `累计 ${budget.limits.cny} 元硬上限 · 已调用 ${budget.usedCalls} 次（无固定次数限制） · 保守预留 ¥${budget.reservedCny.toFixed(4)} · 剩余预留预算 ¥${budget.remainingCny.toFixed(4)}。每次最多 ${budget.limits.outputTokens} 输出 token / ${budget.limits.inputBytes} 输入字节；失败预留不退。${budget.pricingCurrent ? '' : '价格核实已过期，远程调用禁用。'}`;
 }
 async function send(text, remoteTest = false) {
-  if (busy || (remoteTest && batchRunner?.running) || !text.trim()) return;
+  const remoteChat = realChat && !remoteTest;
+  if (busy || ((remoteTest || remoteChat) && batchRunner?.running) || !text.trim()) return;
+  const startedAt = Date.now();
+  chatController = new AbortController(); const controller = chatController;
   busy = true; $('send').disabled = true; $('remote-test').disabled = true; $('app-error').textContent = '';
   speech.stop();
+  renderChatMode();
   stage?.setMode?.('listening');
   const generation = contextGeneration;
   try {
     const chosen = config();
-    // Ordinary chat never spends remote credit, regardless of settings selection.
-    const actual = remoteTest || ['offline', 'ollama'].includes(chosen.provider) || /^https?:\/\/(localhost|127\.0\.0\.1)(:|\/)/.test(chosen.baseUrl)
-      ? chosen : { provider: 'offline' };
+    const actual = remoteTest || remoteChat ? chosen : { provider: 'offline' };
+    if (remoteChat && chosen.provider !== 'deepseek') throw new Error('真实聊天只授权官方 DeepSeek；请先配置 DeepSeek。');
     if (remoteTest && chosen.provider !== 'deepseek') throw new Error('本輪远程预算只允许 DeepSeek 一次短测试。');
-    const result = await api('/api/chat', { method: 'POST', body: JSON.stringify({ text, config: actual, remoteTest, character: character() }) });
-    if (generation !== contextGeneration) return;
+    const result = await api('/api/chat', { method: 'POST', signal: controller.signal, body: JSON.stringify({ text, config: actual, remoteTest, remoteChat, confirmed: remoteChat, character: character() }) });
+    if (generation !== contextGeneration || controller.signal.aborted) return;
     $('messages').querySelector('.empty')?.remove();
     message(result.user); message(result.assistant, result.recalled);
     $('chat-input').value = '';
@@ -135,12 +152,36 @@ async function send(text, remoteTest = false) {
     stage?.setExpression?.(options.emotion);
     if ($('auto-speak').checked) await speech.speak(result.assistant.text, $('voice-select').value, options);
     showTab('chat');
-  } catch (error) { if (generation === contextGeneration) fail(error); }
-  finally { stage?.setMode?.('idle'); busy = false; $('send').disabled = false; $('remote-test').disabled = Boolean(batchRunner?.running); }
+  } catch (error) { if (!controller.signal.aborted && generation === contextGeneration) fail(error); }
+  finally {
+    // Keep rapid repeated clicks inside one send, even when failure returns immediately.
+    const settleMs = remoteChat || remoteTest ? Math.max(0, 500 - (Date.now() - startedAt)) : 0;
+    if (settleMs) await new Promise(resolve => setTimeout(resolve, settleMs));
+    stage?.setMode?.('idle'); busy = false; chatController = null; $('send').disabled = false; $('remote-test').disabled = Boolean(batchRunner?.running); renderChatMode();
+    try { const fresh = await api('/api/status'); updateBudget(fresh.budget); } catch { /* keep original diagnostic */ }
+  }
 }
 $('chat-form').onsubmit = event => { event.preventDefault(); void send($('chat-input').value); };
 $('chat-input').onkeydown = event => { if (event.key === 'Enter' && !event.shiftKey && !event.isComposing) { event.preventDefault(); void send($('chat-input').value); } };
-document.querySelectorAll('[data-prompt]').forEach(node => node.onclick = () => { $('chat-input').value = node.dataset.prompt; void send(node.dataset.prompt); });
+document.querySelectorAll('[data-prompt]').forEach(node => node.onclick = () => { $('chat-input').value = node.dataset.prompt; $('chat-input').focus(); });
+$('cancel-chat').onclick = cancelChat;
+$('chat-settings').onclick = () => { $('settings').showModal(); void refreshCredentialStatus(); };
+$('enable-real-chat').onclick = () => {
+  if (realChat) { if (busy) cancelChat(); realChat = false; renderChatMode(); return; }
+  const chosen = config();
+  if (chosen.provider !== 'deepseek' || !chosen.model || (chosen.credentialSource !== 'saved' && !chosen.apiKey.trim())) {
+    fail('先配置 DeepSeek 模型和密钥来源，再在这里启用真实聊天；不会自动测试。'); $('settings').showModal(); void refreshCredentialStatus(); return;
+  }
+  let official = false;
+  try { const endpoint = new URL(chosen.baseUrl || 'https://api.deepseek.com'); official = endpoint.origin === 'https://api.deepseek.com' && !endpoint.username && !endpoint.password && !endpoint.search && !endpoint.hash && ['/', '/v1', '/v1/'].includes(endpoint.pathname); } catch {}
+  if (!official) { fail('真实聊天仅支持官方 HTTPS DeepSeek 基地址；请修改聊天配置。'); return; }
+  if (batchRunner?.running) { fail('请先结束批量测试。'); return; }
+  realChat = true; $('app-error').textContent = ''; renderChatMode();
+};
+$('suggest-deepseek').onclick = () => {
+  if (busy || batchRunner?.running) return;
+  $('provider').value = 'deepseek'; $('base-url').value = 'https://api.deepseek.com'; $('model-name').value = 'deepseek-flash'; persistSettings(); renderChatMode();
+};
 $('greet').onclick = () => stage?.trigger('greet'); $('nod').onclick = () => stage?.trigger('nod'); $('reset-camera').onclick = () => stage?.resetCamera(); $('stop-speech').onclick = () => speech.stop();
 $('model-select').onchange = () => { speech.stop(); void stage?.load($('model-select').value); };
 $('open-settings').onclick = () => { $('settings').showModal(); void refreshCredentialStatus(); };
@@ -150,25 +191,26 @@ async function refreshCredentialStatus() {
     $('credential-status').textContent = state.available ? state.saved ? '已保存' : '未保存' : '未保存 · Windows 凭据管理器不可用；不会回退明文。';
   } catch { $('credential-status').textContent = '未保存 · 无法确认 Windows 凭据状态。'; }
 }
-$('credential-source').onchange = () => { $('api-key').value = ''; $('api-key').disabled = $('credential-source').value === 'saved'; };
+$('credential-source').onchange = () => { $('api-key').value = ''; $('api-key').disabled = $('credential-source').value === 'saved'; persistSettings(); };
 $('save-credential').onclick = async () => {
   if ($('provider').value !== 'deepseek' || $('credential-source').value !== 'input') { $('credential-status').textContent = '请选择 DeepSeek 和本次输入，再本人确认保存。'; return; }
   $('save-credential').disabled = true;
   try {
     await api('/api/credentials/deepseek', { method: 'POST', body: JSON.stringify({ confirmed: true, apiKey: $('api-key').value }) });
-    $('api-key').value = ''; $('api-key').disabled = true; $('credential-source').value = 'saved'; $('credential-status').textContent = '已保存';
+    $('api-key').value = ''; $('api-key').disabled = true; $('credential-source').value = 'saved'; $('credential-status').textContent = '已保存'; persistSettings();
   } catch (error) { $('credential-status').textContent = `本次输入未保存 · ${error.message}`; }
   finally { $('save-credential').disabled = false; }
 };
 $('delete-credential').onclick = async () => {
   if (!confirm('仅删除本项目保存到本机 Windows 凭据管理器的 DeepSeek 密钥？这不会撤销 DeepSeek 上游密钥。')) return;
   $('delete-credential').disabled = true;
-  try { await api('/api/credentials/deepseek', { method: 'DELETE', body: JSON.stringify({ confirmed: true }) }); $('credential-status').textContent = '未保存'; $('credential-source').value = 'input'; $('api-key').value = ''; $('api-key').disabled = false; }
+  try { await api('/api/credentials/deepseek', { method: 'DELETE', body: JSON.stringify({ confirmed: true }) }); $('credential-status').textContent = '未保存'; $('credential-source').value = 'input'; $('api-key').value = ''; $('api-key').disabled = false; persistSettings(); }
   catch (error) { $('credential-status').textContent = error.message; }
   finally { $('delete-credential').disabled = false; }
 };
 $('clear-key').onclick = () => { $('api-key').value = ''; $('provider-status').textContent = '页面密钥已清除。'; };
 $('provider').onchange = () => {
+  if (busy) cancelChat(); realChat = false; renderChatMode();
   $('base-url').value = providers.find(p => p.id === $('provider').value)?.baseUrl || '';
   $('model-name').value = ''; $('api-key').value = '';
   $('credential-source').value = 'input'; $('api-key').disabled = false;
@@ -182,7 +224,7 @@ function changeCharacter() {
   const timeline = status?.characterOptions?.timelines.find(x => x.id === chosen.timeline);
   const style = status?.characterOptions?.styles.find(x => x.id === chosen.style);
   $('character-details').textContent = `${timeline?.description || ''} ${style?.description || ''} 风格切换沿用当前时间线的对话；时间线切换隔离聊天，已确认记忆仍保留。普通配置刷新后恢复。`;
-  void refreshHistory().catch(fail);
+  renderChatMode(); void refreshHistory().catch(fail);
 }
 $('character-timeline').onchange = changeCharacter; $('character-style').onchange = changeCharacter;
 $('remote-test').onclick = () => {
@@ -281,12 +323,14 @@ $('memory-form').onsubmit = async event => {
 };
 $('memory-manual').onclick = () => resetMemorySource();
 
-globalThis.addEventListener('pagehide', () => { speech.stop(); $('api-key').value = ''; });
+globalThis.addEventListener('pagehide', () => { chatController?.abort(); realChat = false; renderChatMode(); speech.stop(); $('api-key').value = ''; });
 
 async function boot() {
   status = await api('/api/status'); providers = status.providers;
   for (const p of providers) { const option = element('option', '', p.name); option.value = p.id; $('provider').append(option); }
   $('provider').value = savedSettings.provider;
+  $('credential-source').value = savedSettings.credentialSource || 'input';
+  $('api-key').disabled = $('credential-source').value === 'saved';
   $('model-name').value = savedSettings.model;
   $('base-url').value = savedSettings.baseUrl || providers.find(p => p.id === savedSettings.provider)?.baseUrl || '';
   $('character-timeline').value = savedSettings.timeline; $('character-style').value = savedSettings.style;
@@ -299,8 +343,9 @@ async function boot() {
   await Promise.all([refreshHistory(), memories(), voices()]);
   if (Array.from($('voice-emotion').options).some(o => o.value === savedSettings.emotion)) $('voice-emotion').value = savedSettings.emotion;
   voiceDetails();
-  settingsReady = true; persistSettings();
+  settingsReady = true; persistSettings(); renderChatMode();
 }
+for (const id of ['model-name', 'base-url', 'credential-source', 'api-key']) $(id).addEventListener('change', () => { if (busy) cancelChat(); realChat = false; renderChatMode(); });
 for (const id of ['provider', 'model-name', 'base-url', 'voice-select', 'voice-emotion', 'voice-speed', 'character-timeline', 'character-style', 'expression-mode']) $(id).addEventListener('change', persistSettings);
 for (const id of ['model-name', 'base-url', 'voice-speed']) $(id).addEventListener('input', persistSettings);
 void boot().catch(fail);

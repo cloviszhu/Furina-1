@@ -13,7 +13,7 @@ test('confirmed browser source survives DB reopen and reaches mock request; canc
   const start = async () => {
     app = await createApp({ dataDir, dev: true, fetchImpl: async (_url, options) => {
       bodies.push(JSON.parse(options.body));
-      return Response.json({ message: { content: '{"text":"协议替身，不评价记忆质量。","emotion":"calm"}' } });
+      return Response.json({ choices: [{ message: { content: '{"text":"协议替身，不评价记忆质量。","emotion":"calm"}' } }] });
     } });
     await new Promise(r => app.app.listen(0, '127.0.0.1', r)); url = `http://127.0.0.1:${app.app.address().port}`;
   };
@@ -24,8 +24,8 @@ test('confirmed browser source survives DB reopen and reaches mock request; canc
     await p.locator('#auto-speak').uncheck();
   };
   const mock = async p => {
-    await p.locator('#open-settings').click(); await p.locator('#provider').selectOption('ollama');
-    await p.locator('#model-name').fill('fixture'); await p.locator('.close-button').click();
+    await p.locator('#open-settings').click(); await p.locator('#provider').selectOption('deepseek');
+    await p.locator('#model-name').fill('deepseek-flash'); await p.locator('#api-key').fill('fixture-only'); await p.locator('.close-button').click(); await p.locator('#enable-real-chat').click();
   };
   const ask = async p => {
     const n = bodies.length;
@@ -72,6 +72,6 @@ test('confirmed browser source survives DB reopen and reaches mock request; canc
     await expect(reopened.locator('.memory-card')).toHaveCount(0);
     body = await ask(reopened); expect(evidence(body)).toEqual([]);
     for (const word of ['邮差', '向日葵', '园丁', '白玫瑰']) expect(JSON.stringify(body)).not.toContain(word);
-    expect(app.budget.status().usedCalls).toBe(0);
+    expect(app.budget.status().usedCalls).toBe(3);
   } finally { await reopened?.close(); await app.close(); await rm(dataDir, { recursive: true, force: true }); }
 });

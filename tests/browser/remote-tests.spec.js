@@ -6,8 +6,10 @@ import { createApp } from '../../server/index.js';
 import { WindowsCredentials } from '../../server/credentials.js';
 
 test('second-turn missing JSON stops visibly without neutral success, retry or formal writes', async ({ page }) => {
+  test.setTimeout(90000);
+  await page.route('**/character-assets/**', route => route.abort());
   const dataDir = await mkdtemp(join(tmpdir(), 'exo-contract-browser-')); let calls = 0;
-  const app = await createApp({ dataDir, credentials: new WindowsCredentials({ bridge: async () => ({ ok: true, saved: false }) }),
+  const app = await createApp({ dev: true, dataDir, credentials: new WindowsCredentials({ bridge: async () => ({ ok: true, saved: false }) }),
     fetchImpl: async (_url, options) => {
       const body = JSON.parse(options.body); calls++;
       expect(body.response_format).toEqual({ type: 'json_object' });
@@ -34,9 +36,11 @@ test('second-turn missing JSON stops visibly without neutral success, retry or f
 });
 
 test('single explicit click runs eighteen multi-turn fixture calls; report isolated from formal chat and safe cancellation', async ({ page }) => {
+  test.setTimeout(90000);
+  await page.route('**/character-assets/**', route => route.abort());
   const dataDir = await mkdtemp(join(tmpdir(), 'exo-batch-browser-'));
   let calls = 0, block = false;
-  const app = await createApp({ dataDir, credentials: new WindowsCredentials({ bridge: async () => ({ ok: true, saved: false }) }), fetchImpl: async (_url, { signal }) => {
+  const app = await createApp({ dev: true, dataDir, credentials: new WindowsCredentials({ bridge: async () => ({ ok: true, saved: false }) }), fetchImpl: async (_url, { signal }) => {
     calls++;
     if (block) await new Promise((_resolve, reject) => signal.addEventListener('abort', () => reject(Error('fixture abort')), { once: true }));
     return Response.json({ choices: [{ message: { content: '{"text":"本地模拟回答，非真实 API 验收","emotion":"calm"}' } }], usage: { prompt_tokens: 30, completion_tokens: 12 } });

@@ -53,6 +53,7 @@ export async function createApp({ projectRoot = PROJECT, dataDir = join(PROJECT,
   const referenceImports = new ReferenceImports(dataDir, localTts);
   const assetRoot = join(projectRoot, 'assets/characters/furina/source/mmd');
   const modelNames = ['【芙宁娜】.pmx', '【芙宁娜_荒】.pmx'];
+  let chatBusy = false;
   let vite;
   if (dev) { const { createServer } = await import('vite'); vite = await createServer({ root: projectRoot, server: { middlewareMode: true, hmr: false }, appType: 'spa' }); }
   const app = http.createServer(async (req, res) => {
@@ -143,50 +144,65 @@ export async function createApp({ projectRoot = PROJECT, dataDir = join(PROJECT,
       }
       if (pathname === '/api/chat' && req.method === 'POST') {
         const input = await body(req), text = validText(input.text, 1500);
-        const character = characterConfig(input.character);
-        const memories = store.recall(text);
-        const contextGeneration = store.contextGeneration;
-        const messages = messagesFor(text, memories, store.history(16, character.contextKey), character);
-        let config = input.config || { provider: 'offline' };
-        if (typeof config !== 'object' || Array.isArray(config) || ['provider', 'model', 'baseUrl', 'apiKey'].some(k => config[k] !== undefined && (typeof config[k] !== 'string' || config[k].length > (k === 'apiKey' ? 4096 : 500)))) throw Object.assign(new Error('模型配置字段无效或过长。'), { status: 400 });
-        config = await resolveCredential(config, input.remoteTest);
-        if (config.apiKey && text.includes(config.apiKey)) throw Object.assign(new Error('聊天正文不能包含当前密钥。'), { status: 400 });
-        let result = { text: offlineReply(text, memories, character), emotion: 'neutral', expressionSource: 'limited-rule' }, provider = 'offline', error = null;
-        let reservation;
-        if (config.provider && config.provider !== 'offline') {
-          const definition = PROVIDERS.find(p => p.id === config.provider);
-          if (!definition) throw Object.assign(new Error('未知模型提供商。'), { status: 400 });
-          let endpoint;
-          try { endpoint = new URL(config.baseUrl || definition.baseUrl); } catch { throw Object.assign(new Error('模型端点无效，请填写 HTTP 基地址。'), { status: 400 }); }
-          if (endpoint.username || endpoint.password || endpoint.search || endpoint.hash) throw Object.assign(new Error('端点格式被拒绝。'), { status: 400 });
-          const local = LOOPBACK.has(endpoint.hostname);
-          if (local) {
-            if (!['http:', 'https:'].includes(endpoint.protocol)) throw Object.assign(new Error('本地模型需要 HTTP 端点。'), { status: 400 });
-          } else {
-            if (config.provider !== 'deepseek' || endpoint.origin !== 'https://api.deepseek.com' || !['', '/', '/v1', '/v1/'].includes(endpoint.pathname)) throw Object.assign(new Error('本轮只授权 DeepSeek 短测试，其他远程服务禁用。'), { status: 403 });
-            if (input.remoteTest !== true) throw Object.assign(new Error('远程模型只能通过明确的一次测试入口调用。'), { status: 403 });
-            if (typeof config.apiKey !== 'string' || !config.apiKey.trim() || /[\r\n]/.test(config.apiKey)) throw Object.assign(new Error('请由你本人在设置中输入密钥。'), { status: 400 });
-            reservation = budget.reserve(config.model, messages, 128);
+        if (input.remoteChat === true && (input.confirmed !== true || input.remoteTest === true || input.config?.provider !== 'deepseek')) return json(res, 403, { error: '真实聊天需要本人明确启用后逐次发送，仅授权官方 DeepSeek。' });
+        const ownsChatLock = input.remoteChat === true || input.remoteTest === true;
+        if (ownsChatLock && chatBusy) return json(res, 409, { error: '上一条聊天仍在处理，请等待或取消；没有启动重复调用。', budget: budget.status() });
+        if (ownsChatLock) chatBusy = true;
+        const disconnect = new AbortController();
+        const onClose = () => { if (!res.writableEnded) disconnect.abort(); };
+        res.on('close', onClose);
+        try {
+          if (req.aborted || res.destroyed) return;
+          const character = characterConfig(input.character);
+          const memories = store.recall(text);
+          const contextGeneration = store.contextGeneration;
+          const messages = messagesFor(text, memories, store.history(16, character.contextKey), character);
+          let config = input.config || { provider: 'offline' };
+          if (typeof config !== 'object' || Array.isArray(config) || ['provider', 'model', 'baseUrl', 'apiKey'].some(k => config[k] !== undefined && (typeof config[k] !== 'string' || config[k].length > (k === 'apiKey' ? 4096 : 500)))) throw Object.assign(new Error('模型配置字段无效或过长。'), { status: 400 });
+          config = await resolveCredential(config, input.remoteTest === true || (input.remoteChat === true && input.confirmed === true));
+          if (disconnect.signal.aborted || req.aborted || res.destroyed) return;
+          if (config.apiKey && text.includes(config.apiKey)) throw Object.assign(new Error('聊天正文不能包含当前密钥。'), { status: 400 });
+          let result = { text: offlineReply(text, memories, character), emotion: 'neutral', expressionSource: 'limited-rule' }, provider = 'offline', error = null;
+          let reservation;
+          if (config.provider && config.provider !== 'offline') {
+            const definition = PROVIDERS.find(p => p.id === config.provider);
+            if (!definition) throw Object.assign(new Error('未知模型提供商。'), { status: 400 });
+            let endpoint;
+            try { endpoint = new URL(config.baseUrl || definition.baseUrl); } catch { throw Object.assign(new Error('模型端点无效，请填写 HTTP 基地址。'), { status: 400 }); }
+            if (endpoint.username || endpoint.password || endpoint.search || endpoint.hash) throw Object.assign(new Error('端点格式被拒绝。'), { status: 400 });
+            const local = LOOPBACK.has(endpoint.hostname);
+            if (input.remoteChat === true && local) throw Object.assign(new Error('真实聊天仅授权官方 HTTPS DeepSeek 端点。'), { status: 403 });
+            if (local) {
+              if (!['http:', 'https:'].includes(endpoint.protocol)) throw Object.assign(new Error('本地模型需要 HTTP 端点。'), { status: 400 });
+            } else {
+              if (config.provider !== 'deepseek' || endpoint.origin !== 'https://api.deepseek.com' || !['', '/', '/v1', '/v1/'].includes(endpoint.pathname)) throw Object.assign(new Error('仅授权官方 DeepSeek 真实聊天或明确测试，其他远程服务禁用。'), { status: 403 });
+              if (input.remoteTest !== true && !(input.remoteChat === true && input.confirmed === true)) throw Object.assign(new Error('请明确启用真实聊天后发送，或使用本人确认的单次测试。'), { status: 403 });
+              if (typeof config.apiKey !== 'string' || !config.apiKey.trim() || /[\r\n]/.test(config.apiKey)) throw Object.assign(new Error('请由你本人在设置中输入密钥。'), { status: 400 });
+              reservation = budget.reserve(config.model, messages, 128);
+            }
+            try {
+              result = await complete(config, messages, { fetchImpl, signal: disconnect.signal }); provider = config.provider;
+              if (reservation) budget.finish(reservation, result.usage, true);
+            } catch (failure) {
+              if (reservation) budget.finish(reservation, failure.usage || null, false);
+              if (disconnect.signal.aborted || res.destroyed) return;
+              if (input.remoteChat === true) return json(res, 502, { error: 'DeepSeek 未成功返回有效安全回复；没有写入演示回复，没有自动重试。已预留费用保留，请核对配置后手动发送。', budget: budget.status() });
+              if (failure.code === 'UNSAFE_PROVIDER_REPLY') throw Object.assign(new Error('模型响应安全检查失败；本轮未保存或朗读。'), { status: 502 });
+              if (failure.code === 'INVALID_EXPRESSION_CONTRACT') throw Object.assign(new Error('模型未提供有效的 JSON 表达契约；本轮未保存或朗读，没有自动重试。'), { status: 502 });
+              error = '模型服务未成功回应，当前为本地演示回复；没有自动重试。';
+            }
           }
-          try {
-            result = await complete(config, messages, { fetchImpl }); provider = config.provider;
-            if (reservation) budget.finish(reservation, result.usage, true);
-          } catch (failure) {
-            if (reservation) budget.finish(reservation, failure.usage || null, false);
-            if (failure.code === 'UNSAFE_PROVIDER_REPLY') throw Object.assign(new Error('模型响应安全检查失败；本轮未保存或朗读。'), { status: 502 });
-            if (failure.code === 'INVALID_EXPRESSION_CONTRACT') throw Object.assign(new Error('模型未提供有效的 JSON 表达契约；本轮未保存或朗读，没有自动重试。'), { status: 502 });
-            error = '模型服务未成功回应，当前为本地演示回复；没有自动重试。';
-          }
-        }
-        // Corrections/deletions clear history too. Discard completions and
-        // fallbacks based on superseded context before persistence or delivery.
-        if (contextGeneration !== store.contextGeneration) return json(res, 409, {
-          code: 'CONTEXT_CHANGED', error: '记忆已修改或删除，本次回复已取消。请重新发送。',
-        });
-        const user = store.event('user', text, { provider, contextKey: character.contextKey });
-        const assistant = store.event('assistant', result.text, { turnId: user.turnId, provider, contextKey: character.contextKey,
-          emotion: result.expressionSource === 'model-contract' ? result.emotion : null });
-        return json(res, 200, { user, assistant, provider, error, character, emotion: result.emotion, expressionSource: result.expressionSource, recalled: memories.map(m => ({ id: m.id, text: m.text })), usage: result.usage || null, budget: budget.status() });
+          if (disconnect.signal.aborted || res.destroyed) return;
+          // Corrections/deletions clear history too. Discard completions and
+          // fallbacks based on superseded context before persistence or delivery.
+          if (contextGeneration !== store.contextGeneration) return json(res, 409, {
+            code: 'CONTEXT_CHANGED', error: '记忆已修改或删除，本次回复已取消。请重新发送。',
+          });
+          const user = store.event('user', text, { provider, contextKey: character.contextKey });
+          const assistant = store.event('assistant', result.text, { turnId: user.turnId, provider, contextKey: character.contextKey,
+            emotion: result.expressionSource === 'model-contract' ? result.emotion : null });
+          return json(res, 200, { user, assistant, provider, error, character, emotion: result.emotion, expressionSource: result.expressionSource, recalled: memories.map(m => ({ id: m.id, text: m.text })), usage: result.usage || null, budget: budget.status() });
+        } finally { if (ownsChatLock) chatBusy = false; res.off('close', onClose); }
       }
       if (pathname === '/api/voices' && req.method === 'GET') {
         const neural = ttsConfigError ? { ready: false, error: ttsConfigError, voices: [] } : await localTts.status();
@@ -244,7 +260,7 @@ export async function createApp({ projectRoot = PROJECT, dataDir = join(PROJECT,
       if (pathname.startsWith('/character-assets/')) return await serveFile(res, assetRoot, pathname.slice(18));
       if (vite) return vite.middlewares(req, res, () => json(res, 404, { error: '页面不存在。' }));
       return await serveFile(res, join(projectRoot, 'dist'), pathname === '/' ? 'index.html' : pathname.slice(1));
-    } catch (error) { if (!res.headersSent) json(res, error.status || 400, { error: error.message.includes('SQL') ? '本地数据操作失败。' : error.message }); }
+    } catch (error) { if (!res.headersSent) json(res, error.status || 400, { ...(req.url === '/api/chat' ? { budget: budget.status() } : {}), error: error.message.includes('SQL') ? '本地数据操作失败。' : error.message }); }
   });
   return { app, store, budget, async close() { remoteTests.close(); if (app.listening) await new Promise(r => app.close(r)); referenceImports.close(); await vite?.close(); store.close(); } };
 }

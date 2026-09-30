@@ -3,10 +3,10 @@ import assert from 'node:assert/strict';
 import { SETTINGS_KEY, cleanSettings, loadSettings, saveSettings } from '../src/settings.js';
 const storage = () => { const map = new Map(); return { getItem: key => map.get(key), setItem: (key, value) => map.set(key, value), removeItem: key => map.delete(key), map }; };
 test('ordinary config whitelist roundtrip, migration and safe corruption/default fallback', () => {
-  const store = storage(), options = { provider: 'deepseek', model: 'deepseek-flash', baseUrl: 'https://api.deepseek.com/v1', voice: 'neural:furina-community-reference-test', emotion: 'calm', speed: 1.2, timeline: 'performer', style: 'quiet', expressionMode: 'reply', apiKey: 'fake-secret', chat: 'private chat', budget: 999, credentialSource: 'saved' };
+  const store = storage(), options = { provider: 'deepseek', model: 'deepseek-flash', baseUrl: 'https://api.deepseek.com/v1', voice: 'neural:furina-community-reference-test', emotion: 'calm', speed: 1.2, timeline: 'performer', style: 'quiet', expressionMode: 'reply', apiKey: 'fake-secret', chat: 'private chat', budget: 999, credentialSource: 'saved', remoteChat: true, realChat: true, confirmed: true };
   assert(saveSettings(store, options));
   assert.deepEqual(loadSettings(store), cleanSettings(options));
-  for (const forbidden of ['fake-secret', 'private chat', 'apiKey', 'budget', 'credentialSource']) assert(!store.getItem(SETTINGS_KEY).includes(forbidden));
+  for (const forbidden of ['fake-secret', 'private chat', 'apiKey', 'budget', 'remoteChat', 'realChat', 'confirmed']) assert(!store.getItem(SETTINGS_KEY).includes(forbidden));
   store.setItem(SETTINGS_KEY, JSON.stringify({ version: 1, settings: options }));
   assert.equal(loadSettings(store).timeline, 'performer'); assert.equal(JSON.parse(store.getItem(SETTINGS_KEY)).version, 2);
   for (const raw of ['{', JSON.stringify({ version: 900, settings: options }), 'x'.repeat(8001)]) {

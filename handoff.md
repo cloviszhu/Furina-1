@@ -1,3 +1,7 @@
+# 当前交接
+
+正式聊天流程已实现，尚未部署。详见 [正式聊天交接](docs/explicit-chat-mode-handoff.md)。默认演示，真实模式必须本人在主聊天启用；逐次发送收费，刷新回演示。新模式验证仅 mock，未重跑真实召回。
+
 [2026-09-30 persistent memory save app-only deployed: app PID69452, TTS PID67988 retained; shortest real validation steps](docs/persistent-memory-deployment-2026-09-30.md)
 
 [2026-09-30 persistent SQLite memory chain and mock request verification](docs/persistent-memory-handoff.md)

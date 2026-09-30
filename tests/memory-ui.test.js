@@ -34,7 +34,7 @@ async function ui() {
   const pending = deferred();
   const document = { getElementById: id => nodes[id], createElement: tag => new Element(tag), querySelectorAll: () => [] };
   const context = vm.createContext({
-    loadSettings, saveSettings,
+    loadSettings, saveSettings, AbortController,
     document, console, confirm: () => true, addEventListener() {},
     initReferences() {},
     mountRemoteTests() {},

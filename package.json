@@ -6,6 +6,7 @@
   "engines": { "node": ">=24" },
   "scripts": {
     "build": "vite build",
+    "build:review": "vite build --outDir artifacts/explicit-chat-mode/build",
     "start": "node server/index.js",
     "dev": "node server/index.js --dev",
     "local:start": "node scripts/exo-local.mjs start",
