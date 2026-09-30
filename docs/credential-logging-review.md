@@ -2,6 +2,8 @@
 
 2026-09-30，基于 `8358e4f2da053c9ce67a87bff292ba7a54a13d4b`。父独立审查指出旧 PowerShell JSON cmdlet 管道可能泄漏密钥，本轮采用假 sentinel 复现并最小修复。所有真实凭据读/写/删除仍未执行；没有部署、刷新用户页、修改生产数据、收费调用或日志/安全持久策略。`src/stage.js` 未修改，动作任务保留给独立 worktree。
 
+修复代码提交：`9819185e53710981552422c743276bdae6fc5cc3`。后续仅任务完成/交接记录，最终 main SHA 以最终报告及远端核对为准；仍需父独立复审后再部署。
+
 ## 风险结论
 
 **风险成立，旧版不能作为已通过安全审查的凭据实现部署。** 原脚本将 `[Console]::In.ReadToEnd()` 送入 `ConvertFrom-Json`，将带 key 的 result 送入 `ConvertTo-Json`。私有 stdin/stdout 和 `-NoProfile` 不阻止 PowerShell 对 cmdlet 管道记录模块日志或 transcription。

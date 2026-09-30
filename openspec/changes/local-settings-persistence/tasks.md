@@ -10,4 +10,4 @@
 
 - [x] 2.1 移除秘密经过 PowerShell cmdlet/变量/输出管道的路径，使用 C# 无参数 void 入口处理解析、Cred API、序列化和私有 OS 管道。
 - [x] 2.2 使用假 sentinel 和 Cred API 替身验证协议及本进程 transcription/module logging，保留旧路径泄漏对照，不改变持久日志或安全策略。
-- [ ] 2.3 完成回归、build、OpenSpec、修复交接与提交，提供完整 SHA 供复审，不部署或操作真实凭据。
+- [x] 2.3 完成回归、build、OpenSpec、修复交接与提交，提供完整 SHA 供复审，不部署或操作真实凭据。
