@@ -1,6 +1,6 @@
 # 本地设置持久化与凭据入口交接
 
-2026-09-30，基于完整 SHA `3f4fdef5b722c7377d516ecefcdafb3899956322`，main / `cloviszhu/Furina-1`。用户原话「每次都得填配置，好麻烦啊」，同意普通配置自动保留和本人首次确认的 Windows 凭据管理器入口。代码及隔离验证已完成；未执行真实保存，未重启生产 app/TTS，也未刷新用户页。提交/推送结果以最终交接和 git 为准。
+2026-09-30，基于完整 SHA `3f4fdef5b722c7377d516ecefcdafb3899956322`，main / `cloviszhu/Furina-1`。用户原话「每次都得填配置，好麻烦啊」，同意普通配置自动保留和本人首次确认的 Windows 凭据管理器入口。代码及隔离验证已完成；未执行真实保存，未重启生产 app/TTS，也未刷新用户页。代码提交 `076c61fa9f51c3d6e79cfd7c2c0a7349ecbf4d63` 已通过同一 `git push origin main` 推送，并用 `git ls-remote origin refs/heads/main` 完整 SHA 核对一致。后续仅交接/任务勾选提交，最终 SHA 以最终报告和 git 为准。
 
 ## 非敏感配置
 
