@@ -273,6 +273,7 @@ export async function createApp({ projectRoot = PROJECT, dataDir = join(PROJECT,
         if (backend === 'gpt-sovits' && referenceImports.committing) throw Object.assign(new Error('参考登记正在更新，请稍后试听。'), { status: 409 });
         if (!['windows-sapi', 'gpt-sovits'].includes(backend)) throw Object.assign(new Error('该声音后端不使用服务器合成接口。'), { status: 400 });
         validateSpeechOptions(input, backend);
+        const releaseSpeech = turn ? turns.acquireSpeech(input) : () => {};
         const controller = new AbortController();
         const onTurnCancel = () => controller.abort();
         turn?.controller.signal.addEventListener('abort', onTurnCancel, { once: true });
@@ -287,7 +288,7 @@ export async function createApp({ projectRoot = PROJECT, dataDir = join(PROJECT,
           if (res.destroyed) return;
           if (controller.signal.aborted) return json(res, 409, { code: 'TURN_CANCELLED', turnId: turn?.id, error: '本轮语音已取消。' });
           return json(res, 502, { code: 'TTS_FAILED', turnId: turn?.id, segmentId: input.segmentId, error: '语音合成失败，可重播或重新发送。' });
-        } finally { res.off('close', cancelled); turn?.controller.signal.removeEventListener('abort', onTurnCancel); }
+        } finally { releaseSpeech(); res.off('close', cancelled); turn?.controller.signal.removeEventListener('abort', onTurnCancel); }
         if (res.destroyed) return;
         if (controller.signal.aborted) return json(res, 409, { code: 'TURN_CANCELLED', turnId: turn?.id, error: '本轮语音已取消。' });
         res.writeHead(200, { 'Content-Type': 'audio/wav', 'Cache-Control': 'no-store' }); res.end(wav); return;

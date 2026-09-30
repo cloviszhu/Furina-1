@@ -17,6 +17,7 @@ test('segments preserve text, first sentence, Unicode and conservative request b
   }
   assert.equal(segmentsFor(id, '第一句。第二句！', 'calm')[0].text, '第一句。');
   assert.throws(() => segmentsFor(id, 'x'.repeat(1501), 'calm'), { code: 'TURN_OUTPUT_LIMIT' });
+  assert.throws(() => segmentsFor(id, '一句。' + ' '.repeat(350) + '后句', 'calm'), { code: 'TURN_OUTPUT_LIMIT' });
 });
 
 test('bounded registry keeps cancellation tombstones, rejects mismatches and expires', () => {

@@ -26,21 +26,23 @@ export function segmentsFor(turnId, text, emotion) {
     else bounded.push(chunk);
   }
   if (bounded.length > 10) throw fail('TURN_OUTPUT_LIMIT', '回复分段过多。', 502);
+  if (bounded.some(text => !text.trim())) throw fail('TURN_OUTPUT_LIMIT', '回复包含无法朗读的空白分段。', 502);
   return bounded.map((text, index) => ({ segmentId: `${turnId}:${index}`, index, text, emotion }));
 }
 
 export class Turns {
-  constructor({ now = Date.now, ttlMs = 30 * 60 * 1000, limit = 128 } = {}) {
+  constructor({ now = Date.now, ttlMs = 30 * 60 * 1000, limit = 128, maxSpeechJobs = 4 } = {}) {
     this.entries = new Map(); this.now = now; this.ttlMs = ttlMs; this.limit = limit;
+    this.maxSpeechJobs = maxSpeechJobs; this.speechJobs = 0;
   }
   prune() {
-    for (const [id, turn] of this.entries) if (!turn.busy && this.now() - turn.updatedAt >= this.ttlMs) this.entries.delete(id);
+    for (const [id, turn] of this.entries) if (!turn.busy && !turn.speechJobs.size && this.now() - turn.updatedAt >= this.ttlMs) this.entries.delete(id);
   }
   create(id) {
     id = validTurnId(id); this.prune();
     if (this.entries.has(id)) throw fail(this.entries.get(id).state === 'cancelled' ? 'TURN_CANCELLED' : 'TURN_EXISTS', '本轮已取消或已提交，请使用新的 turnId。');
     if (this.entries.size >= this.limit) throw fail('TURN_CAPACITY', '暂存轮次已满，请稍后重试。', 429);
-    const turn = { id, state: 'thinking', controller: new AbortController(), busy: true, updatedAt: this.now(), segments: [] };
+    const turn = { id, state: 'thinking', controller: new AbortController(), busy: true, updatedAt: this.now(), segments: [], speechJobs: new Set() };
     this.entries.set(id, turn); return turn;
   }
   get(id) {
@@ -68,6 +70,17 @@ export class Turns {
     const segment = turn.segments.find(s => s.segmentId === input.segmentId);
     if (turn.state !== 'completed' || !segment || input.text !== segment.text || (input.emotion !== undefined && input.emotion !== segment.emotion)) throw fail('INVALID_SEGMENT', '音频请求与本轮分段不一致。', 400);
     return turn;
+  }
+  acquireSpeech(input) {
+    const turn = this.speech(input);
+    if (turn.speechJobs.has(input.segmentId)) throw fail('SEGMENT_BUSY', '本段语音仍在合成。');
+    if (turn.speechJobs.size >= 2 || this.speechJobs >= this.maxSpeechJobs) throw fail('SPEECH_CAPACITY', '语音合成队列已满，请稍后重播。', 429);
+    turn.speechJobs.add(input.segmentId); ++this.speechJobs;
+    let released = false;
+    return () => {
+      if (released) return;
+      released = true; turn.speechJobs.delete(input.segmentId); --this.speechJobs; turn.updatedAt = this.now();
+    };
   }
   invalidate() { for (const turn of this.entries.values()) this.cancel(turn.id); }
   close() { for (const turn of this.entries.values()) turn.controller.abort(); this.entries.clear(); }
