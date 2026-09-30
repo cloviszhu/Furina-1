@@ -62,7 +62,7 @@ export function mountRemoteTests({ api, config, character, updateBudget, isBusy 
       $('batch-report-list').replaceChildren();
       for (const report of reports.sort((a, b) => b.createdAt - a.createdAt)) {
         const option = document.createElement('option'); option.value = report.id;
-        option.textContent = `${new Date(report.createdAt).toLocaleString()} · ${report.model} · ${report.state} · ${report.count}/6`;
+        option.textContent = `${new Date(report.createdAt).toLocaleString()} · ${report.model} · ${report.state} · ${report.count}/${report.total || 6}`;
         $('batch-report-list').append(option);
       }
       $('batch-report-status').textContent = `本地隔离报告 ${reports.length}/100；不写正式聊天或记忆，不自动删除。`;
@@ -83,7 +83,7 @@ export function mountRemoteTests({ api, config, character, updateBudget, isBusy 
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   };
   void refreshReports();
-  const labels = { idle: '尚未启动真实测试', starting: '检查配置（尚未调用模型）', running: '真实 API 测试进行中', completed: '六项真实测试结束，待人工审阅', stopped: '已停止；没有重试', cancelled: '已取消；不会继续调用', pending: '待执行', failed: '失败', skipped: '未执行' };
+  const labels = { idle: '尚未启动真实测试', starting: '检查配置（尚未调用模型）', running: '真实 API 测试进行中', completed: '六组三轮测试结束，待人工审阅', stopped: '已停止；没有重试', cancelled: '已取消；不会继续调用', pending: '待执行', failed: '失败', skipped: '未执行' };
   const controls = ['remote-test', 'batch-start', 'provider', 'model-name', 'base-url', 'api-key', 'clear-key'];
   const runner = new BoundedTestRunner({ request: api, onBudget: updateBudget, onUpdate: run => {
     controls.forEach(id => { $(id).disabled = run.running || (['remote-test', 'batch-start'].includes(id) && isBusy()); }); $('batch-cancel').disabled = !run.running;
@@ -96,9 +96,10 @@ export function mountRemoteTests({ api, config, character, updateBudget, isBusy 
       detail.textContent = row.elapsedMs === undefined ? row.text : `${(row.elapsedMs / 1000).toFixed(1)} 秒 · 输入/输出 tokens ${row.usage?.prompt_tokens ?? '未知'}/${row.usage?.completion_tokens ?? '未知'} · 估算费用 ${row.estimatedCny == null ? '未知' : `¥${row.estimatedCny.toFixed(6)}`} · 保守预留 ¥${row.reservedCny.toFixed(5)}`; item.append(detail);
       if (row.elapsedMs !== undefined && row.text) {
         const text = document.createElement('p'); text.textContent = row.text; item.append(text);
-        const review = document.createElement('small'); review.textContent = `JSON 表达契约：${row.structured ? '有效' : '未提供'} · emotion=${row.emotion || '无'}。角色、自然度及事实仍需人工审阅。`; item.append(review);
+        const review = document.createElement('small'); review.textContent = `JSON 表达契约：${row.structured ? '有效' : '未提供'} · emotion=${row.emotion || '无'}。身份、时间线、捏造及自然度待人工审阅。${row.persistence === 'not-tested' ? '跨会话持久记忆未测；本轮仅检验无依据时的回答。' : ''}${(row.reviewHints || []).join('；')}`; item.append(review);
       }
       if (row.error) { const error = document.createElement('p'); error.textContent = row.error; item.append(error); }
+      if (row.reviewCriteria) { const criteria = document.createElement('small'); criteria.textContent = `人工审核：${row.reviewCriteria}`; item.append(criteria); }
       $('batch-results').append(item);
     }
   } });

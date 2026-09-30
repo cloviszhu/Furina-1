@@ -144,7 +144,7 @@ function changeCharacter() {
   const chosen = character();
   const timeline = status?.characterOptions?.timelines.find(x => x.id === chosen.timeline);
   const style = status?.characterOptions?.styles.find(x => x.id === chosen.style);
-  $('character-details').textContent = `${timeline?.description || ''} ${style?.description || ''} 官方背景与玩家记录分开；切换隔离旧聊天，配置刷新后恢复默认。`;
+  $('character-details').textContent = `${timeline?.description || ''} ${style?.description || ''} 风格切换沿用当前时间线的对话；时间线切换隔离聊天，已确认记忆仍保留。配置刷新后恢复默认。`;
   void refreshHistory().catch(fail);
 }
 $('character-timeline').onchange = changeCharacter; $('character-style').onchange = changeCharacter;

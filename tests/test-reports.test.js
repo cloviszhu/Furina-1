@@ -66,17 +66,22 @@ test('UI cancellation during unknown start ID sends known client ID and never di
   assert.equal(cancelled, `/api/remote-tests/${id}/cancel`); assert.equal(steps, 0);
 });
 
-test('reports persist six allowlisted results, re-read after restart, never store config/errors/key or formal data', async () => {
+test('reports persist eighteen allowlisted input/output results, re-read after restart without config/errors/key or formal data', async () => {
   let calls = 0; const f = fixture(async () => { calls++; return response(); });
   try {
     const a = start(f.tests); f.tests.activate(a.id);
-    for (let index = 0; index < 6; index++) await f.tests.step(a.id, { index, config });
+    for (let index = 0; index < 18; index++) await f.tests.step(a.id, { index, config });
     const reports = new TestReports(join(f.directory, 'test-reports'));
-    const report = reports.read(a.id); assert.equal(report.rows.length, 6); assert.equal(report.state, 'completed');
+    const report = reports.read(a.id); assert.equal(report.rows.length, 18); assert.equal(report.state, 'completed');
+    assert.equal(report.version, 2); assert.equal(report.total, 18);
+    assert.equal(report.rows[1].history[1].text, 'fixture safe reply');
+    assert.equal(report.rows[7].recalledFixture[0].source, 'mutual-agreement');
+    assert.equal(report.rows[17].persistence, 'not-tested'); assert.deepEqual(report.rows[17].history, []);
+    assert.deepEqual(report.rows[1].prompt, f.tests.run.rows[1].prompt);
     assert.equal(report.rows[0].text, 'fixture safe reply'); assert.equal(report.rows[0].structured, true);
     const contents = readFileSync(join(f.directory, 'test-reports', `${a.id}.json`), 'utf8');
     assert(!contents.includes(config.apiKey)); assert(!contents.includes('config')); assert(!contents.includes('headers')); assert(!contents.includes('error'));
-    assert.deepEqual(f.store.history(), []); assert.deepEqual(f.store.list(), []); assert.equal(calls, 6);
+    assert.deepEqual(f.store.history(), []); assert.deepEqual(f.store.list(), []); assert.equal(calls, 18);
     assert.throws(() => reports.read('../exo.sqlite'));
     assert.throws(() => reports.read(randomUUID()));
     const file = join(f.directory, 'test-reports', `${a.id}.json`);

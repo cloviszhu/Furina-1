@@ -2,6 +2,7 @@ import { DatabaseSync } from 'node:sqlite';
 import { mkdirSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { randomUUID } from 'node:crypto';
+import { contextKeys } from './persona.js';
 
 export function validText(value, limit = 2000) {
   if (typeof value !== 'string' || !value.trim() || value.length > limit) {
@@ -45,8 +46,9 @@ export class MemoryStore {
   }
 
   history(limit = 16, contextKey = null) {
+    const keys = contextKey === null ? [] : contextKeys(contextKey);
     return this.db.prepare(`SELECT id, turn_id AS turnId, role, text, provider, created_at AS createdAt
-      FROM events WHERE kind='conversation' AND (? IS NULL OR context_key=?) ORDER BY rowid DESC LIMIT ?`).all(contextKey, contextKey, limit).reverse();
+      FROM events WHERE kind='conversation' ${keys.length ? `AND context_key IN (${keys.map(() => '?').join(',')})` : ''} ORDER BY rowid DESC LIMIT ?`).all(...keys, limit).reverse();
   }
 
   list() {
@@ -56,7 +58,8 @@ export class MemoryStore {
   }
 
   sourceExists(id, contextKey) {
-    return Boolean(this.db.prepare("SELECT 1 FROM events WHERE id=? AND role='user' AND kind='conversation' AND context_key=?").get(id, contextKey));
+    const keys = contextKeys(contextKey);
+    return Boolean(this.db.prepare(`SELECT 1 FROM events WHERE id=? AND role='user' AND kind='conversation' AND context_key IN (${keys.map(() => '?').join(',')})`).get(id, ...keys));
   }
 
   save(text, sourceId) {

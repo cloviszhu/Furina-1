@@ -1,5 +1,9 @@
 
-## 2026-09-30 reliability relay（待父协调部署）
+## 2026-09-30 persona continuity relay（待父协调部署）
+
+最新阶段见 [人设与多轮验收接力](persona-quality-handoff.md)：六组三轮、角色语义 fixture、实际 prompt/history 安全报告、同时间线 style 连续与旧键非破坏兼容。74/74 隔离 Node tests、build、OpenSpec strict 与独立 Edge 浏览器检查通过；真实角色表现及跨会话持久记忆仍未验收。未重启/刷新旧服务与用户页，未读取 key/正式 DB，未调用真实 API。历史累计七次/估算 ¥0.007372/reserve ¥0.46346 未改。父协调安全刷新和 app-only 部署后再由用户本人启动。
+
+## 2026-09-30 reliability relay（历史阶段，待父协调部署）
 
 代码已提交但未在 3000 部署。本次没有重启 app84100/3000 或 TTS67988/9880，没有刷新用户页面、读取 key/.env、追加真实 API，也没有改正式聊天/记忆/预算。旧页面中的六项报告未迁移或伪造；旧服务不持有六条结果，不能在重启后补录。父已收集用户复制的真实 reply，请先保留旧页报告再协调 app-only 重启。
 

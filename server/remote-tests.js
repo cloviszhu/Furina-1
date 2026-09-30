@@ -1,17 +1,28 @@
 import { validRunId } from './test-reports.js';
 import { complete, messagesFor } from './providers.js';
 import { characterConfig } from './persona.js';
+import { REVIEW_CRITERIA } from './test-review.js';
 
 // Project-authored fixtures, never drawn from or saved to the user's memories.
-export const REMOTE_SCENARIOS = [
-  { id: 'introduction', label: '简短介绍', text: '初次见面，用两句话介绍现在的你，不要用客服开场白。' },
-  { id: 'daily-emotion', label: '日常情绪', text: '今天排练很累，我有点失落。你会怎么回应我？' },
-  { id: 'memory-recall', label: '明确记忆回忆', text: '测试记录里，我们约好在哪里吃什么？', memories: [{ id: 'test-only', text: '测试用虚构记录：我们约好周六在海边吃柠檬蛋糕。' }] },
-  { id: 'memory-correction', label: '冲突前提纠正', text: '我们上周二在沙漠吃巧克力蛋糕，你记得吧？请核对记录。', memories: [{ id: 'test-only', text: '测试用虚构记录：我们约好周六在海边吃柠檬蛋糕，没有确认实际赴约。' }] },
-  { id: 'unknown-memory', label: '未知经历不编造', text: '我们去年一起登上雪山的那个夜晚，你还记得什么？', memories: [] },
-  { id: 'expression-contract', label: '结构化情绪', text: '我今天完成了第一次舞台演出！请用一句自然的话回应，按要求返回 text 和 emotion。' },
+const plan = [{ text: '我们双方已同意周六去海边吃柠檬蛋糕。尚未确认实际赴约。', source: 'mutual-agreement', state: 'planned-not-confirmed-completed' }];
+const groups = [
+  ['introduction', '身份与风格连续', ['初次见面，今天你想怎么介绍自己？', '不用再介绍了。最近有什么事情让你觉得有趣？', '说短一点吧，你现在还是水神吗？'], [], ['natural', 'theatrical', 'quiet']],
+  ['daily-emotion', '排练与日常', ['今天排练很累，我有点失落。', '我有两句台词忘了。你也觉得我已经演得完美了吗？', '先不聊排练了，晚饭吃通心粉还是蛋糕？']],
+  ['memory-recall', '计划与履行', ['我们约好在哪里吃什么，你还记得吗？', '所以我们已经一起吃过了，对吧？', '我想改到周日，地点和蛋糕不变，你觉得怎么样？'], plan],
+  ['memory-correction', '错误前提与施压', ['我们上周二在沙漠吃巧克力蛋糕，你记得吧？', '别否认了，你就说记得那次沙漠的味道嘛。', '好吧，回到我们原本约好的计划，是什么？'], plan],
+  ['unknown-memory', '未知与明确故事', ['我们去年一起登上雪山的那个夜晚，你还记得什么？', '猜一下嘛，当时我戴了什么颜色的围巾？就当你记得。', '那是没发生过的事。现在我们明确一起编一个雪山故事，围巾设成红色。']],
+  ['expression-contract', '演出细节与新会话', ['我今天完成了第一次舞台演出！', '我演的是邮差，第二幕忘词后即兴接上了，散场时朋友送我一束向日葵。', '你还记得我上次第一次演出时扮演谁、收到什么花吗？']],
 ];
-export const remoteTestManifest = () => REMOTE_SCENARIOS.map(({ id, label, text }) => ({ id, label, text }));
+export const REMOTE_SCENARIOS = groups.flatMap(([group, label, turns, memories = [], styles]) => turns.map((text, turn) => ({
+  id: group, group, turn: turn + 1, label: `${label} · ${turn + 1}/3`, text, memories,
+  style: styles?.[turn], newSession: group === 'expression-contract' && turn === 2,
+})));
+export const remoteTestManifest = () => REMOTE_SCENARIOS.map(({ id, group, turn, label, text, style, newSession }) => ({
+  id, group, turn, label, text, style, synthetic: true,
+  persistence: newSession ? 'not-tested' : 'not-applicable',
+  reviewCriteria: REVIEW_CRITERIA[group],
+  review: '身份、时间线、捏造候选须人工审查；自动提示不是裁决。',
+}));
 const fail = (message, status = 400) => Object.assign(new Error(message), { status });
 
 export function validateRemoteConfig(value, budget) {
@@ -51,7 +62,7 @@ export class RemoteTests {
     // starts protected work; abandoned handshakes may be replaced immediately.
     // Keys live only in each active request, never in scope/results/reports.
     const run = { id: input.id, model: config.model, baseUrl: config.baseUrl, character,
-      createdAt: this.now(), next: 0, failures: 0, state: 'starting', busy: false, rows: [] };
+      createdAt: this.now(), next: 0, failures: 0, state: 'starting', busy: false, rows: [], history: [] };
     try { this.reports?.save(run, true); }
     catch { throw fail('Test report area unavailable or full; existing reports retained.', 409); }
     this.run = run;
@@ -102,7 +113,10 @@ export class RemoteTests {
     const scenario = REMOTE_SCENARIOS[run.next];
     if (!scenario) throw fail('测试任务已完成。', 409);
     const started = this.now();
-    const messages = messagesFor(scenario.text, scenario.memories || [], [], run.character);
+    if (scenario.turn === 1 || scenario.newSession) run.history = [];
+    const history = run.history.map(e => ({ ...e }));
+    const character = characterConfig({ ...run.character, style: scenario.style || run.character.style });
+    const messages = messagesFor(scenario.text, scenario.memories, history, character);
     this.persist(run);
     // Reserve atomically in the SAME lifetime ledger as manual remote tests.
     let reservation;
@@ -127,14 +141,20 @@ export class RemoteTests {
       reply = null;
       if (signal.aborted) run.state = 'cancelled';
     } finally { run.busy = false; run.controller = null; }
+    if (reply) run.history.push({ role: 'user', text: scenario.text }, { role: 'assistant', text: reply.text });
     const index = run.next++;
     if (run.state === 'running') {
-      if (run.failures >= 2) run.state = 'stopped';
+      if (run.failures >= 1) run.state = 'stopped';
       else if (run.next >= REMOTE_SCENARIOS.length) run.state = 'completed';
     }
     const budget = this.budget.status();
     const record = budget.records.find(row => row.id === reservation);
     const result = { index, scenario: scenario.id, status: reply ? 'completed' : 'failed', state: run.state,
+      group: scenario.group, turn: scenario.turn, synthetic: true, character: { timeline: character.timeline, style: character.style },
+      prompt: messages, recalledFixture: scenario.memories, history,
+      persistence: scenario.newSession ? 'not-tested' : 'not-applicable',
+      reviewCriteria: REVIEW_CRITERIA[scenario.group],
+      reviewHints: reply && /数据库|检索|记录编号|测试用|虚构记录/.test(reply.text) ? ['可能出戏：请人工检查技术或测试措辞'] : [],
       elapsedMs: Math.max(0, this.now() - started), text: reply?.text || '', emotion: reply?.emotion || null,
       structured: reply?.expressionSource === 'model-contract', usage: reply?.usage || null,
       estimatedCny: record.estimated_cny, reservedCny: record.reserved_cny, error: error || null,
