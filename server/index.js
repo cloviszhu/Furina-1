@@ -41,12 +41,12 @@ async function serveFile(res, root, relative) {
   createReadStream(canonical).pipe(res);
 }
 
-export async function createApp({ projectRoot = PROJECT, dataDir = join(PROJECT, 'data'), dev = false, fetchImpl = fetch, localTtsImpl, credentials = new WindowsCredentials() } = {}) {
+export async function createApp({ projectRoot = PROJECT, dataDir = join(PROJECT, 'data'), dev = false, fetchImpl = fetch, localTtsImpl, windowsSpeechImpl, credentials = new WindowsCredentials() } = {}) {
   const store = new MemoryStore(join(dataDir, 'exo.sqlite'));
   const budget = new RemoteBudget(store.db);
   const testReports = new TestReports(join(dataDir, 'test-reports'));
   const remoteTests = new RemoteTests(budget, { fetchImpl, reports: testReports });
-  const speech = new WindowsSpeech(projectRoot, dataDir);
+  const speech = windowsSpeechImpl || new WindowsSpeech(projectRoot, dataDir);
   let ttsConfig = null, ttsConfigError = null;
   try { ttsConfig = await loadTtsConfig(dataDir); } catch { ttsConfigError = '本地 TTS 登记无效，请检查参考来源、许可与文件。'; }
   const localTts = localTtsImpl || new LocalTts(ttsConfig, { fetchImpl });

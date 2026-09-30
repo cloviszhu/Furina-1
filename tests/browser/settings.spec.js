@@ -17,7 +17,7 @@ test('isolated settings reload preserves ordinary options and context; user-only
     if (action === 'delete') { savedKey = undefined; return { ok: true }; }
     if (!savedKey) throw credentialError('NOT_FOUND'); return { ok: true, key: savedKey };
   } });
-  const app = await createApp({ dev: true, dataDir, credentials, localTtsImpl: { status: async () => ({ ready: true, voices: [
+  const app = await createApp({ dev: true, windowsSpeechImpl: { voices: async () => [], synthesize: async () => { throw Error('Windows audio disabled in browser fixtures'); } }, dataDir, credentials, localTtsImpl: { status: async () => ({ ready: true, voices: [
     { id: 'furina-community-reference-test', engine: 'gpt-sovits', name: 'Fixture Furina', localService: true, emotions: ['neutral', 'calm'], source: 'fixture', license: 'fixture' },
     { id: 'ravdess-24-test', engine: 'gpt-sovits', name: 'Fixture RAVDESS', localService: true, emotions: ['neutral', 'happy'], source: 'fixture', license: 'fixture' },
   ] }) }, fetchImpl: async () => { calls++; throw Error('no real network'); } });

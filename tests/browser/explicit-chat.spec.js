@@ -11,7 +11,7 @@ test('main chat explicitly enabled, reusable configuration, cancel, reload and m
   await page.route('**/character-assets/**', route => route.abort());
   const directory = await mkdtemp(join(tmpdir(), 'exo-chat-browser-'));
   let calls = 0, reads = 0, hold = false, failed = false;
-  const context = await createApp({ dev: true, dataDir: directory, credentials: new WindowsCredentials({ bridge: async action => {
+  const context = await createApp({ dev: true, windowsSpeechImpl: { voices: async () => [], synthesize: async () => { throw Error('Windows audio disabled in browser fixtures'); } }, dataDir: directory, credentials: new WindowsCredentials({ bridge: async action => {
     if (action === 'status') return { ok: true, saved: true };
     expect(action).toBe('read'); reads++; return { ok: true, key: 'fixture-only-chat-key' };
   } }), fetchImpl: async (url, options) => {

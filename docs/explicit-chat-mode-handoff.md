@@ -1,6 +1,6 @@
 # 正式真实聊天流程交接
 
-2026-09-30，基于 main `619d028`。仅实现、隔离审核及推送，未部署新版本。
+2026-09-30，基于 main `619d028`。聊天提交 `63448ae`；用户追加授权动作分支原提交 `d7cae774`，review 后无冲突 cherry-pick 为 `d87ed13`。仅实现、隔离审核及推送，未部署新版本。
 
 ## 使用流程
 
@@ -8,17 +8,18 @@
 
 主界面显示模式、配置模型、累计 9 元上限、预留和剩余预算。演示强制 offline，不因设置 provider 自动访问本地或远程模型。真实聊天仅允许官方 HTTPS DeepSeek，其他付费服务仍禁用。模型价格白名单、24 小时核实期限、128 输出 token、16000 输入字节、十倍安全预留、失败保留费用和无自动重试逻辑未改。未知自定义模型不会被偷偷替换，但原有预算价格白名单仍可拒绝该模型。
 
-取消、切模式、上下文失效或刷新传递 AbortSignal；服务端取消后不写用户/assistant 历史。已派发请求可能计费，预留不退。客户端防连击，瞬间失败也保留 500 毫秒的本次发送窗口；服务端串行拒绝重叠的真实聊天/单次测试，在拒绝并发前不读凭据。仅旧的直接本地 API 调用仍保留并行行为供既有上下文测试使用。正式真实聊天失败明确报错，不以演示回复代替、不写历史；预算随错误和请求结束刷新。
+取消、切模式、上下文失效或刷新传递 AbortSignal；服务端取消后不写用户/assistant 历史。已派发请求可能计费，预留不退。客户端防连击，瞬间失败也保留 500 毫秒的本次发送窗口；服务端串行拒绝重叠的真实聊天/单次测试，在拒绝并发前不读凭据。仅旧的直接本地 API 调用仍保留并行行为供既有上下文测试使用。浏览器隔离服务额外注入 Windows 声音枚举/合成测试桩，生产默认路径不变，避免测试依赖用户系统声音。正式真实聊天失败明确报错，不以演示回复代替、不写历史；预算随错误和请求结束刷新。
 
 密钥依旧走已审查的固定 Windows CredMan 与 official endpoint 路径，本轮未改 `server/credentials.js` 或 C# bridge，没有新秘密存储。只记住 input/saved 偏好，不是读取凭据或恢复付费授权。消息保存共同记忆继续使用服务端生成的用户 source；模式切换保留所选 source，保存前仍核验失效。
 
 ## 验证与证据
 
-- `npm.cmd test`：97/97 通过，含新隔离 HTTP mock 测试；覆盖未授权、其他 provider/loopback 拒绝、凭据边界、重复请求、取消、失败预算、来源与预算耗尽。
+- 聊天初验 `npm.cmd test`：97/97 通过，动作集成后完整复跑为 100/100 通过，含新隔离 HTTP mock 测试；覆盖未授权、其他 provider/loopback 拒绝、凭据边界、重复请求、取消、失败预算、来源与预算耗尽。
 - 最终单元日志：`artifacts/explicit-chat-mode/unit-test.log`；浏览器日志：`artifacts/explicit-chat-mode/browser-test.log`。
+- 集成浏览器指定 5 个文件合计 14/14 通过（7.8 分钟；冷启动较慢，非 UI 延迟基准），覆盖正式聊天、SQLite 重开、修改/删除、跨页来源、编码密钥回显、批量报告和设置持久化。早期旧断言/角色加载等待及超时失败已修正，最终一次完整集成运行无失败。
 - 浏览器测试均使用临时数据库、随机端口、mock provider / mock CredMan。新流程验证演示默认、明确启用不读 key、不调用、快捷填字、每次发送、保留 v4-pro 自定义模型、失败无重试、取消、切模式、刷新和记忆来源。回归用例改为测试新源码的隔离 Vite 服务，不依赖生产 dist。
 - 审核构建命令为 `npm.cmd run build:review`，输出到 `artifacts/explicit-chat-mode/build`；保留既有 bundle 超过 500 kB 提示。
-- OpenSpec `explicit-chat-mode` 严格校验通过。`src/stage.js` 未修改。
+- OpenSpec `explicit-chat-mode` 严格校验通过。聊天提交未修改 `src/stage.js`；后续按用户明确授权统一集成动作分支，见下文。
 - 本地 mock UI 截图：`artifacts/explicit-chat-mode/mock-real-chat.png`，仅 fixture 对话和预算；截图为加速阻断角色资源，没有代表生产角色加载故障。
 
 首次误用默认 `npm.cmd run build` 曾短暂覆盖生产读取的 dist，已恢复原 HTML/JS/CSS 并移除本次多余 bundle。恢复后的 SHA256 与既有部署记录一致：HTML `f8cd9f973b393b84e80f478f6a542a6db8abb16cade1f5136908af156758e607`，JS `9c21c20e6d91931f2ee82fcb61463f086b1a70d8db0e3d31c702b01eacad99b9`，CSS `06b3ef903857f7d41aea4ca4acb991e2cd0c83bd3ae0e2dac5b095734c7d0b09`。app PID69452、TTS PID67988 未停/重启，未操作生产数据库，未刷新用户页面或访问真实凭据。后续审核构建输出隔离目录。不能证明短暂覆盖窗口内用户没有自行刷新，因此不声称过程中 dist 从未变化。
@@ -30,3 +31,12 @@
 继承只读任务已核验的事实：19:03:28 独立真实召回蓝莓小蛋糕/明天湖边散步，performer 只有本次问答，无旧答案污染；本任务未重跑。用户提供最新生产账本为 44 completed、reserve 4.27920，本任务没有追加任何真实调用，也未读取生产账本核实。
 
 新正式聊天流程的真实模型端到端验收与部署尚未执行。取消不能承诺上游撤销计费。仍沿用 timeline 作为历史隔离方式，没有新增“清空会话”功能。小屏布局及真实 TTS/角色联动没有新增全套验收，既有相关单元回归继续通过。
+
+
+## 动作统一集成
+
+review 确认变更仅增加角速度上限、幂等 cancelAction 及测试文档，未修改 main/音频/凭据。集成后 stage.js 与 d7cae774 分支文件完全一致，无冲突或手工补丁。动作专项单元 5/5 通过；本主目录重新执行双模型前后对照，after 每模型 10 场景、合计 20 场景全部回位并拒绝重复抢占，无 pageerror。最大肘角步进 0.075000 rad，最大手腕世界步进 0.305770 模型单位；mouth=0.5 对应あ约0.3，happy 对应にこり约0.279306。沿用数值模拟与截图限制，不代表实测 GPU FPS。
+
+集成证据：`artifacts/explicit-chat-mode/unit-integration.log`、`build-integration.log`、`browser-integration.log`、`motion-integration.log`、`motion-summary.json` 和 `motion-integration/evidence.json`。动作 runner 只读既有模型，静态随机端口，没有应用/数据/凭据/TTS 请求。既有动作验收详见 [动作回位报告](stage-action-release-validation.md)。
+
+最终 OpenSpec 严格校验及 git diff --check 通过。OpenSpec 5/5 任务完成，保留变更供审查，未归档或部署。集成构建仅写 artifacts；生产三项产物 hash 和 app/TTS 启动时间最终复核仍一致。
