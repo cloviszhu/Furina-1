@@ -14,6 +14,7 @@ export function validText(value, limit = 2000) {
 
 export class MemoryStore {
   constructor(file) {
+    this.contextGeneration = 0;
     if (file !== ':memory:') mkdirSync(dirname(file), { recursive: true });
     this.db = new DatabaseSync(file);
     this.db.exec(`PRAGMA journal_mode=WAL;
@@ -79,6 +80,7 @@ export class MemoryStore {
       this.db.prepare('UPDATE memories SET text=?, source_id=?, updated_at=?, revision=revision+1 WHERE id=?')
         .run(text, source.id, new Date().toISOString(), id);
       this.db.exec('COMMIT');
+      ++this.contextGeneration;
       return this.list();
     } catch (error) { this.db.exec('ROLLBACK'); throw error; }
   }
@@ -112,6 +114,7 @@ export class MemoryStore {
         this.db.prepare('UPDATE memories SET source_id=? WHERE id=?').run(newSource.id, row.id);
       }
       this.db.exec('COMMIT');
+      ++this.contextGeneration;
       return this.list();
     } catch (error) { this.db.exec('ROLLBACK'); throw error; }
   }
@@ -127,7 +130,8 @@ export class MemoryStore {
     const terms = new Set(clean.match(/[a-z0-9]{2,}|[\u4e00-\u9fff]{2}/g) || []);
     // Sliding Chinese pairs also work when word boundaries differ.
     for (let i = 0; i < clean.length - 1; i++) terms.add(clean.slice(i, i + 2));
-    return memories.map(m => ({ ...m, score: [...terms].filter(t => m.text.toLowerCase().includes(t)).length }))
+    // Lexical similarity does not establish the query's premise.
+    return memories.map(m => ({ ...m, match: 'related', score: [...terms].filter(t => m.text.toLowerCase().includes(t)).length }))
       .filter(m => m.score > 0).sort((a, b) => b.score - a.score).slice(0, limit);
   }
 

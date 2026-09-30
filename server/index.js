@@ -74,6 +74,7 @@ export async function createApp({ projectRoot = PROJECT, dataDir = join(PROJECT,
       if (pathname === '/api/chat' && req.method === 'POST') {
         const input = await body(req), text = validText(input.text, 1500);
         const memories = store.recall(text);
+        const contextGeneration = store.contextGeneration;
         const messages = messagesFor(text, memories, store.history());
         const config = input.config || { provider: 'offline' };
         let result = { text: offlineReply(text, memories) }, provider = 'offline', error = null;
@@ -100,6 +101,11 @@ export async function createApp({ projectRoot = PROJECT, dataDir = join(PROJECT,
             error = '模型服务未成功回应，当前为本地演示回复；没有自动重试。';
           }
         }
+        // Corrections/deletions clear history too. Discard completions and
+        // fallbacks based on superseded context before persistence or delivery.
+        if (contextGeneration !== store.contextGeneration) return json(res, 409, {
+          code: 'CONTEXT_CHANGED', error: '记忆已修改或删除，本次回复已取消。请重新发送。',
+        });
         const user = store.event('user', text, { provider });
         const assistant = store.event('assistant', result.text, { turnId: user.turnId, provider });
         return json(res, 200, { user, assistant, provider, error, recalled: memories.map(m => ({ id: m.id, text: m.text })), usage: result.usage || null, budget: budget.status() });

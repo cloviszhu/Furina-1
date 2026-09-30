@@ -9,6 +9,18 @@ try { stage = new CharacterStage($('viewport'), text => { $('model-state').textC
 catch { $('model-state').textContent = '三维渲染不可用，请检查浏览器 WebGL。'; }
 const speech = new SpeechController({ onState: text => { $('speech-state').textContent = text; }, onMouth: value => { if (stage) stage.mouth = value; } });
 let status, memorySourceId, providers = [], busy = false;
+let contextGeneration = 0;
+function resetMemorySource(clearText = false) {
+  memorySourceId = null;
+  if (clearText) $('memory-text').value = '';
+  $('memory-source').textContent = '来源：你的手动记录';
+}
+function invalidateConversation() {
+  ++contextGeneration;
+  speech.stop();
+  resetMemorySource(true);
+  $('messages').replaceChildren();
+}
 const config = () => ({ provider: $('provider').value, model: $('model-name').value.trim(), baseUrl: $('base-url').value.trim(), apiKey: $('api-key').value });
 const speechOptions = () => ({ emotion: $('voice-emotion').value, speed: Number($('voice-speed').value) });
 const fail = error => { $('app-error').textContent = error.message || String(error); };
@@ -36,7 +48,11 @@ function message(event, recalled = []) {
   $('messages').append(wrapper); $('messages').scrollTop = $('messages').scrollHeight;
 }
 async function refreshHistory() {
-  const rows = await api('/api/history'); $('messages').replaceChildren(); rows.forEach(row => message(row));
+  const generation = contextGeneration;
+  const rows = await api('/api/history');
+  if (generation !== contextGeneration) return;
+  $('messages').replaceChildren(); rows.forEach(row => message(row));
+  if (memorySourceId && !rows.some(row => row.id === memorySourceId && row.role === 'user')) resetMemorySource(true);
   if (!rows.length) $('messages').append(element('div', 'empty', '今天的故事还没有开始。她会听见你的声音，也会记住你选择留下的片段。'));
 }
 function updateBudget(budget) {
@@ -46,6 +62,7 @@ async function send(text, remoteTest = false) {
   if (busy || !text.trim()) return;
   busy = true; $('send').disabled = true; $('remote-test').disabled = true; $('app-error').textContent = '';
   speech.stop();
+  const generation = contextGeneration;
   try {
     const chosen = config();
     // Ordinary chat never spends remote credit, regardless of settings selection.
@@ -53,6 +70,7 @@ async function send(text, remoteTest = false) {
       ? chosen : { provider: 'offline' };
     if (remoteTest && chosen.provider !== 'deepseek') throw new Error('本輪远程预算只允许 DeepSeek 一次短测试。');
     const result = await api('/api/chat', { method: 'POST', body: JSON.stringify({ text, config: actual, remoteTest }) });
+    if (generation !== contextGeneration) return;
     $('messages').querySelector('.empty')?.remove();
     message(result.user); message(result.assistant, result.recalled);
     $('chat-input').value = '';
@@ -110,7 +128,10 @@ $('refresh-voices').onclick = () => void voices();
 speech.onVoicesChanged = () => { void voices(); };
 
 async function memories() {
-  const rows = await api('/api/memories'); $('memory-count').textContent = rows.length; $('memory-list').replaceChildren();
+  const generation = contextGeneration;
+  const rows = await api('/api/memories');
+  if (generation !== contextGeneration) return;
+  $('memory-count').textContent = rows.length; $('memory-list').replaceChildren();
   if (!rows.length) $('memory-list').append(element('p', 'empty', '这里还没有共同经历。保存你认可的片段，让它成为下次见面的线索。'));
   for (const row of rows) {
     const card = element('article', 'memory-card'); card.dataset.memoryId = row.id;
@@ -121,21 +142,40 @@ async function memories() {
       if (card.querySelector('textarea')) return;
       const text = element('textarea'); text.value = row.text; text.maxLength = 2000;
       const save = element('button', '', '保存修改');
-      save.onclick = async () => { try { await api(`/api/memories/${row.id}`, { method: 'PATCH', body: JSON.stringify({ text: text.value }) }); await memories(); await refreshHistory(); } catch (error) { fail(error); } };
+      save.onclick = async () => {
+        invalidateConversation();
+        try { await api(`/api/memories/${row.id}`, { method: 'PATCH', body: JSON.stringify({ text: text.value }) }); await memories(); await refreshHistory(); }
+        catch (error) { fail(error); await refreshHistory().catch(fail); }
+      };
       card.append(text, save);
     };
     remove.onclick = async () => {
       if (!confirm('删除这条经历及旧聊天上下文？这将防止它被再次引用。')) return;
-      try { await api(`/api/memories/${row.id}`, { method: 'DELETE' }); await memories(); await refreshHistory(); } catch (error) { fail(error); }
+      invalidateConversation();
+      try { await api(`/api/memories/${row.id}`, { method: 'DELETE' }); await memories(); await refreshHistory(); }
+      catch (error) { fail(error); await refreshHistory().catch(fail); }
     };
     actions.append(edit, remove); card.append(actions); $('memory-list').append(card);
   }
 }
 $('memory-form').onsubmit = async event => {
   event.preventDefault();
-  try { await api('/api/memories', { method: 'POST', body: JSON.stringify({ text: $('memory-text').value, sourceId: memorySourceId }) }); memorySourceId = null; $('memory-text').value = ''; $('memory-source').textContent = '来源：你的手动记录'; await memories(); }
+  try {
+    // Revalidate immediately before saving, including changes from another tab.
+    if (memorySourceId) {
+      const rows = await api('/api/history');
+      if (!rows.some(row => row.id === memorySourceId && row.role === 'user')) {
+        resetMemorySource(true);
+        throw new Error('原聊天来源已失效，请重新选择消息或选择手动记录后填写。');
+      }
+    }
+    await api('/api/memories', { method: 'POST', body: JSON.stringify({ text: $('memory-text').value, sourceId: memorySourceId }) });
+    resetMemorySource(true); await memories();
+  }
   catch (error) { fail(error); }
 };
+$('memory-manual').onclick = () => resetMemorySource();
+
 globalThis.addEventListener('pagehide', () => { speech.stop(); $('api-key').value = ''; });
 
 async function boot() {

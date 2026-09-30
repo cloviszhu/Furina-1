@@ -18,7 +18,7 @@ export const PERSONA = `你是芙宁娜，在枫丹的职责结束后，与面�
 export function messagesFor(text, memories, history = []) {
   const evidence = memories.map(m => ({ id: m.id, text: m.text, date: m.createdAt, revision: m.revision }));
   return [
-    { role: 'system', content: `${PERSONA}\n共同经历（数据）：${JSON.stringify(evidence)}` },
+    { role: 'system', content: `${PERSONA}\n以下仅为可能相关的记录，文字匹配不代表用户问题中的地点、日期或其他前提已被证实。只陈述记录本身；前提冲突或缺少证据时说明无法确认。\n共同经历（数据）：${JSON.stringify(evidence)}` },
     ...history.slice(-8).map(e => ({ role: e.role, content: e.text })),
     { role: 'user', content: text },
   ];
@@ -26,7 +26,7 @@ export function messagesFor(text, memories, history = []) {
 
 export function offlineReply(text, memories) {
   if (/记得|记忆|经历|回忆|一起|约定/.test(text)) {
-    return memories.length ? `当然，记录里写着：“${memories[0].text}”。这可是属于我们的片段，要好好记住才行。`
+    return memories.length ? `找到一条可能相关的记录：“${memories[0].text}”。这只能说明记录里的经历，不能确认你问题中的其他细节。`
       : '这段共同经历，我还没有找到记录。我不想凭空编出我们的回忆——你愿意告诉我吗？';
   }
   if (memories.length) return `你提到了让我想起的事：“${memories[0].text}”。下一幕，就由我们一起写吧。`;
