@@ -12,4 +12,4 @@
 
 ## 3. 交付
 
-- [x] 3.1 运行隔离测试、build、OpenSpec strict；记录证据、commit/push 核对与待部署交接。
+- [ ] 3.1 运行隔离测试、build、OpenSpec strict；记录证据、commit/push 核对与待部署交接。（测试/build/strict/本地 commit 与交接完成；push 被自动审批拒绝，待父协调处理授权。）
