@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs';
 import vm from 'node:vm';
 import { loadSettings, saveSettings } from '../src/settings.js';
 import { resolveVoicePreference } from '../src/voice-preference.js';
+import { TurnLifecycle, completedSegments } from '../src/turn-lifecycle.js';
 
 // Execute the real main.js event handlers with a tiny DOM and stubbed rendering,
 // speech and HTTP. No WebGL, character assets, browser or external service needed.
@@ -35,12 +36,12 @@ async function ui() {
   const pending = deferred();
   const document = { getElementById: id => nodes[id], createElement: tag => new Element(tag), querySelectorAll: () => [] };
   const context = vm.createContext({
-    loadSettings, saveSettings, resolveVoicePreference, AbortController,
+    loadSettings, saveSettings, resolveVoicePreference, completedSegments, AbortController, crypto: globalThis.crypto,
     document, console, confirm: () => true, addEventListener() {},
     initReferences() {},
     mountRemoteTests() {},
     CharacterStage: class { trigger() {} resetCamera() {} },
-    SpeechController: class { constructor() { this.voices = []; } stop() { ++stops; } async listVoices() { return []; } async speak(text) { spoken.push(text); } },
+    SpeechController: class { constructor() { this.voices = []; this.lifecycle = new TurnLifecycle(); } stop() { ++stops; this.lifecycle.cancel(); } beginTurn() { this.stop(); return this.lifecycle.begin(); } async listVoices() { return []; } async speak(text) { spoken.push(text); } },
     fetch: async (path, options = {}) => {
       let data;
       if (path === '/api/status') data = { providers: [], models: [], budget };

@@ -5,6 +5,7 @@ import { initReferences } from './reference-import.js';
 import { mountRemoteTests } from './remote-tests.js';
 import { loadSettings, saveSettings } from './settings.js';
 import { resolveVoicePreference } from './voice-preference.js';
+import { completedSegments } from './turn-lifecycle.js';
 
 const $ = id => document.getElementById(id);
 let savedSettings;
@@ -24,7 +25,15 @@ const element = (tag, className, text) => { const node = document.createElement(
 let stage;
 try { stage = new CharacterStage($('viewport'), text => { $('model-state').textContent = text; }); }
 catch { $('model-state').textContent = '三维渲染不可用，请检查浏览器 WebGL。'; }
-const speech = new SpeechController({ onState: text => { $('speech-state').textContent = text; }, onMouth: value => { if (stage) stage.mouth = value; }, onExpression: value => stage?.setExpression?.(value), onStop: preservePreview => { if (!preservePreview) $('reference-preview')?.pause(); } });
+const speech = new SpeechController({
+  onState: text => { $('speech-state').textContent = text; },
+  onMouth: value => { if (stage) stage.mouth = value; },
+  onExpression: value => stage?.setExpression?.(value),
+  onLifecycle: ({ phase }) => { stage?.setMode?.(phase); $('speech-state').dataset.phase = phase; },
+  onSegment: segment => { $('speech-subtitle').textContent = segment?.text || ''; if (segment?.index === 0) stage?.trigger('nod'); },
+  onStop: preservePreview => { stage?.cancelAction?.(); if (!preservePreview) $('reference-preview')?.pause(); },
+  onCancel: turnId => { void fetch(`/api/turns/${encodeURIComponent(turnId)}/cancel`, { method: 'POST', keepalive: true, headers: { 'X-Exo-Credentials': '1' } }).then(response => { if (!response.ok) throw new Error(); }).catch(() => { $('app-error').textContent = '本地已停止，服务端取消确认失败；已发出的模型调用仍可能计费。'; }); },
+});
 let status, memorySourceId, providers = [], busy = false, batchRunner;
 let realChat = false, chatController;
 function renderChatMode() {
@@ -132,17 +141,20 @@ async function send(text, remoteTest = false) {
   const startedAt = Date.now();
   chatController = new AbortController(); const controller = chatController;
   busy = true; $('send').disabled = true; $('remote-test').disabled = true; $('app-error').textContent = '';
-  speech.stop();
+  const turn = speech.beginTurn();
+  turn.remoteId = globalThis.crypto.randomUUID();
+  turn.signal.addEventListener('abort', () => controller.abort(), { once: true });
   renderChatMode();
-  stage?.setMode?.('listening');
+  stage?.setMode?.('thinking');
   const generation = contextGeneration;
   try {
     const chosen = config();
     const actual = remoteTest || remoteChat ? chosen : { provider: 'offline' };
     if (remoteChat && chosen.provider !== 'deepseek') throw new Error('真实聊天只授权官方 DeepSeek；请先配置 DeepSeek。');
     if (remoteTest && chosen.provider !== 'deepseek') throw new Error('本輪远程预算只允许 DeepSeek 一次短测试。');
-    const result = await api('/api/chat', { method: 'POST', signal: controller.signal, body: JSON.stringify({ text, config: actual, remoteTest, remoteChat, confirmed: remoteChat, character: character() }) });
-    if (generation !== contextGeneration || controller.signal.aborted) return;
+    const result = await api('/api/chat', { method: 'POST', signal: controller.signal, body: JSON.stringify({ text, turnId: turn.remoteId, config: actual, remoteTest, remoteChat, confirmed: remoteChat, character: character() }) });
+    if (generation !== contextGeneration || controller.signal.aborted || !speech.lifecycle.owns(turn)) return;
+    const segments = completedSegments(result, turn.remoteId);
     $('messages').querySelector('.empty')?.remove();
     message(result.user); message(result.assistant, result.recalled);
     $('chat-input').value = '';
@@ -151,16 +163,21 @@ async function send(text, remoteTest = false) {
     if (result.error) fail(result.error);
     updateBudget(result.budget);
     const options = replySpeechOptions(result);
-    stage?.trigger('nod');
-    stage?.setExpression?.(options.emotion);
-    if ($('auto-speak').checked) await speech.speak(result.assistant.text, $('voice-select').value, options);
+    if ($('auto-speak').checked) {
+      const voice = speech.voices.find(v => v.value === $('voice-select').value);
+      $('expression-state').textContent = voice?.engine !== 'gpt-sovits' ? '当前系统备用声使用 neutral 表达。'
+        : segments.some(s => !voice.emotions?.includes(s.emotion)) ? '段落表达未登记，实际使用 neutral；保留当前声线。'
+        : '交谈按回复情绪发声；手动参考表达用于声音试听。';
+      await speech.speakSegments(segments, $('voice-select').value, { ...options, turn });
+    }
+    else speech.lifecycle.set(turn, 'idle');
     showTab('chat');
-  } catch (error) { if (!controller.signal.aborted && generation === contextGeneration) fail(error); }
+  } catch (error) { if (!controller.signal.aborted && generation === contextGeneration && speech.lifecycle.owns(turn)) { fail(new Error(`${error.message || '回复失败'} 没有自动重试。`)); speech.lifecycle.set(turn, 'error'); speech.cancelRemote(turn); } }
   finally {
     // Keep rapid repeated clicks inside one send, even when failure returns immediately.
     const settleMs = remoteChat || remoteTest ? Math.max(0, 500 - (Date.now() - startedAt)) : 0;
     if (settleMs) await new Promise(resolve => setTimeout(resolve, settleMs));
-    stage?.setMode?.('idle'); busy = false; chatController = null; $('send').disabled = false; $('remote-test').disabled = Boolean(batchRunner?.running); renderChatMode();
+    busy = false; chatController = null; $('send').disabled = false; $('remote-test').disabled = Boolean(batchRunner?.running); renderChatMode();
     try { const fresh = await api('/api/status'); updateBudget(fresh.budget); } catch { /* keep original diagnostic */ }
   }
 }
@@ -170,7 +187,8 @@ document.querySelectorAll('[data-prompt]').forEach(node => node.onclick = () => 
 $('cancel-chat').onclick = cancelChat;
 $('chat-settings').onclick = () => { $('settings').showModal(); void refreshCredentialStatus(); };
 $('enable-real-chat').onclick = () => {
-  if (realChat) { if (busy) cancelChat(); realChat = false; renderChatMode(); return; }
+  if (busy) cancelChat(); else speech.stop();
+  if (realChat) { realChat = false; renderChatMode(); return; }
   const chosen = config();
   if (chosen.provider !== 'deepseek' || !chosen.model || (chosen.credentialSource !== 'saved' && !chosen.apiKey.trim())) {
     fail('先配置 DeepSeek 模型和密钥来源，再在这里启用真实聊天；不会自动测试。'); $('settings').showModal(); void refreshCredentialStatus(); return;
@@ -289,7 +307,7 @@ $('confirm-voice-preference').onclick = () => {
 };
 $('voice-emotion').onchange = () => { speech.stop(); preferredEmotion = $('voice-emotion').value; stage?.setExpression?.(preferredEmotion); voiceDetails(); };
 $('voice-speed').onchange = () => speech.stop();
-$('expression-mode').onchange = () => { speech.stop(); $('expression-state').textContent = $('expression-mode').value === 'reply' ? '下一条回复使用经验证的表达字段；演示/纯文本为 neutral。' : '下一条回复使用手动选择的参考表达。'; };
+$('expression-mode').onchange = () => { speech.stop(); $('expression-state').textContent = '交谈按回复情绪发声；手动参考表达用于声音试听。'; };
 $('voice-test').onclick = () => void speech.speak('你终于来了。下一幕，就由我们一起写吧。', $('voice-select').value, speechOptions());
 $('refresh-voices').onclick = () => void voices();
 speech.onVoicesChanged = () => { void voices(); };

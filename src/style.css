@@ -11,3 +11,6 @@
 .chat-mode-controls p { font-size: 12px; margin: 8px 0 0; }
 .chat-mode-controls button { margin: 4px; }
 #send { white-space: normal; }
+.speech-subtitle { position: absolute; bottom: 112px; left: 8%; right: 8%; text-align: center; color: #edf5ff; font-size: 16px; line-height: 1.65; text-shadow: 0 2px 8px #071425; pointer-events: none; z-index: 2; }
+.speech-subtitle:empty { display: none; }
+@media(max-width:820px) { .speech-subtitle { bottom: 95px; font-size: 14px; } }

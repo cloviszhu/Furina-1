@@ -9,7 +9,8 @@
         <div class="stage-glow"></div><div class="stage-caption"><span class="eyebrow">FONTAINE · A NEW CHAPTER</span><h1>故事之后，<br>还有我们的故事。</h1><p>每一次相遇，都可以成为下一幕的开场。</p></div>
         <div id="viewport"></div><div id="model-state" class="model-state" role="status">正在准备舞台…</div>
         <div class="stage-controls"><button id="greet">✧ 招呼</button><button id="nod">点头</button><button id="reset-camera">重置视角</button><select id="model-select" aria-label="模型形态"></select></div>
-        <div class="speech-caption"><span id="speech-state" role="status">系统语音 · 非角色原声</span><button id="stop-speech" class="quiet">停止发声</button></div>
+        <div class="speech-subtitle" id="speech-subtitle" aria-live="off"></div>
+        <div class="speech-caption"><span id="speech-state" role="status" data-phase="idle">等待交谈 · 本地语音</span><button id="stop-speech" class="quiet">停止发声</button></div>
       </section>
       <aside class="companion-panel">
         <nav class="tabs" aria-label="互动面板"><button class="tab active" data-tab="chat">交谈</button><button class="tab" data-tab="memory">共同经历 <span id="memory-count">0</span></button></nav>

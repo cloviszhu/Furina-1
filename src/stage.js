@@ -2,7 +2,69 @@ import * as THREE from 'three';
 import { MMDLoader } from 'three/addons/loaders/MMDLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { MMDAnimationHelper } from 'three/addons/animation/MMDAnimationHelper.js';
-import { motionFrame, gestureWeight } from './motion.js';
+import { motionFrame, gestureWeight, ease } from './motion.js';
+
+// Deliberate, held upper-body poses, with gaze leading the body. Both PMX rigs
+// have these controls; root/legs remain planted because this stage has no IK.
+export function composeStagePose(frame, { time, mode, action, elapsed = 0, variant = 'auto' }) {
+  const add = (name, x = 0, y = 0, z = 0) => {
+    const angles = frame.bones[name];
+    if (angles) { angles[0] += x; angles[1] += y; angles[2] += z; }
+  };
+  const slot = ((time % 30) + 30) % 30;
+  const variants = ['settled', 'glance', 'attentive'];
+  const selected = variant === 'auto' ? variants[Math.floor(slot / 10)] : variant;
+  const phase = slot % 10;
+  const hold = variant === 'auto' ? ease(phase / 2) * (1 - ease((phase - 7.2) / 2.8)) : 1;
+  const active = action ? 1 - gestureWeight(elapsed, action === 'nod' ? 2 : 3.6) : 1;
+  const weight = hold * active * (mode === 'idle' ? 1 : mode === 'thinking' ? .55 : .2);
+  if (selected === 'settled') {
+    add('上半身', -.012 * weight, .025 * weight, .035 * weight);
+    add('上半身2', .018 * weight, 0, -.018 * weight);
+    add('頭', -.025 * weight, -.035 * weight, -.065 * weight);
+    add('右肩', 0, .025 * weight, -.025 * weight);
+    add('左肩', 0, -.015 * weight, .025 * weight);
+    add('右ひじ', -.07 * weight, .18 * weight, -.28 * weight);
+    add('右手首', .05 * weight, -.05 * weight, .04 * weight);
+    add('左腕', -.06 * weight, 0, .025 * weight);
+  } else if (selected === 'glance') {
+    const look = ease(phase / 1.1) * (1 - ease((phase - 5.8) / 2));
+    const gaze = variant === 'auto' ? look * active : active;
+    add('両目', -.025 * gaze, .09 * gaze, 0);
+    add('頭', -.06 * weight, .16 * weight, .04 * weight);
+    add('首', 0, .045 * weight, 0);
+    add('上半身2', 0, .045 * weight, -.015 * weight);
+    add('左肩', 0, .025 * weight, .02 * weight);
+    add('左ひじ', -.04 * weight, -.13 * weight, .22 * weight);
+    add('左手首', 0, .07 * weight, -.025 * weight);
+  } else if (selected === 'attentive') {
+    add('上半身', .035 * weight, -.025 * weight, -.025 * weight);
+    add('上半身2', .015 * weight, 0, .012 * weight);
+    add('頭', .025 * weight, .04 * weight, .065 * weight);
+    add('両目', -.018 * weight, -.02 * weight, 0);
+    add('右腕', -.09 * weight, 0, -.025 * weight);
+    add('左腕', -.075 * weight, 0, .025 * weight);
+    add('右ひじ', -.03 * weight, .16 * weight, -.30 * weight);
+    add('左ひじ', -.03 * weight, -.14 * weight, .25 * weight);
+  }
+  if (mode === 'thinking' || mode === 'preparing') {
+    const w = gestureWeight(Math.min(time % 8, 3), 5) * .5;
+    add('頭', -.035 * w, -.05 * w, .04 * w);
+    add('上半身2', -.012 * w, 0, -.012 * w);
+  }
+  if (action === 'greet') {
+    const body = gestureWeight(elapsed - .12), attention = gestureWeight(elapsed + .18);
+    add('頭', -.065 * attention, -.055 * body, -.055 * body);
+    add('首', .018 * body, .025 * body, 0);
+    add('両目', -.035 * attention, .025 * attention, 0);
+    add('上半身', .04 * body, -.045 * body, -.03 * body);
+    add('上半身2', -.02 * body, -.025 * body, .015 * body);
+    add('左肩', 0, .03 * body, .025 * body);
+    add('左腕', -.09 * body, .04 * body, .04 * body);
+    add('左ひじ', -.05 * body, -.10 * body, .22 * body);
+  }
+  return frame;
+}
 
 // Small secondary movement in the stage's PMX control space. Keep the root and
 // legs planted: this stage applies grants, but does not solve leg IK/physics.
@@ -43,6 +105,7 @@ export class CharacterStage {
   constructor(element, onState) {
     this.element = element; this.onState = onState; this.mouth = 0; this.action = null; this.expression = 'neutral';
     this.mode = 'idle'; this.lastVoiceAt = -Infinity; this.smoothed = new Map();
+    this.idleVariant = 'auto';
     this.offset = new THREE.Quaternion(); this.euler = new THREE.Euler();
     this.scene = new THREE.Scene();
     this.camera = new THREE.PerspectiveCamera(30, 1, 0.1, 1000);
@@ -108,7 +171,8 @@ export class CharacterStage {
     this.action = { name: action, start: performance.now() }; return true;
   }
   cancelAction() { const active = Boolean(this.action); this.action = null; return active; }
-  setMode(value) { this.mode = ['idle', 'listening', 'speaking'].includes(value) ? value : 'idle'; }
+  setIdleVariant(value) { this.idleVariant = ['auto', 'settled', 'glance', 'attentive'].includes(value) ? value : 'auto'; }
+  setMode(value) { this.mode = ['idle', 'thinking', 'preparing', 'speaking', 'error'].includes(value) ? value : 'idle'; }
   setExpression(value) { this.expression = ['neutral', 'calm', 'happy', 'sad', 'angry', 'surprised'].includes(value) ? value : 'neutral'; }
   morph(names, value) { for (const name of names) { const index = this.mesh?.morphTargetDictionary?.[name]; if (index !== undefined) this.mesh.morphTargetInfluences[index] = value; } }
   tick(now = performance.now()) {
@@ -116,14 +180,14 @@ export class CharacterStage {
     const dt = Math.min(.05, Math.max(0, (now - (this.lastTick ?? now - 16.667)) / 1000)); this.lastTick = now;
     if (this.mesh) {
       for (const [bone, quaternion] of this.base) bone.quaternion.copy(quaternion);
-      if (this.mouth > .025) this.lastVoiceAt = now;
-      const mode = now - this.lastVoiceAt < 450 ? 'speaking' : this.mode;
+      const mode = this.mode;
       if (mode !== this.motionMode) { this.motionMode = mode; this.modeStartedAt = now; }
       const elapsed = this.action ? (now - this.action.start) / 1000 : 0;
       const direction = this.camera.position.clone().sub(this.controls.target);
       const frame = motionFrame({ time: t, mode, modeElapsed: (now - this.modeStartedAt) / 1000, expression: this.expression, action: this.action?.name, elapsed, mouth: this.mouth,
         gazeYaw: Math.atan2(direction.x, direction.z), gazePitch: -Math.atan2(direction.y, Math.hypot(direction.x, direction.z)) * .25 });
       softenStageFrame(frame, { time: t, mode, expression: this.expression, action: this.action?.name, elapsed });
+      composeStagePose(frame, { time: t, mode, action: this.action?.name, elapsed, variant: this.idleVariant });
       for (const [name, angles] of Object.entries(frame.bones)) {
         const bone = this.bones[name]; if (!bone) continue;
         const target = this.offset.setFromEuler(this.euler.set(...angles));

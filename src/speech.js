@@ -1,8 +1,22 @@
+import { TurnLifecycle } from './turn-lifecycle.js';
+
+// Complete-reply sentence TTS, not an LLM token stream.
+export function splitSpeech(text, limit = 100) {
+  const chunks = []; let chunk = '', boundary = false;
+  for (const char of String(text).trim()) {
+    if (boundary && !/[。！？!?；;”’」』）)\s]/u.test(char)) { if (chunk.trim()) chunks.push(chunk.trim()); chunk = ''; boundary = false; }
+    if (chunk.length + char.length > limit && chunk) { chunks.push(chunk); chunk = ''; boundary = false; }
+    chunk += char;
+    if (/[。！？!?；;\n]/u.test(char)) boundary = true;
+  }
+  if (chunk.trim()) chunks.push(chunk.trim());
+  return chunks;
+}
 export class SpeechController {
-  constructor({ onState, onMouth, onExpression = () => {}, onStop = () => {} }) {
-    this.onState = onState; this.onMouth = onMouth; this.sequence = 0; this.voices = [];
-    this.onExpression = onExpression;
-    this.onStop = onStop;
+  constructor({ onState = () => {}, onMouth = () => {}, onExpression = () => {}, onStop = () => {}, onCancel = () => {}, onLifecycle = () => {}, onSegment = () => {}, fetchAudio, audioContext } = {}) {
+    Object.assign(this, { onState, onMouth, onExpression, onStop, onCancel, onSegment, fetchAudio, context: audioContext });
+    this.voices = []; this.sequence = 0;
+    this.lifecycle = new TurnLifecycle(onLifecycle);
     globalThis.speechSynthesis?.addEventListener('voiceschanged', () => this.onVoicesChanged?.());
   }
   async listVoices() {
@@ -18,66 +32,110 @@ export class SpeechController {
     this.localStatus = localStatus;
     this.voices = [...windows, ...browser]; return this.voices;
   }
-  stop({ preservePreview = false } = {}) {
-    ++this.sequence;
-    this.abort?.abort(); this.abort = null;
-    try { this.source?.stop(); } catch { /* Already ended. */ }
-    this.source = null;
-    globalThis.speechSynthesis?.cancel();
-    if (this.frame) cancelAnimationFrame(this.frame);
-    this.frame = null; this.onMouth(0); this.onExpression('neutral'); this.onState('已停止 · 生成中的旧音频不会播放');
-    this.onStop(preservePreview);
+
+  beginTurn() { this.stop(); this.onState('正在想回应…'); return this.lifecycle.begin(); }
+  reset() {
+    if (this.frame != null) globalThis.cancelAnimationFrame?.(this.frame);
+    this.frame = null; this.onMouth(0); this.onExpression('neutral'); this.onSegment(null);
   }
-  async speak(text, value, { emotion = 'neutral', speed = 1 } = {}) {
-    this.stop(); const sequence = this.sequence;
-    const voice = this.voices.find(v => v.value === value);
-    if (!voice || !voice.localService) { this.onState('没有可用本机声音，请在设置中刷新或选择。'); return; }
-    const neural = voice.engine === 'gpt-sovits';
-    if (neural && text.length > 300) { this.onState('本地 TTS 每次最多 300 字，请缩短朗读内容。'); return; }
-    if (neural && !voice.emotions.includes(emotion)) { this.onState('这份声音尚未登记所选表达。'); return; }
-    this.onExpression(neural ? emotion : 'neutral');
-    this.onState(neural ? '本地 TTS 正在生成…' : '正在准备系统备用语音…');
+  stop({ preservePreview = false } = {}) {
+    ++this.sequence; this.cancelRemote(this.lifecycle.current); this.lifecycle.cancel();
+    this.cancelPlayback?.(); this.cancelPlayback = null;
+    try { this.source?.stop(); } catch {}
+    this.source = null; globalThis.speechSynthesis?.cancel(); this.reset();
+    this.onState('已停止 · 这一轮的旧音频不会播放'); this.onStop(preservePreview);
+  }
+  cancelRemote(turn) { if (turn?.remoteId && !turn.cancelSent) { turn.cancelSent = true; this.onCancel(turn.remoteId); } }
+  async prepare(segment, voice, turn, options) {
+    if (!this.lifecycle.owns(turn)) return null;
+    this.context ||= new AudioContext(); await this.context.resume();
+    if (!this.lifecycle.owns(turn)) return null;
+    const body = voice.engine === 'gpt-sovits'
+      ? { backend: 'gpt-sovits', text: segment.text, referenceId: voice.id, ...(segment.segmentId && !voice.emotions?.includes(segment.emotion) ? {} : { emotion: segment.segmentId ? segment.emotion : options.emotion }), speed: options.speed }
+      : { text: segment.text, voice: voice.id };
+    if (turn.remoteId && segment.segmentId) Object.assign(body, { turnId: turn.remoteId, segmentId: segment.segmentId });
+    const response = await (this.fetchAudio || fetch)('/api/speech', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), signal: turn.signal });
+    if (!this.lifecycle.owns(turn)) return null;
+    if (!response.ok) throw new Error((await response.json()).error || '语音生成失败');
+    const data = await response.arrayBuffer();
+    if (!this.lifecycle.owns(turn)) return null;
+    const audio = await this.context.decodeAudioData(data);
+    return this.lifecycle.owns(turn) ? audio : null;
+  }
+  speak(text, value, options = {}) { return this.speakSegments(splitSpeech(text).map((text, index) => ({ id: index, text })), value, options); }
+  async speakSegments(segments, value, { emotion = 'neutral', speed = 1, turn } = {}) {
+    if (!turn) { this.stop(); turn = this.lifecycle.begin('preparing'); }
+    if (!this.lifecycle.owns(turn)) return { cancelled: true };
+    const voice = this.voices.find(v => v.value === value), options = { emotion, speed };
     try {
-      if (voice.engine === 'windows-sapi' || neural) {
-        const controller = new AbortController(); this.abort = controller;
-        this.context ||= new AudioContext();
-        await this.context.resume();
-        if (sequence !== this.sequence || controller.signal.aborted) return;
-        const response = await fetch('/api/speech', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(neural ? { backend: 'gpt-sovits', text, referenceId: voice.id, emotion, speed } : { text: text.slice(0, 1000), voice: voice.id }), signal: controller.signal });
-        if (!response.ok) throw new Error((await response.json()).error);
-        const audio = await this.context.decodeAudioData(await response.arrayBuffer());
-        if (sequence !== this.sequence) return;
-        const source = this.context.createBufferSource(); source.buffer = audio;
-        const analyser = this.context.createAnalyser(); analyser.fftSize = 256;
-        source.connect(analyser); analyser.connect(this.context.destination);
-        this.source = source;
-        source.onended = () => { if (sequence !== this.sequence) return; cancelAnimationFrame(this.frame); this.onMouth(0); this.onExpression('neutral'); this.onState(neural ? '语音结束 · 本地测试声线 / 角色相似度待验收' : '语音结束 · 本机系统备用声'); this.source = null; };
-        const bytes = new Uint8Array(analyser.fftSize);
-        const animate = () => {
-          if (sequence !== this.sequence) return;
-          analyser.getByteTimeDomainData(bytes);
-          const rms = Math.sqrt(bytes.reduce((sum, sample) => sum + ((sample - 128) / 128) ** 2, 0) / bytes.length);
-          this.onMouth(Math.min(1, rms * 6)); this.frame = requestAnimationFrame(animate);
-        };
-        this.onState(neural ? `正在发声 · 本地 TTS / ${emotion} / 音频振幅口型` : '正在发声 · 本机系统备用声 / 音频振幅口型');
-        source.start(); animate();
-      } else {
-        const utterance = new SpeechSynthesisUtterance(text.slice(0, 1000));
-        utterance.voice = voice.voice; utterance.lang = voice.voice.lang; utterance.rate = .95;
-        utterance.onstart = () => {
-          if (sequence !== this.sequence) return;
-          this.onState('正在发声 · 浏览器本机声音 / 近似口型');
-          const start = performance.now();
-          const animate = () => { if (sequence !== this.sequence) return; this.onMouth(.3 + Math.sin((performance.now() - start) * .025) * .22); this.frame = requestAnimationFrame(animate); };
-          animate();
-        };
-        utterance.onend = () => { if (sequence !== this.sequence) return; cancelAnimationFrame(this.frame); this.onMouth(0); this.onState('语音结束 · 浏览器系统声'); };
-        utterance.onerror = () => { if (sequence !== this.sequence) return; cancelAnimationFrame(this.frame); this.onMouth(0); this.onState('浏览器语音失败，请尝试 Windows 本机声音。'); };
-        globalThis.speechSynthesis.speak(utterance);
+      if (!voice || !voice.localService) throw new Error('没有可用本地声音；请刷新或选择声音。');
+      if (voice.engine === 'gpt-sovits' && !voice.emotions?.includes(emotion)) throw new Error('当前声线未登记所选表达。');
+      if (segments.some(s => !s.text?.trim() || s.text.length > (voice.engine === 'gpt-sovits' ? 300 : 1000))) throw new Error('语音分句内容无效或超出长度限制。');
+      const buffered = voice.engine === 'windows-sapi' || voice.engine === 'gpt-sovits';
+      // One-sentence lookahead; wrap prefetch failures immediately.
+      const prepare = segment => this.prepare(segment, voice, turn, options).then(audio => ({ audio }), error => ({ error }));
+      let pending = buffered && segments.length ? prepare(segments[0]) : null;
+      for (let index = 0; index < segments.length; index++) {
+        if (!this.lifecycle.owns(turn)) return { cancelled: true };
+        const requested = segments[index].segmentId ? segments[index].emotion : emotion;
+        const effective = voice.engine === 'gpt-sovits' && voice.emotions?.includes(requested) ? requested : 'neutral';
+        const segment = { ...segments[index], index, turnId: turn.remoteId || turn.id, emotion: effective };
+        this.lifecycle.set(turn, 'preparing', segment); this.onState(`正在准备声音 · 第 ${index + 1}/${segments.length} 句`);
+        const prepared = buffered ? await pending : {};
+        if (!this.lifecycle.owns(turn)) return { cancelled: true };
+        if (prepared.error) throw prepared.error;
+        pending = buffered && index + 1 < segments.length ? prepare(segments[index + 1]) : null;
+        await this.play(segment, prepared.audio, voice, turn);
       }
+      if (!this.lifecycle.owns(turn)) return { cancelled: true };
+      this.reset(); this.lifecycle.set(turn, 'idle'); this.onState('播放结束 · 本地分句语音'); return { completed: true };
     } catch (error) {
-      if (sequence !== this.sequence) return;
-      this.onMouth(0); this.onExpression('neutral'); this.onState(error.name === 'AbortError' ? '语音已取消' : `${error.message || '语音失败'} · 请启动本地 TTS 后刷新，或在设置中显式选择系统备用声`);
+      if (!this.lifecycle.owns(turn)) return { cancelled: true };
+      this.reset(); this.lifecycle.set(turn, 'error'); this.cancelRemote(turn); turn.controller.abort();
+      this.onState(`${error.message || '发声失败'} · 可以重新发送或选择声音后重试`); return { error };
     }
+  }
+  play(segment, audio, voice, turn) {
+    return new Promise((resolve, reject) => {
+      let done = false;
+      const finish = error => {
+        if (done) return; done = true; turn.signal.removeEventListener('abort', cancelled); this.cancelPlayback = null;
+        if (this.lifecycle.owns(turn)) { this.source = null; this.reset(); }
+        error ? reject(error) : resolve();
+      };
+      const cancelled = () => { try { this.source?.stop(); } catch {} finish(); };
+      this.cancelPlayback = cancelled; turn.signal.addEventListener('abort', cancelled, { once: true });
+      const start = () => {
+        if (!this.lifecycle.owns(turn)) return finish();
+        this.lifecycle.set(turn, 'speaking', segment); this.onSegment(segment);
+        this.onExpression(voice.engine === 'gpt-sovits' ? segment.emotion : 'neutral');
+        this.onState(`正在发声 · 第 ${segment.index + 1} 句 · ${voice.engine === 'gpt-sovits' ? '本地 TTS / 音频驱动口型' : '本地系统备用'}`);
+      };
+      try {
+        if (audio) {
+          const source = this.context.createBufferSource(); source.buffer = audio;
+          const analyser = this.context.createAnalyser(); analyser.fftSize = 256;
+          source.connect(analyser); analyser.connect(this.context.destination); this.source = source;
+          source.onended = () => { source.disconnect?.(); analyser.disconnect?.(); finish(); };
+          const bytes = new Uint8Array(analyser.fftSize);
+          const animate = () => {
+            if (!this.lifecycle.owns(turn) || done) return;
+            analyser.getByteTimeDomainData(bytes);
+            const rms = Math.sqrt(bytes.reduce((sum, sample) => sum + ((sample - 128) / 128) ** 2, 0) / bytes.length);
+            this.onMouth(Math.min(1, rms * 6)); this.frame = requestAnimationFrame(animate);
+          };
+          source.start(); start(); animate();
+        } else {
+          const utterance = new SpeechSynthesisUtterance(segment.text);
+          utterance.voice = voice.voice; utterance.lang = voice.voice.lang; utterance.rate = .95;
+          utterance.onstart = () => {
+            start(); const startedAt = performance.now();
+            const animate = () => { if (!this.lifecycle.owns(turn) || done) return; this.onMouth(.3 + Math.sin((performance.now() - startedAt) * .025) * .22); this.frame = requestAnimationFrame(animate); }; animate();
+          };
+          utterance.onend = () => finish(); utterance.onerror = () => finish(new Error('浏览器本机发声失败；请尝试 Windows 本地声音。'));
+          globalThis.speechSynthesis.speak(utterance);
+        }
+      } catch (error) { finish(error); }
+    });
   }
 }
