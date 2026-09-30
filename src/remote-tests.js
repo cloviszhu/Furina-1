@@ -84,9 +84,9 @@ export function mountRemoteTests({ api, config, character, updateBudget, isBusy 
   };
   void refreshReports();
   const labels = { idle: '尚未启动真实测试', starting: '检查配置（尚未调用模型）', running: '真实 API 测试进行中', completed: '六组三轮测试结束，待人工审阅', stopped: '已停止；没有重试', cancelled: '已取消；不会继续调用', pending: '待执行', failed: '失败', skipped: '未执行' };
-  const controls = ['remote-test', 'batch-start', 'provider', 'model-name', 'base-url', 'api-key', 'clear-key'];
+  const controls = ['remote-test', 'batch-start', 'provider', 'model-name', 'base-url', 'api-key', 'clear-key', 'credential-source', 'save-credential', 'delete-credential'];
   const runner = new BoundedTestRunner({ request: api, onBudget: updateBudget, onUpdate: run => {
-    controls.forEach(id => { $(id).disabled = run.running || (['remote-test', 'batch-start'].includes(id) && isBusy()); }); $('batch-cancel').disabled = !run.running;
+    controls.forEach(id => { $(id).disabled = run.running || (id === 'api-key' && $('credential-source').value === 'saved') || (['remote-test', 'batch-start'].includes(id) && isBusy()); }); $('batch-cancel').disabled = !run.running;
     $('batch-state').textContent = `${labels[run.state] || run.state}。${run.error || ''}`;
     $('batch-results').replaceChildren();
     for (const row of run.rows) {
@@ -106,7 +106,7 @@ export function mountRemoteTests({ api, config, character, updateBudget, isBusy 
   $('batch-start').onclick = () => {
     if (isBusy()) { $('batch-state').textContent = '请等当前回复结束再启动测试；未产生额外调用。'; return; }
     const chosen = config();
-    if (chosen.provider !== 'deepseek' || !chosen.model || !chosen.apiKey.trim()) {
+    if (chosen.provider !== 'deepseek' || !chosen.model || (chosen.credentialSource !== 'saved' && !chosen.apiKey.trim())) {
       $('batch-state').textContent = '请本人选择 DeepSeek、填写官方模型名和 API key。配置未完成，未产生调用。'; return;
     }
     void runner.start(chosen, character());

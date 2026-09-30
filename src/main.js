@@ -3,8 +3,20 @@ import { CharacterStage } from './stage.js';
 import { SpeechController } from './speech.js';
 import { initReferences } from './reference-import.js';
 import { mountRemoteTests } from './remote-tests.js';
+import { loadSettings, saveSettings } from './settings.js';
 
 const $ = id => document.getElementById(id);
+let savedSettings;
+try { savedSettings = loadSettings(globalThis.localStorage); } catch { savedSettings = loadSettings({ getItem() {} }); }
+let settingsReady = false;
+function persistSettings() {
+  if (!settingsReady) return;
+  const value = { provider: $('provider').value, model: $('model-name').value.trim(), baseUrl: $('base-url').value.trim(), voice: $('voice-select').value,
+    emotion: $('voice-emotion').value, speed: Number($('voice-speed').value), timeline: $('character-timeline').value, style: $('character-style').value, expressionMode: $('expression-mode').value };
+  let saved = false;
+  try { saved = saveSettings(globalThis.localStorage, value, $('api-key').value); } catch { /* no plaintext fallback */ }
+  $('settings-state').textContent = saved ? '普通配置已自动保存在此浏览器；不会自动启动收费测试。' : '浏览器存储不可用，普通配置本次未保存。';
+}
 const element = (tag, className, text) => { const node = document.createElement(tag); if (className) node.className = className; if (text !== undefined) node.textContent = text; return node; };
 let stage;
 try { stage = new CharacterStage($('viewport'), text => { $('model-state').textContent = text; }); }
@@ -37,7 +49,7 @@ try {
   }
 } catch { /* Server context-generation still rejects stale completions. */ }
 const announceMemoryMutation = () => memoryChannel?.postMessage({ type: 'memory-mutated' });
-const config = () => ({ provider: $('provider').value, model: $('model-name').value.trim(), baseUrl: $('base-url').value.trim(), apiKey: $('api-key').value });
+const config = () => ({ provider: $('provider').value, model: $('model-name').value.trim(), baseUrl: $('base-url').value.trim(), apiKey: $('credential-source').value === 'saved' ? '' : $('api-key').value, credentialSource: $('credential-source').value });
 const character = () => ({ timeline: $('character-timeline').value || 'aftermath', style: $('character-style').value || 'natural' });
 const historyPath = () => { const chosen = character(); return chosen.timeline === 'aftermath' && chosen.style === 'natural' ? '/api/history' : `/api/history?timeline=${chosen.timeline}&style=${chosen.style}`; };
 const sourcePath = id => { const chosen = character(); return `/api/sources/${encodeURIComponent(id)}?timeline=${chosen.timeline}&style=${chosen.style}`; };
@@ -57,7 +69,7 @@ const fail = error => { $('app-error').textContent = error.message || String(err
 
 async function api(path, options = {}) {
   let response;
-  try { response = await fetch(path, { ...options, headers: { 'Content-Type': 'application/json', ...options.headers } }); }
+  try { response = await fetch(path, { ...options, headers: { 'Content-Type': 'application/json', 'X-Exo-Credentials': '1', ...options.headers } }); }
   catch { throw new Error('项目服务无法连接；请运行 npm.cmd start，确认 127.0.0.1:3000 后刷新页面。'); }
   let data;
   try { data = await response.json(); } catch { throw new Error('项目服务未返回有效数据，请重启项目后刷新。'); }
@@ -130,11 +142,35 @@ $('chat-input').onkeydown = event => { if (event.key === 'Enter' && !event.shift
 document.querySelectorAll('[data-prompt]').forEach(node => node.onclick = () => { $('chat-input').value = node.dataset.prompt; void send(node.dataset.prompt); });
 $('greet').onclick = () => stage?.trigger('greet'); $('nod').onclick = () => stage?.trigger('nod'); $('reset-camera').onclick = () => stage?.resetCamera(); $('stop-speech').onclick = () => speech.stop();
 $('model-select').onchange = () => { speech.stop(); void stage?.load($('model-select').value); };
-$('open-settings').onclick = () => $('settings').showModal();
+$('open-settings').onclick = () => { $('settings').showModal(); void refreshCredentialStatus(); };
+async function refreshCredentialStatus() {
+  try {
+    const state = await api('/api/credentials/deepseek');
+    $('credential-status').textContent = state.available ? state.saved ? '已保存' : '未保存' : '未保存 · Windows 凭据管理器不可用；不会回退明文。';
+  } catch { $('credential-status').textContent = '未保存 · 无法确认 Windows 凭据状态。'; }
+}
+$('credential-source').onchange = () => { $('api-key').value = ''; $('api-key').disabled = $('credential-source').value === 'saved'; };
+$('save-credential').onclick = async () => {
+  if ($('provider').value !== 'deepseek' || $('credential-source').value !== 'input') { $('credential-status').textContent = '请选择 DeepSeek 和本次输入，再本人确认保存。'; return; }
+  $('save-credential').disabled = true;
+  try {
+    await api('/api/credentials/deepseek', { method: 'POST', body: JSON.stringify({ confirmed: true, apiKey: $('api-key').value }) });
+    $('api-key').value = ''; $('api-key').disabled = true; $('credential-source').value = 'saved'; $('credential-status').textContent = '已保存';
+  } catch (error) { $('credential-status').textContent = `本次输入未保存 · ${error.message}`; }
+  finally { $('save-credential').disabled = false; }
+};
+$('delete-credential').onclick = async () => {
+  if (!confirm('仅删除本项目保存到本机 Windows 凭据管理器的 DeepSeek 密钥？这不会撤销 DeepSeek 上游密钥。')) return;
+  $('delete-credential').disabled = true;
+  try { await api('/api/credentials/deepseek', { method: 'DELETE', body: JSON.stringify({ confirmed: true }) }); $('credential-status').textContent = '未保存'; $('credential-source').value = 'input'; $('api-key').value = ''; $('api-key').disabled = false; }
+  catch (error) { $('credential-status').textContent = error.message; }
+  finally { $('delete-credential').disabled = false; }
+};
 $('clear-key').onclick = () => { $('api-key').value = ''; $('provider-status').textContent = '页面密钥已清除。'; };
 $('provider').onchange = () => {
   $('base-url').value = providers.find(p => p.id === $('provider').value)?.baseUrl || '';
   $('model-name').value = ''; $('api-key').value = '';
+  $('credential-source').value = 'input'; $('api-key').disabled = false;
   $('provider-status').textContent = '模型与密钥已留空；切换不产生 API 请求。';
 };
 function changeCharacter() {
@@ -144,18 +180,18 @@ function changeCharacter() {
   const chosen = character();
   const timeline = status?.characterOptions?.timelines.find(x => x.id === chosen.timeline);
   const style = status?.characterOptions?.styles.find(x => x.id === chosen.style);
-  $('character-details').textContent = `${timeline?.description || ''} ${style?.description || ''} 风格切换沿用当前时间线的对话；时间线切换隔离聊天，已确认记忆仍保留。配置刷新后恢复默认。`;
+  $('character-details').textContent = `${timeline?.description || ''} ${style?.description || ''} 风格切换沿用当前时间线的对话；时间线切换隔离聊天，已确认记忆仍保留。普通配置刷新后恢复。`;
   void refreshHistory().catch(fail);
 }
 $('character-timeline').onchange = changeCharacter; $('character-style').onchange = changeCharacter;
 $('remote-test').onclick = () => {
   const text = $('chat-input').value.trim();
   if (!text) { $('settings').close(); fail('请先在聊天框填写一次短测试内容。'); return; }
-  if (!$('api-key').value.trim()) { $('provider-status').textContent = '请由你本人输入密钥；未发起请求。'; return; }
+  if ($('credential-source').value !== 'saved' && !$('api-key').value.trim()) { $('provider-status').textContent = '请由你本人输入密钥或选择已保存密钥；未发起请求。'; return; }
   $('settings').close(); void send(text, true);
 };
 async function voices() {
-  const previous = $('voice-select').value;
+  const previous = $('voice-select').value || savedSettings.voice;
   const list = await speech.listVoices(); $('voice-select').replaceChildren();
   for (const voice of list) { const option = element('option', '', voice.label); option.value = voice.value; option.disabled = !voice.localService; $('voice-select').append(option); }
   const preferred = list.find(v => v.value === previous && v.localService) || list.find(v => v.engine === 'gpt-sovits');
@@ -165,6 +201,7 @@ async function voices() {
     placeholder.value = ''; $('voice-select').append(placeholder); $('voice-select').value = '';
   }
   voiceDetails();
+  if (settingsReady) persistSettings();
 }
 function voiceDetails() {
   const previous = $('voice-emotion').value;
@@ -244,13 +281,23 @@ globalThis.addEventListener('pagehide', () => { speech.stop(); $('api-key').valu
 async function boot() {
   status = await api('/api/status'); providers = status.providers;
   for (const p of providers) { const option = element('option', '', p.name); option.value = p.id; $('provider').append(option); }
+  $('provider').value = savedSettings.provider;
+  $('model-name').value = savedSettings.model;
+  $('base-url').value = savedSettings.baseUrl || providers.find(p => p.id === savedSettings.provider)?.baseUrl || '';
+  $('character-timeline').value = savedSettings.timeline; $('character-style').value = savedSettings.style;
+  $('voice-speed').value = savedSettings.speed; $('expression-mode').value = savedSettings.expressionMode;
   for (const model of status.models) { const option = element('option', '', model.name.replace('.pmx', '') + (model.available ? '' : ' · 缺失')); option.value = model.url; $('model-select').append(option); }
   const selected = status.models.find(m => m.available);
   if (selected) { $('model-select').value = selected.url; void stage?.load(selected.url); }
   else $('model-state').textContent = '缺少本地 PMX；请按 README 安装资产。';
   updateBudget(status.budget);
   await Promise.all([refreshHistory(), memories(), voices()]);
+  if (Array.from($('voice-emotion').options).some(o => o.value === savedSettings.emotion)) $('voice-emotion').value = savedSettings.emotion;
+  voiceDetails();
+  settingsReady = true; persistSettings();
 }
+for (const id of ['provider', 'model-name', 'base-url', 'voice-select', 'voice-emotion', 'voice-speed', 'character-timeline', 'character-style', 'expression-mode']) $(id).addEventListener('change', persistSettings);
+for (const id of ['model-name', 'base-url', 'voice-speed']) $(id).addEventListener('input', persistSettings);
 void boot().catch(fail);
 initReferences({ api, speech, voices });
 batchRunner = mountRemoteTests({ api, config, character, updateBudget, isBusy: () => busy });

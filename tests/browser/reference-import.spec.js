@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { mkdtemp, rm, readFile, writeFile, readdir } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
-import { createApp } from '../../server/index.js';
+import { createApp } from './isolated-app.js';
 import { ReferenceImports } from '../../server/reference-import.js';
 import { LocalTts } from '../../server/local-tts.js';
 

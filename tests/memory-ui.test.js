@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import vm from 'node:vm';
+import { loadSettings, saveSettings } from '../src/settings.js';
 
 // Execute the real main.js event handlers with a tiny DOM and stubbed rendering,
 // speech and HTTP. No WebGL, character assets, browser or external service needed.
@@ -12,6 +13,8 @@ class Element {
     this.classList = { toggle() {} };
   }
   append(...nodes) { for (const node of nodes) { node.parent = this; this.children.push(node); } }
+  addEventListener() {}
+  get options() { return this.children; }
   replaceChildren(...nodes) { this.children = []; this.append(...nodes); }
   remove() { if (this.parent) this.parent.children = this.parent.children.filter(n => n !== this); }
   querySelector(selector) { return walk(this).find(n => selector[0] === '.' ? n.className.split(' ').includes(selector.slice(1)) : n.tagName === selector); }
@@ -31,11 +34,12 @@ async function ui() {
   const pending = deferred();
   const document = { getElementById: id => nodes[id], createElement: tag => new Element(tag), querySelectorAll: () => [] };
   const context = vm.createContext({
+    loadSettings, saveSettings,
     document, console, confirm: () => true, addEventListener() {},
     initReferences() {},
     mountRemoteTests() {},
     CharacterStage: class { trigger() {} resetCamera() {} },
-    SpeechController: class { stop() { ++stops; } async listVoices() { return []; } async speak(text) { spoken.push(text); } },
+    SpeechController: class { constructor() { this.voices = []; } stop() { ++stops; } async listVoices() { return []; } async speak(text) { spoken.push(text); } },
     fetch: async (path, options = {}) => {
       let data;
       if (path === '/api/status') data = { providers: [], models: [], budget };

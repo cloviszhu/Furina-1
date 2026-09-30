@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { mkdtemp, rm, mkdir, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { createApp } from '../../server/index.js';
+import { createApp } from './isolated-app.js';
 
 test('actual PMX gesture remains continuous, refuses interruption, returns to rest and deforms mesh', async ({ page }) => {
   const directory = await mkdtemp(join(tmpdir(), 'exo-motion-browser-'));

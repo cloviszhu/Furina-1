@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve, sep } from 'node:path';
-import { createApp } from '../../server/index.js';
+import { createApp } from './isolated-app.js';
 
 const deferred = () => { let resolve; const promise = new Promise(r => { resolve = r; }); return { promise, resolve }; };
 async function isolated(options = {}) {

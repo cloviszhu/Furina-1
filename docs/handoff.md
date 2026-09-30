@@ -1,3 +1,5 @@
+[2026-09-30 local settings: implementation verified; app-only deployment and first real credential save pending](local-settings-handoff.md)
+
 
 ## 2026-09-30 persona continuity relay（已 app-only 部署，待用户验收）
 

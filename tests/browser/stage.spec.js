@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { createApp } from '../../server/index.js';
+import { createApp } from './isolated-app.js';
 test('actual PMX stage, memory interaction, empty credentials and mobile layout', async ({ page }) => {
   // Memory corrections invalidate chat context. Never run that journey on data/.
   const dataDir = await mkdtemp(join(tmpdir(), 'exo-stage-browser-'));

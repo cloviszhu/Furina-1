@@ -3,11 +3,12 @@ import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createApp } from '../../server/index.js';
+import { WindowsCredentials } from '../../server/credentials.js';
 
 test('single explicit click runs eighteen multi-turn fixture calls; report isolated from formal chat and safe cancellation', async ({ page }) => {
   const dataDir = await mkdtemp(join(tmpdir(), 'exo-batch-browser-'));
   let calls = 0, block = false;
-  const app = await createApp({ dataDir, fetchImpl: async (_url, { signal }) => {
+  const app = await createApp({ dataDir, credentials: new WindowsCredentials({ bridge: async () => ({ ok: true, saved: false }) }), fetchImpl: async (_url, { signal }) => {
     calls++;
     if (block) await new Promise((_resolve, reject) => signal.addEventListener('abort', () => reject(Error('fixture abort')), { once: true }));
     return Response.json({ choices: [{ message: { content: '{"text":"本地模拟回答，非真实 API 验收","emotion":"calm"}' } }], usage: { prompt_tokens: 30, completion_tokens: 12 } });

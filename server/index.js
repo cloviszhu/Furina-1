@@ -14,6 +14,7 @@ import { SPEECH_BACKENDS, validateSpeechOptions } from './tts-contract.js';
 import { LocalTts, loadTtsConfig } from './local-tts.js';
 import { CHARACTER_OPTIONS, characterConfig } from './persona.js';
 import { ReferenceImports, MAX_REFERENCE_BYTES } from './reference-import.js';
+import { WindowsCredentials } from './credentials.js';
 
 const PROJECT = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.bmp': 'image/bmp', '.pmx': 'application/octet-stream', '.svg': 'image/svg+xml' };
@@ -40,7 +41,7 @@ async function serveFile(res, root, relative) {
   createReadStream(canonical).pipe(res);
 }
 
-export async function createApp({ projectRoot = PROJECT, dataDir = join(PROJECT, 'data'), dev = false, fetchImpl = fetch, localTtsImpl } = {}) {
+export async function createApp({ projectRoot = PROJECT, dataDir = join(PROJECT, 'data'), dev = false, fetchImpl = fetch, localTtsImpl, credentials = new WindowsCredentials() } = {}) {
   const store = new MemoryStore(join(dataDir, 'exo.sqlite'));
   const budget = new RemoteBudget(store.db);
   const testReports = new TestReports(join(dataDir, 'test-reports'));
@@ -59,6 +60,11 @@ export async function createApp({ projectRoot = PROJECT, dataDir = join(PROJECT,
     res.setHeader('Referrer-Policy', 'no-referrer');
     res.setHeader('Cross-Origin-Resource-Policy', 'same-origin');
     try {
+      const resolveCredential = async (config, confirmed) => {
+        if (config?.credentialSource === 'saved' && (req.headers['x-exo-credentials'] !== '1' || !['same-origin', 'none', undefined].includes(req.headers['sec-fetch-site']))) throw Object.assign(new Error('凭据请求来源被拒绝。'), { status: 403 });
+        if (config?.credentialSource === 'saved' && !/^application\/json(?:\s*;\s*charset=utf-8)?$/i.test(req.headers['content-type'] || '')) throw Object.assign(new Error('凭据请求只接受 JSON。'), { status: 415 });
+        return await credentials.resolve(config, confirmed);
+      };
       const host = req.headers.host || '';
       const expectedPort = app.address()?.port;
       if (![ `127.0.0.1:${expectedPort}`, `localhost:${expectedPort}`, `[::1]:${expectedPort}` ].includes(host)) return json(res, 403, { error: 'Host 被拒绝。' });
@@ -67,12 +73,27 @@ export async function createApp({ projectRoot = PROJECT, dataDir = join(PROJECT,
       if (req.headers['sec-fetch-site'] === 'cross-site') return json(res, 403, { error: '跨站请求被拒绝。' });
       const url = new URL(req.url, `http://${host}`);
       const pathname = decodeURIComponent(url.pathname);
+      if (pathname.startsWith('/api/credentials')) {
+        if (pathname !== '/api/credentials/deepseek' || url.search) return json(res, 400, { error: '固定凭据入口不接受目标或参数。' });
+        // Sensitive reads and mutations require an explicit same-origin app request.
+        if (req.headers.origin && req.headers.origin !== `http://${host}` || req.headers['x-exo-credentials'] !== '1' || !['same-origin', 'none', undefined].includes(req.headers['sec-fetch-site'])) return json(res, 403, { error: '凭据请求来源被拒绝。' });
+        if (req.method === 'GET') return json(res, 200, await credentials.status());
+        if (!['POST', 'DELETE'].includes(req.method)) return json(res, 405, { error: '方法不支持。' });
+        if (!/^application\/json(?:\s*;\s*charset=utf-8)?$/i.test(req.headers['content-type'] || '')) return json(res, 415, { error: '只接受 JSON 请求。' });
+        const input = await body(req);
+        const fields = req.method === 'POST' ? ['confirmed', 'apiKey'] : ['confirmed'];
+        if (!input || typeof input !== 'object' || Array.isArray(input) || input.confirmed !== true || Object.keys(input).some(k => !fields.includes(k))) return json(res, 400, { error: '请本人明确确认固定 DeepSeek 凭据操作。' });
+        return json(res, 200, req.method === 'POST' ? await credentials.save(input.apiKey) : await credentials.delete());
+      }
       if (pathname === '/api/remote-tests' && req.method === 'GET') return json(res, 200, { scenarios: remoteTestManifest() });
       if (pathname === '/api/test-reports' && req.method === 'GET') return json(res, 200, { reports: testReports.list() });
       const report = pathname.match(/^\/api\/test-reports\/([a-f0-9-]{36})$/i);
       if (report && req.method === 'GET') return json(res, 200, testReports.read(report[1]));
       if (pathname === '/api/remote-tests' && req.method === 'POST') {
         const input = await body(req);
+        if (req.aborted || res.destroyed) return;
+        if (input.confirmed !== true) return json(res, 400, { error: '请明确点击启动收费测试。' });
+        input.config = await resolveCredential(input.config, input.confirmed);
         if (req.aborted || res.destroyed) return;
         const run = remoteTests.start(input);
         res.once('close', () => {
@@ -85,6 +106,11 @@ export async function createApp({ projectRoot = PROJECT, dataDir = join(PROJECT,
         if (testStep[2] === 'cancel') return json(res, 200, remoteTests.cancel(testStep[1]));
         if (testStep[2] === 'activate') return json(res, 200, remoteTests.activate(testStep[1]));
         const input = await body(req), disconnect = new AbortController();
+        // Validate run state before credential access; a stale step cannot read.
+        const run = remoteTests.get(testStep[1]);
+        if (!run.activated || !['starting', 'running'].includes(run.state) || run.busy || input.index !== run.next) return json(res, 409, { error: '测试已停止或步骤重复。' });
+        input.config = await resolveCredential(input.config, true);
+        if (req.aborted || res.destroyed) return;
         const onClose = () => { if (!res.writableEnded) disconnect.abort(); };
         res.on('close', onClose);
         try {
@@ -121,8 +147,9 @@ export async function createApp({ projectRoot = PROJECT, dataDir = join(PROJECT,
         const memories = store.recall(text);
         const contextGeneration = store.contextGeneration;
         const messages = messagesFor(text, memories, store.history(16, character.contextKey), character);
-        const config = input.config || { provider: 'offline' };
+        let config = input.config || { provider: 'offline' };
         if (typeof config !== 'object' || Array.isArray(config) || ['provider', 'model', 'baseUrl', 'apiKey'].some(k => config[k] !== undefined && (typeof config[k] !== 'string' || config[k].length > (k === 'apiKey' ? 4096 : 500)))) throw Object.assign(new Error('模型配置字段无效或过长。'), { status: 400 });
+        config = await resolveCredential(config, input.remoteTest);
         if (config.apiKey && text.includes(config.apiKey)) throw Object.assign(new Error('聊天正文不能包含当前密钥。'), { status: 400 });
         let result = { text: offlineReply(text, memories, character), emotion: 'neutral', expressionSource: 'limited-rule' }, provider = 'offline', error = null;
         let reservation;
