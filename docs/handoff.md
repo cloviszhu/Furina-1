@@ -49,3 +49,6 @@
 无读取真实凭证/.env/桌面key，无私人消息、充值、提权安装或全局设置改动。PMX、音频、权重、参考素材、secret、runtime、截图不进入Git。只提交代码、测试和文字记录，main / cloviszhu/Furina-1，不force、不改可见性；最新提交用git log -1与远端main核对。
 
 历史：[第四阶段验证](stage-four-validation.md)、[角色契约](character-contract.md)、[本地TTS](local-tts.md)。历史PID/计数不作为当前状态。
+
+
+Latest deployed integration (2026-09-30): see docs/local-deployment-2026-09-30.md. App PID85080; TTS PID67988 unchanged; code c7253c10cd0cc3c1be963968f9b149b672d37b2c. Real credential operations remain unperformed.

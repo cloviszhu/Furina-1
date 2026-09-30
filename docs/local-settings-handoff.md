@@ -40,3 +40,6 @@ build 更新了被 Git 忽略的 dist，但运行中的后端仍是原进程；�
 部署后用户路径：幕后设置 → DeepSeek → 本次输入 → 本人填 key → **保存到本机 Windows 凭据管理器**。成功后页面显示已保存、密码框清空；下次选择「使用已保存的本机 DeepSeek 密钥」。真实 CredWrite/Read/Delete、重登录持久及当前账户真实权限仍待本人验收，**不称实际密钥已保存**。保存不会测试 API。需要真实 LLM 验收时仍由本人点击一次收费测试，沿用累计九元/既有七条预留账本；请求成功不能当作角色质量或跨会话持久记忆通过。
 
 模型、PMX、音频、参考文件、真实 key、SQLite、runtime 和 fixture 截图均未加入 Git；只提交源码、测试、OpenSpec 和文字说明。后续 parent 独立审查应重点看 read 前端点门禁、native stdin/错误处理、origin/Host/JSON 边界及不可覆盖路径。
+
+
+Latest deployed integration (2026-09-30): see docs/local-deployment-2026-09-30.md. App PID85080; TTS PID67988 unchanged; code c7253c10cd0cc3c1be963968f9b149b672d37b2c. Real credential operations remain unperformed.
