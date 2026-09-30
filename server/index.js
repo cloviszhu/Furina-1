@@ -136,6 +136,17 @@ export async function createApp({ projectRoot = PROJECT, dataDir = join(PROJECT,
         return json(res, 200, { voices: [...(neural.ready ? neural.voices : []), ...windows], error, localTts: neural });
       }
       if (pathname === '/api/reference-profiles' && req.method === 'GET') return json(res, 200, { profiles: referenceImports.list(), error: ttsConfigError });
+      const deleteReference = /^\/api\/reference-profiles\/([a-z0-9][a-z0-9_-]{0,39})$/.exec(pathname);
+      if (deleteReference && req.method === 'DELETE') {
+        if (ttsConfigError) throw Object.assign(new Error('现有参考登记无效，请先修复；不会覆盖登记。'), { status: 409 });
+        return json(res, 200, await referenceImports.deletions.remove(deleteReference[1], await body(req)));
+      }
+      if (pathname === '/api/reference-deletions' && req.method === 'GET') return json(res, 200, { deletions: await referenceImports.deletions.list() });
+      const restoreReference = /^\/api\/reference-deletions\/([a-f0-9-]{36})\/restore$/.exec(pathname);
+      if (restoreReference && req.method === 'POST') {
+        if (ttsConfigError) throw Object.assign(new Error('现有参考登记无效，请先修复；不会覆盖登记。'), { status: 409 });
+        return json(res, 200, await referenceImports.deletions.restore(restoreReference[1], await body(req)));
+      }
       if (pathname === '/api/reference-imports' && req.method === 'POST') {
         if (ttsConfigError) throw Object.assign(new Error('现有参考登记无效，请先修复 data/tts-config.json；不会覆盖损坏的登记。'), { status: 409 });
         if (!req.headers['content-type']?.startsWith('audio/wav')) throw Object.assign(new Error('只接受 PCM16 WAV 音频。'), { status: 415 });

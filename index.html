@@ -38,6 +38,16 @@
       <p>只选取你有权用于本地语音合成的录音。不下载角色录音。首版支持 3–10 秒、最多 4 MiB 的 PCM16 WAV（8–96 kHz，单/双声道）。MP3、FLAC、浮点 WAV 请先用本机音频工具导出 PCM16；不能只改扩展名。</p>
       <label for="reference-file">1 · 选择本机录音</label><input id="reference-file" type="file" accept=".wav,audio/wav"><button id="reference-check" type="button">检查并生成本机预览</button>
       <p id="reference-state" role="status">文件只在本机处理；尚未登记。当前 RAVDESS 是非商业测试声，不是芙宁娜。</p>
+      <section aria-label="管理已导入声线">
+        <h3>管理已导入声线</h3>
+        <p>仅管理本应用导入的副本；不删除原始录音或内置 RAVDESS。删除会解绑并保留本地恢复副本（最多 20 次）；生成或排队中会拒绝操作，请停止播放并等待队列释放。</p>
+        <label for="reference-manage-profile">自定义声线</label><select id="reference-manage-profile"></select>
+        <label for="reference-manage-emotion">已登记表达</label><select id="reference-manage-emotion"></select>
+        <div class="setting-actions"><button id="reference-delete-expression" type="button">删除此表达</button><button id="reference-delete-profile" type="button">删除整个声线</button></div>
+        <p>neutral 是声线基础，只能随整个声线删除。删除当前选择后回退到可用声线／neutral；不会自动启用系统语音。</p>
+        <label for="reference-deleted">可恢复的删除记录</label><select id="reference-deleted"></select><button id="reference-restore" type="button">恢复所选记录</button>
+        <p id="reference-management-state" role="status">尚未操作；原始录音保持不变。</p>
+      </section>
       <div id="reference-confirmation" hidden>
         <audio id="reference-preview" controls preload="metadata" aria-label="规范化参考录音预览"></audio>
         <p>输出单声道 32 kHz PCM16，只降低过高峰值，不放大低音量噪声、不修复削波、不自动裁剪。请试听完整录音，检查音质和转写。不同表达须是同一个说话人；不能把不同声线混进同一 profile。声纹身份由你确认。登记已有表达会替换该表达的参考；其他表达保留。</p>

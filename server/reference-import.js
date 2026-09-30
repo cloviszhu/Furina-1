@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { mkdir, writeFile, rename, unlink, realpath, stat } from 'node:fs/promises';
 import { join, resolve, sep } from 'node:path';
 import { loadTtsConfig, validateWav } from './local-tts.js';
+import { ReferenceDeletions } from './reference-deletions.js';
 
 export const MAX_REFERENCE_BYTES = 4 * 1024 * 1024;
 const fault = (message, status = 400) => Object.assign(new Error(message), { status });
@@ -81,7 +82,7 @@ export function inspectReference(input) {
 }
 
 export class ReferenceImports {
-  constructor(dataDir, tts, { now = Date.now } = {}) { this.dataDir = dataDir; this.tts = tts; this.now = now; this.pending = new Map(); this.committing = false; }
+  constructor(dataDir, tts, { now = Date.now } = {}) { this.dataDir = dataDir; this.tts = tts; this.now = now; this.pending = new Map(); this.committing = false; this.deletions = new ReferenceDeletions(this); }
   prune() { for (const [id, entry] of this.pending) if (entry.expiresAt <= this.now()) this.pending.delete(id); }
   prepare(wav) {
     this.prune();
