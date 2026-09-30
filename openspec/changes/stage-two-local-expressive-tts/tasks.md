@@ -11,4 +11,4 @@
 - [x] 2.1 实现 reference 登记、loopback 适配、有界串行队列与投递取消，用协议/输入/取消/异常回归测试验证
 - [x] 2.2 接入后端状态、表达选择、播放/口型和停止，用浏览器验证并明确备用与角色相似度状态
 - [x] 2.3 做同句表达、连续请求与取消真实验证，记录未有素材支持的项目，不以 mock 宣称声音验收
-- [ ] 2.4 全套相关测试/build/OpenSpec strict，更新运行指南/handoff，逐项审计 Git 后 commit/push 并核对远程
+- [x] 2.4 全套相关测试/build/OpenSpec strict，更新运行指南/handoff，逐项审计 Git 后 commit/push 并核对远程
