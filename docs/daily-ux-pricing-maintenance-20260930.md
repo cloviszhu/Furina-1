@@ -30,7 +30,11 @@
 
 运行时代码只更新 `server/budget.js` 的 `verifiedAt` 从 10:15:00Z 到 **21:53:53Z**。价格常数、9 元累计上限、128 output token/16000 输入 bytes、10 倍预留、失败留存、无自动 retry 均不变；不重算旧 reserve。24 小时失效机制仍在，截止 **2026-10-01T21:53:53Z**，之后必须重新官方核价。
 
-新增隔离边界测试以旧时间创建 completed/failed 台账，再应用新价格时间，证明 records/reserve/剩余额度/上限原样保留；验证生效前、起点、24 小时前最后 1 ms、恰满 24 小时的有效性和阻断，阻断不添加台账。`npm.cmd test` **108/108** 通过；`npm.cmd run build:review` 通过（现有 >500 kB 警告），审查 HTML/JS/CSS 与现有生产包 hash 一致，无前端行为改动。本机日志及前后审计位于 `artifacts/pricing-maintenance/`；维护前运行时代码归档为 `runtime-before.tar`，无需恢复数据库。部署结果完成后补充。
+新增隔离边界测试以旧时间创建 completed/failed 台账，再应用新价格时间，证明 records/reserve/剩余额度/上限原样保留；验证生效前、起点、24 小时前最后 1 ms、恰满 24 小时的有效性和阻断，阻断不添加台账。`npm.cmd test` **108/108** 通过；`npm.cmd run build:review` 通过（现有 >500 kB 警告），审查 HTML/JS/CSS 与现有生产包 hash 一致，无前端行为改动。本机日志及前后审计位于 `artifacts/pricing-maintenance/`；维护前运行时代码归档为 `runtime-before.tar`，无需恢复数据库。
+
+已提交推送并 app-only 部署维护代码 **`c75bf8006b71bc6e8ca27524235c15517aec6f65`**。最终安静检查无在途模型/测试、活跃 TTS 队列、app 客户端或外部连接；launcher 经 PID/创建时间/绝对脚本/health 身份核验停止旧 app 92240，启动新 app **90048**，health ready。TTS worker **67988** 保留，日志无启动错误。生产 status 已返回 `verifiedAt: 2026-09-30T21:53:53Z` 与 `pricingCurrent: true`；其余价格字段原样。
+
+`before/quiet/after.json` 证明 events 11、memories 1、remote_usage 44 行全行摘要、schema、两份报告、TTS 配置摘要、预算记录/上限/余额、三份服务实际返回静态文件 SHA256 前后完全一致。仍 **44 completed、reserve 4.27920 元、剩余 4.72080 元**。没有替换 dist、恢复/重算台账、读取用户 storage/真实 key、付费调用、操作用户页面或修改声线/来源行为。后续交接文档提交不改变运行时代码。
 
 ## 用户剩余验收（仍需本人明确操作）
 
