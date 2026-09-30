@@ -5,7 +5,7 @@ import { spawn } from 'node:child_process';
 
 test('original Windows PInvoke definitions compile and have native layout without executing credential calls', { skip: process.platform !== 'win32' }, async () => {
   const source = await readFile(new URL('../scripts/windows-credentials.ps1', import.meta.url), 'utf8');
-  const command = source.slice(0, source.indexOf('$inputData =')) + `
+  const command = source.slice(0, source.indexOf('[ExoCredentials]::Run()')) + `
 [Console]::Out.Write([Runtime.InteropServices.Marshal]::SizeOf([type][ExoCredentials+Credential]))
 } catch { [Console]::Out.Write('compile-failed') }
 `;
@@ -39,8 +39,9 @@ test('Windows bridge compiles and exercises managed native-API replacement, neve
 `;
   const imports = /  \[DllImport\("advapi32\.dll"[\s\S]*?static extern void CredFree\(IntPtr buffer\);/;
   assert(imports.test(source)); source = source.replace(imports, shim).replaceAll('Marshal.GetLastWin32Error()', 'fixtureNativeError');
+  source = source.replace('  static object Execute(', '  public static object Execute('); // fixture-only branch access
   assert(!source.includes('DllImport')); // Fail closed before running the fixture process.
-  source = source.slice(0, source.indexOf('$inputData =')) + `
+  source = source.slice(0, source.indexOf('[ExoCredentials]::Run()')) + `
 $rows = @()
 $rows += [ExoCredentials]::Execute('status', '')
 $rows += [ExoCredentials]::Execute('read', '')

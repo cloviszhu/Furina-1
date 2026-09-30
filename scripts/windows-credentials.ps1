@@ -2,14 +2,52 @@
 # Advapi32 only; no enumeration, files, environment keys or plaintext fallback.
 $ErrorActionPreference = 'Stop'
 try {
-Add-Type -TypeDefinition @'
+Add-Type -ReferencedAssemblies 'System.dll', 'System.Core.dll', 'System.Web.Extensions.dll' -TypeDefinition @'
 using System;
 using System.Text;
+using System.IO;
+using System.Collections.Generic;
+using System.Web.Script.Serialization;
 using System.Runtime.InteropServices;
 using System.Threading;
 public static class ExoCredentials {
   const string Target = "ProjectExo/Furina-1/DeepSeek/APIKey/v1";
   const string Owner = "ProjectExo:Furina-1:DeepSeek:v1";
+  // Secrets never enter PowerShell variables, cmdlet arguments or its output
+  // pipeline. This no-argument void entry owns both OS pipe streams end to end.
+  public static void Run() {
+    byte[] bytes = new byte[8193];
+    object result;
+    var serializer = new JavaScriptSerializer { MaxJsonLength=8192, RecursionLimit=4 };
+    try {
+      using (Stream input = Console.OpenStandardInput()) {
+        int size=0, count;
+        while (size<bytes.Length && (count=input.Read(bytes,size,bytes.Length-size))>0) size+=count;
+        if (size>8192) throw new InvalidDataException();
+        var data = serializer.Deserialize<Dictionary<string,object>>(new UTF8Encoding(false,true).GetString(bytes,0,size));
+        if (data==null || !data.ContainsKey("action") || !(data["action"] is string)) throw new InvalidDataException();
+        string action=(string)data["action"];
+        foreach (string field in data.Keys) if (field!="action" && field!="key") throw new InvalidDataException();
+        string key=null;
+        if (data.ContainsKey("key")) {
+          if (action!="save" || !(data["key"] is string)) throw new InvalidDataException();
+          key=(string)data["key"];
+        }
+        if (action=="save" && !Valid(key)) result=new { ok=false, code="INVALID_KEY" };
+        else result=Execute(action,key);
+      }
+    } catch {
+      // Catch inside C#: PowerShell must never create a secret-bearing ErrorRecord.
+      result=new { ok=false, code="UNAVAILABLE" };
+    } finally { Array.Clear(bytes,0,bytes.Length); }
+    byte[] output;
+    try { output=Encoding.UTF8.GetBytes(serializer.Serialize(result)); }
+    catch { output=Encoding.UTF8.GetBytes("{\"ok\":false,\"code\":\"UNAVAILABLE\"}"); }
+    try {
+      using (Stream pipe=Console.OpenStandardOutput()) { pipe.Write(output,0,output.Length); pipe.Flush(); }
+    } catch { /* Broken private pipe: do not surface content to PowerShell. */ }
+    finally { Array.Clear(output,0,output.Length); }
+  }
   [StructLayout(LayoutKind.Sequential, CharSet=CharSet.Unicode)]
   public struct Credential {
     public uint Flags, Type;
@@ -28,7 +66,7 @@ public static class ExoCredentials {
   [DllImport("advapi32.dll", EntryPoint="CredDeleteW", CharSet=CharSet.Unicode, ExactSpelling=true, SetLastError=true)]
   static extern bool Delete(string target, uint type, uint flags);
   [DllImport("advapi32.dll")] static extern void CredFree(IntPtr buffer);
-  public static object Execute(string action, string key) {
+  static object Execute(string action, string key) {
     if (action != "status" && action != "save" && action != "read" && action != "delete") return new { ok=false, code="UNAVAILABLE" };
     using (var mutex = new Mutex(false, @"Local\ProjectExo-Furina1-DeepSeek-v1")) {
       bool locked = false;
@@ -88,9 +126,7 @@ public static class ExoCredentials {
   }
 }
 '@
-$inputData = [Console]::In.ReadToEnd() | ConvertFrom-Json
-$result = [ExoCredentials]::Execute([string]$inputData.action, [string]$inputData.key)
-$result | ConvertTo-Json -Compress
+[ExoCredentials]::Run()
 } catch {
   # Never return exception text or user input.
   [Console]::Out.Write('{"ok":false,"code":"UNAVAILABLE"}')

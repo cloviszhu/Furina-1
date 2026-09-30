@@ -39,3 +39,14 @@ Development verification SHALL 使用假密钥/mock桥接、独立临时 DB 和 
 #### Scenario: Regression verification
 - **WHEN** 执行构建、单元及浏览器验收
 - **THEN** 原有历史、预算、声音 profile 和运行服务保持不变，fake key 不出现在 storage/history/report/API body
+
+### Requirement: Secret-free PowerShell bootstrap
+The credential bridge MUST 只通过 PowerShell 编译静态 C# 并调用无参数 void 入口；秘密解析、Cred API、序列化和私有 OS 管道 I/O SHALL 全部留在 C#，秘密不能经过 PowerShell cmdlet、变量、输出管道或 ErrorRecord。
+
+#### Scenario: Logging enabled in an isolated fixture
+- **WHEN** 使用 Cred API 替身和随机假 sentinel，在本进程启用 transcription 和模块日志进行验证
+- **THEN** 旧 JSON cmdlet 路径作为泄漏对照，修复路径不把 sentinel 送入 PowerShell 日志；不改变持久安全/日志策略，不读取其他进程日志
+
+#### Scenario: Malformed private input
+- **WHEN** stdin JSON 损坏、超限或含非法字段/类型
+- **THEN** C# 内部捕获并仅向私有 OS 管道返回固定安全错误，PowerShell 不接收秘密或异常原文

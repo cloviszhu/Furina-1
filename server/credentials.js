@@ -19,8 +19,9 @@ export function assertOfficialDeepSeek(config) {
   if (config?.provider !== 'deepseek' || url.origin !== 'https://api.deepseek.com' || url.username || url.password || url.search || url.hash || !['/', '/v1', '/v1/'].includes(url.pathname)) throw Object.assign(new Error('已保存密钥仅可用于官方 HTTPS DeepSeek API；未读取凭据。'), { status: 403 });
 }
 
-// Static, checked-in bridge source only in argv. Secret JSON travels through a
-// private stdin pipe; stdout is consumed internally and never logged/returned.
+// Static bootstrap only in argv. C# owns private pipe I/O and JSON; PowerShell
+// sees no secret variables, cmdlet input or pipeline output. NoProfile alone
+// is not a logging guarantee. Stdout is consumed here, never logged/returned.
 export async function nativeBridge(action, key, { spawnImpl = spawn, platform = process.platform } = {}) {
   if (platform !== 'win32') throw credentialError();
   const script = await readFile(new URL('../scripts/windows-credentials.ps1', import.meta.url), 'utf8');

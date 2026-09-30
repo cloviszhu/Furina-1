@@ -14,6 +14,7 @@
 - 剧情时点和风格在首次读取历史前恢复；现有同时间线风格连续、跨时间线隔离不变。不持久化自动朗读开关。
 - checked-in PowerShell/C# PInvoke 调用 Advapi32，固定 target `ProjectExo/Furina-1/DeepSeek/APIKey/v1`、CRED_TYPE_GENERIC、CRED_PERSIST_LOCAL_MACHINE=2。本机同用户后续登录可用，无 Enterprise 漫游。
 - 输入只经私有 stdin 管道；系统响应只在后端消费。错误只保留安全枚举及数字原生错误码。无 secret argv/env/文件、无明文回退。
+- PowerShell 仅编译固定 C# 源码并调用无参数 void Run 入口；C# 内部完成有界 JSON 解析、Cred API、序列化和 Console.OpenStandardInput/OpenStandardOutput 直接 OS 管道 I/O。密钥不经过 PowerShell 变量、cmdlet 参数/管道、输出流或 ErrorRecord；NoProfile 本身不能保证不会被日志记录。
 - 读取前验证 DeepSeek 官方 HTTPS origin 及 /、/v1 路径，包括 loopback 拒绝；保存状态只返回布尔。
 - 不覆盖任何已有凭据；固定 owner 标记不符时拒绝读取和删除。命名 mutex 序列化桥接操作。
 - 敏感入口要求固定路径、同来源、Host、Sec-Fetch-Site、自定义请求头及 JSON。用户点击明确保存/删除按钮；首次真实保存不由开发测试执行。
@@ -21,6 +22,8 @@
 ## Risks / Trade-offs
 
 同 Windows 用户的其他进程可能访问凭据，不宣称绝对隔离。无法使用系统 API 时报告未保存，不切换文件存储。真实库验收须用户首次亲自保存；本阶段只编译桥接结构及 mock 验证。
+
+模块日志及 transcription 可能记录 PowerShell 管道输入/输出，因此私有 stdin/stdout 本身不足以保护原来的 JSON cmdlet 路径。修复只移除秘密穿越 PowerShell 的路径，不关闭任何安全日志，不声称抵御管理员、OS 级管道/内存抓取或未知监控产品。
 
 ## Migration Plan
 
