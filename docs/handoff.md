@@ -48,3 +48,7 @@ origin `https://github.com/cloviszhu/Furina-1.git`，main，继承远程初始�
 用户澄清只研究参考项目思路，不复制/改编其代码、不做 GPL fork，不额外扩充署名文案；依赖必要许可照常。当前栈是用户授权自主选择的首阶段，不是永久锁定平台。
 
 断线时父任务可在云端处理已推代码/规格的独立审查和无资产测试；本机模型与未推文件没有云备份。恢复后检查进程/工作树，防止冲突。不花其他钱、不泄露秘密、不用私人账户对外发邮件/消息、不改安全设置、不管理员安装。
+
+## Verified Git checkpoint
+
+Implementation commit: 68d012a21d9effb209930a92887c2ea8a2c5a04e. Push succeeded and origin refs/heads/main was verified at this hash. All stage-one tasks are complete; the OpenSpec change remains active, unarchived, for successor review. This final documentation checkpoint follows the implementation commit. No new feature work is included.
