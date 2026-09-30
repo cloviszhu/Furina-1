@@ -1,4 +1,6 @@
-[2026-09-30 persistent SQLite memory chain and mock request verification; not deployed](docs/persistent-memory-handoff.md)
+[2026-09-30 persistent memory save app-only deployed: app PID69452, TTS PID67988 retained; shortest real validation steps](docs/persistent-memory-deployment-2026-09-30.md)
+
+[2026-09-30 persistent SQLite memory chain and mock request verification](docs/persistent-memory-handoff.md)
 
 [2026-09-30 multi-turn contract app-only deployed: app PID78928, TTS PID67988 retained; real model validation pending](docs/multi-turn-deployment-2026-09-30.md)
 
