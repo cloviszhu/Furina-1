@@ -81,7 +81,7 @@ export class LocalTts {
     return (this.config?.profiles || []).map(profile => ({ id: profile.id, name: profile.label, engine: 'gpt-sovits', localService: true, language: 'zh', emotions: Object.keys(profile.references), source: profile.source, license: profile.license }));
   }
   async status() {
-    if (!this.config) return { ready: false, error: '成熟 TTS 未登记；系统声音仍是临时备用。', voices: [] };
+    if (!this.config) return { ready: false, error: '成熟 TTS 未登记；请按 docs/local-tts.md 登记许可参考并重启项目。系统声音仍是临时备用。', voices: [] };
     if (this.quarantined) return { ready: false, error: 'TTS 超时后已隔离；请重启本地 TTS 和项目服务。', voices: [] };
     // The upstream async route performs synchronous model work, so its health
     // probe can be blocked while synthesizing. An owned active slot is busy.
@@ -92,7 +92,7 @@ export class LocalTts {
       const schema = await response.json();
       if (!schema.paths?.['/tts']?.post) throw new Error();
       return { ready: this.voices().length > 0, error: this.voices().length ? null : '尚无许可明确的参考录音。', voices: this.voices(), active: this.active, pending: this.queue.length, cancel: '停止播放与投递；上游计算完成后释放队列', stream: false };
-    } catch { return { ready: false, error: '本地 GPT-SoVITS 未运行。', voices: [] }; }
+    } catch { return { ready: false, error: '本地 GPT-SoVITS 未运行或不可达；请运行 .runtime/tts-venv/Scripts/python.exe scripts/run-local-tts.py，再刷新声音。', voices: [] }; }
   }
   synthesize({ text, referenceId, emotion = 'neutral', speed = 1, signal }) {
     if (!this.config || this.quarantined) return Promise.reject(fault('本地 TTS 未配置或已隔离。', 503));

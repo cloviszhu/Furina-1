@@ -18,8 +18,8 @@
           <div id="messages" class="messages" role="log" aria-live="polite"></div>
           <div class="quick-prompts"><button data-prompt="你好，芙宁娜。">打个招呼</button><button data-prompt="你还记得我们的共同经历吗？">聊聊回忆</button><button data-prompt="我今天有点累。">说说今天</button></div>
           <form id="chat-form"><label class="sr-only" for="chat-input">对芙宁娜说的话</label><textarea id="chat-input" placeholder="告诉她，你今天的故事…" maxlength="1500" rows="2"></textarea><div class="composer-footer"><label><input id="auto-speak" type="checkbox" checked> 朗读回复</label><button id="send" type="submit" class="primary">开场 →</button></div></form>
-          <p id="app-error" class="error" role="alert"></p>
         </section>
+        <p id="app-error" class="error app-error" role="alert"></p>
         <section id="memory-panel" class="panel">
           <div class="conversation-heading"><span class="eyebrow">OUR SHARED MOMENTS</span><h2>值得留下的片段。</h2><p>由你确认后保存，重启后仍可回忆。修改或删除会清空聊天上下文，避免旧说法被再次引用。</p></div>
           <form id="memory-form"><label for="memory-text">保存一段共同经历</label><textarea id="memory-text" rows="3" maxlength="2000" placeholder="例如：今天我们一起讨论了歌剧，约定下次试试布丁。"></textarea><div class="composer-footer"><span id="memory-source">来源：你的手动记录</span><button class="primary" type="submit">记住这一刻</button></div></form>
@@ -28,12 +28,12 @@
         </section>
       </aside>
     </main>
-    <footer class="app-footer"><span>本机保存共同经历 · 模型与声音可替换</span><span>第二阶段 · 本地 TTS / 表达参考 / 对话演示</span></footer>
+    <footer class="app-footer"><span>本机保存共同经历 · 模型与声音可替换</span><span>第三阶段 · 本地 TTS / 表达参考 / 对话演示</span></footer>
   </div>
   <dialog id="settings"><form method="dialog" class="dialog-heading"><div><span class="eyebrow">THE BACKSTAGE</span><h2>幕后设置</h2></div><button aria-label="关闭设置" class="close-button">×</button></form>
-    <div class="settings-body"><section><h3>模型与对话</h3><p>模型与密钥默认空。密钥只在此页面内存中使用，刷新即清除；不保存、不日志、不读取文件或其他应用。</p><label for="provider">提供商</label><select id="provider"></select><label for="model-name">模型名称</label><input id="model-name" autocomplete="off" placeholder="由你填写官方模型名"><label for="base-url">API 基地址</label><input id="base-url" type="url" autocomplete="off"><label for="api-key">API key · 由你本人输入</label><input id="api-key" type="password" autocomplete="off" spellcheck="false" placeholder="空 · 不自动读取任何凭证"><button id="clear-key" class="quiet">清除页面密钥</button><p id="provider-status">协议替身测试不等于真实服务验证。</p>
+    <div class="settings-body"><section><h3>角色与对话</h3><label for="character-timeline">剧情时点（含枫丹剧情）</label><select id="character-timeline"><option value="aftermath">主线落幕后 · 私人日常</option><option value="performer">重返舞台 · 传说任务后</option></select><label for="character-style">语言风格</label><select id="character-style"><option value="natural">自然交谈</option><option value="theatrical">舞台感</option><option value="quiet">安静陪伴</option></select><p id="character-details">官方背景、你确认的经历与主观感受分开；不会自动把回复存成事实。切换时隔离旧聊天，共同经历保留。配置刷新后恢复默认。</p><p>模型与密钥默认空。密钥只在此页面内存中使用，刷新即清除；不保存、不日志、不读取文件或其他应用。</p><label for="provider">提供商</label><select id="provider"></select><label for="model-name">模型名称</label><input id="model-name" autocomplete="off" placeholder="由你填写官方模型名"><label for="base-url">API 基地址</label><input id="base-url" type="url" autocomplete="off"><label for="api-key">API key · 由你本人输入</label><input id="api-key" type="password" autocomplete="off" spellcheck="false" placeholder="空 · 不自动读取任何凭证"><button id="clear-key" class="quiet">清除页面密钥</button><p id="provider-status">协议替身测试不等于真实服务验证。</p>
     <div class="budget-card"><strong>一次短测试</strong><p id="budget-state">本轮人民币 9 元上限；最多 3 次，128 输出 token/次。正常聊天不会自动调用远程 API。</p><button id="remote-test">用当前输入执行一次 DeepSeek 测试</button><small>用户醒来并亲自输入密钥后再使用。不自动重试、不充值，其他远程服务当前禁用。</small></div></section>
-    <section><h3>声音与表达</h3><p>本地 TTS 使用登记录音的声线与表达，芙宁娜相似度尚待获授权素材验收。系统声音是临时备用。</p><label for="voice-select">本机可用声音</label><select id="voice-select"></select><label for="voice-emotion">表达</label><select id="voice-emotion"><option value="neutral">参考原表达</option></select><label for="voice-speed">语速</label><input id="voice-speed" type="number" min="0.7" max="1.3" step="0.1" value="1"><div class="setting-actions"><button id="voice-test">试听一句</button><button id="refresh-voices">刷新声音</button></div><p id="voice-details"></p></section></div>
+    <section><h3>声音与表达</h3><p>本地 TTS 使用登记录音的声线与表达；当前 RAVDESS 不是芙宁娜声线，角色相似度与人工听感未验证。系统声音是临时备用。</p><label for="voice-select">本机可用声音</label><select id="voice-select"></select><label for="expression-mode">回复表达</label><select id="expression-mode"><option value="manual">手动选择参考表达</option><option value="reply">随回复的表达字段</option></select><label for="voice-emotion">表达</label><select id="voice-emotion"><option value="neutral">参考原表达</option></select><label for="voice-speed">语速</label><input id="voice-speed" type="number" min="0.7" max="1.3" step="0.1" value="1"><div class="setting-actions"><button id="voice-test">试听一句</button><button id="refresh-voices">刷新声音</button></div><p id="voice-details"></p><p id="expression-state" role="status">表达为参考表演控制，不等于真实情绪理解。</p></section></div>
   </dialog>
   <script type="module" src="/src/main.js"></script>
 </body></html>

@@ -1,3 +1,47 @@
+# Project Exo · 第三阶段交接（最新）
+
+2026-09-30 第三阶段已稳定收口，停止继续加功能，供新会话接续。用户总授权截止 14:30 UTC / 多伦多 10:30；此交接不自动延长时限。前两阶段均已停止。远程 `https://github.com/cloviszhu/Furina-1.git`，main；不强推。
+
+## 本阶段结果
+
+- 独立 QA `1d757191ebfad1a77cd9faabcad38ea538c9299c` 已 cherry-pick 为 `fad06848e9664153bb88bbeefa22b7a994975420` 并 push/ls-remote 核对，保留 TTS。修复记忆改删期间旧回复回流、demo 冲突前提误肯定与 stale sourceId。
+- 第三阶段增加同源多标签页改删通知、有限角色时点/风格与历史隔离、结构化正文/表达契约、手动/随回复表达、PMX 基础表情、语音设置切换取消与明确备用/恢复提示。非角色素材和规则演示始终明示。
+- 最终 **41/41 unit、10/10 Edge browser、build、三个 OpenSpec strict** 通过，0 fail/skip。真实 PMX、GPT-SoVITS 与 Windows SAPI 已验证；真实 LLM 仍为 0 调用。
+- 详情 [第三阶段验证](stage-three-validation.md)、[角色契约与资料边界](character-contract.md)、[已修 review](stage-one-review-pending.md)。阶段三 OpenSpec `stage-three-journey-quality`；前两阶段未归档，不将格式校验当产品验收。
+
+## 服务与启动
+
+应用 http://127.0.0.1:3000，当前本轮工具 session **8894** / Node PID **79524**。TTS http://127.0.0.1:9880，实际重启后 session **44493** / Python PID **64468**，CUDA FP16 v2ProPlus。最后检查 ready=true、active=false、pending=0，两模型 available=true，budget usedCalls=0/reservedCny=0。
+
+新会话的工具 session 可能不可访问，先实际检查 status 与 `netstat -ano`，再检查 PID/路径；不要凭旧数字重复启动或泛杀。若停止，先核实项目自有进程。沙箱 COM/进程操作被限制时所用工具执行范围放开不是 Windows 管理员提权，没有改安全设置。
+
+```powershell
+npm.cmd run build
+npm.cmd start
+# 仅当 9880 未有本项目服务时：
+.runtime/tts-venv/Scripts/python.exe scripts/run-local-tts.py
+```
+
+已有隔离环境和官方权重，不需 npm 重装/再次下载大模型。现有 RTX4060 Laptop 8188MiB VRAM、16GB RAM；不追加大权重。setup verify 为只读验证，不重复部署。
+
+## 本地证据
+
+`artifacts/stage-three/`：两形态 idle/greet、五种 expression、happy/sad/angry portrait、settings/mobile、visual-evidence.json、真实停机 tts-unavailable.png/json、service-recovery.json 与两条 restart WAV。代表截图：`ousia-greet.png`、`portrait-sad.png`、`settings.png`。全为本地忽略文件，不上传用户角色图像或音频。
+
+实际 TTS 停机后 502/启动命令明确；恢复后两个同时请求观察单 active/一等待，neutral 8.30s、happy 排队总完成9.55s（增量1.25s），完整 PCM16。前阶段六情绪/资源基线仍见 `artifacts/tts/`；没有重做训练或人工质量验收。
+
+## 下一会话重点与限制
+
+1. **保持能力边界**：当前规则演示不是真实推理；JSON/provider 测试只证明协议。两个固定剧情时点、三风格已经可选，角色摘要是项目解释，官方视频/动态页未完整提取。真实模型的角色一致性、自然中文、情绪选择与持续成长仍需评估，不要称 mock 已完成人格。
+2. **声音**：RAVDESS Actor24 CC BY-NC-SA4.0 非商业参考，不是芙宁娜声线。人工听感/自然度/相似度/身份稳定性未验证。先由用户试听基线并提供或确认合法角色参考，再讨论训练；不下载来源不明音频/权重，不再装大权重。非流式、无 GPU 硬取消，无物理/精确音素口型。
+3. **费用**：用户本人最后输入 key 前不读 secret/`.env`、不调用真实收费模型。仅未来 DeepSeek RMB9，最多3次/128输出token/次，输入16KB、10倍预留、无重试、失败和重启不释放预留。官方价格10:15UTC核对 Flash2/8、Pro9/27 元每百万token；24小时后 fail closed，实际测试前复核。其他远程服务仍禁用。
+4. **数据库**：新增 events.context_key，旧数据默认 aftermath:natural；配置刷新恢复默认，按配置显示历史。纠改/删除清空全部短期会话并保护其他确认记忆。同源 BroadcastChannel 不覆盖其他浏览器/外部脚本直接改 DB。不要手动重置 data/exo.sqlite 或预算。
+5. **测试**：`npm.cmd test`、`npm.cmd run test:browser` 需要既有 app/TTS/资产；缺语音时相关测试会 skip，不算通过。新增 journey 使用临时 SQLite，原生产 stage 测试创建/删除验收条目会按产品语义清空短期聊天。截图 `node scripts/capture-stage-three.mjs`，真实队列 `node scripts/check-real-tts-queue.mjs`。
+
+所有模型/贴图/参考/生成音频/权重/运行数据/密钥留本地不 Git。未访问桌面秘密、未训练、未充值、未复制 D_sakiko、未新接受协议、未发信或改仓库可见性。下一步应开新会话，不继续无限长上下文。
+
+## 附：第二阶段原交接记录
+
 # Project Exo · 第二阶段交接
 
 2026-09-30 09:45 UTC 附近安全交接点；父任务要求结束当前执行轮次并接力，用户项目总授权窗口仍到 14:30 UTC。

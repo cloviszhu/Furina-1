@@ -1,8 +1,10 @@
 # Project Exo · 数字芙宁娜
 
-第二阶段可运行：真实 PMX、待机/眨眼/招呼/点头、本地 GPT-SoVITS v2ProPlus、六种表达参考、真实音频振幅口型、聊天与持久共同经历。
+第三阶段可运行：真实 PMX、待机/眨眼/招呼/点头与基础表情、本地 GPT-SoVITS v2ProPlus、六种表达参考、真实音频振幅口型、聊天与持久共同经历；已修复记忆纠改竞态，提供角色时点/风格及回复表达契约。
 
 **默认对话是有限规则演示，不是真实 LLM。成熟 TTS 已跑通，但当前为 RAVDESS 非商业测试女声，未验收芙宁娜相似度或人工情绪自然度。系统声只是临时备用。** 见 [本地 TTS 安装与许可](docs/local-tts.md)。
+
+设置中可选剧情时点、语言风格，以及手动或随回复字段的表达。切换声音/表达/语速会停止旧音频；TTS 不可用时需显式选择系统备用声。见 [角色与表达边界](docs/character-contract.md) 和 [第三阶段验证](docs/stage-three-validation.md)。
 
 ## 本机启动
 
@@ -37,7 +39,7 @@ mmd/
 
 ## 使用与验证
 
-点击招呼/点头，在设置中选择本地 TTS、表达并试听/停止，也可显式选择系统备用声。聊天后点击“保存为共同经历”，或手动记录。纠正/删除会清空已有聊天上下文，其他明确保存的记忆保留；生成中的旧回复仍有竞态待修，另有 demo 冲突前提误肯定和 pending 来源问题，见 [独立 review 待修](docs/stage-one-review-pending.md)。
+点击招呼/点头，在设置中选择本地 TTS、表达并试听/停止，也可显式选择系统备用声。聊天后点击“保存为共同经历”，或手动记录。纠正/删除清空上下文并抑制迟到回复，其他确认记忆保留；同源其他页面也会停止旧内容。来源失效可改为手动记录。见 [独立 QA 修复状态](docs/stage-one-review-pending.md)。
 
 ```powershell
 npm.cmd test
@@ -54,4 +56,4 @@ npm.cmd run test:browser
 
 共同经历和无密钥预算记录在忽略目录 `data/exo.sqlite`。临时语音文本/WAV 随后清理。素材、声音数据、权重、凭证、运行数据均不提交。
 
-OpenSpec 变更：`stage-one-interactive-furina`、`stage-two-local-expressive-tts`。见 [第一阶段验收](docs/stage-one-validation.md)、[第二阶段实测](docs/stage-two-validation.md)、[交接](docs/handoff.md)。
+OpenSpec 变更：`stage-one-interactive-furina`、`stage-two-local-expressive-tts`、`stage-three-journey-quality`。见 [第一阶段验收](docs/stage-one-validation.md)、[第二阶段实测](docs/stage-two-validation.md)、[第三阶段验收](docs/stage-three-validation.md)、[交接](docs/handoff.md)。

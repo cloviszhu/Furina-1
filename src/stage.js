@@ -5,7 +5,7 @@ import { MMDAnimationHelper } from 'three/addons/animation/MMDAnimationHelper.js
 
 export class CharacterStage {
   constructor(element, onState) {
-    this.element = element; this.onState = onState; this.mouth = 0; this.action = null;
+    this.element = element; this.onState = onState; this.mouth = 0; this.action = null; this.expression = 'neutral';
     this.scene = new THREE.Scene();
     this.camera = new THREE.PerspectiveCamera(30, 1, 0.1, 1000);
     this.renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true, powerPreference: 'high-performance' });
@@ -65,6 +65,7 @@ export class CharacterStage {
     bone.quaternion.multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(x, y, z)));
   }
   trigger(action) { this.action = { name: action, start: performance.now() }; }
+  setExpression(value) { this.expression = ['neutral', 'calm', 'happy', 'sad', 'angry', 'surprised'].includes(value) ? value : 'neutral'; }
   morph(names, value) { for (const name of names) { const index = this.mesh?.morphTargetDictionary?.[name]; if (index !== undefined) this.mesh.morphTargetInfluences[index] = value; } }
   tick() {
     const t = (performance.now() - this.start) / 1000;
@@ -79,6 +80,10 @@ export class CharacterStage {
       this.morph(['あ'], this.mouth * .65);
       this.morph(['い'], this.mouth * .12);
       this.morph(['う'], this.mouth * .1);
+      this.morph(['にこり'], this.expression === 'happy' ? .35 : this.expression === 'calm' ? .12 : 0);
+      this.morph(['悲しむ', '困る'], this.expression === 'sad' ? .25 : 0);
+      this.morph(['怒り目', '怒り'], this.expression === 'angry' ? .28 : 0);
+      this.morph(['びっくり'], this.expression === 'surprised' ? .3 : 0);
       if (this.action) {
         const elapsed = (performance.now() - this.action.start) / 1000;
         const envelope = Math.min(1, elapsed * 3) * Math.max(0, Math.min(1, (2.5 - elapsed) * 3));

@@ -1,11 +1,12 @@
 export class SpeechController {
-  constructor({ onState, onMouth }) {
+  constructor({ onState, onMouth, onExpression = () => {} }) {
     this.onState = onState; this.onMouth = onMouth; this.sequence = 0; this.voices = [];
+    this.onExpression = onExpression;
     globalThis.speechSynthesis?.addEventListener('voiceschanged', () => this.onVoicesChanged?.());
   }
   async listVoices() {
     let windows = [];
-    try { const response = await fetch('/api/voices'); const result = await response.json(); this.localStatus = result.localTts; windows = result.voices.map(v => ({ ...v, value: `${v.engine === 'gpt-sovits' ? 'neural' : 'windows'}:${v.id}`, label: `${v.name} · ${v.engine === 'gpt-sovits' ? '本地 TTS' : 'Windows 临时备用'}` })); } catch { /* Browser fallback remains available. */ }
+    try { const response = await fetch('/api/voices'); if (!response.ok) throw new Error(); const result = await response.json(); this.localStatus = result.localTts; windows = result.voices.map(v => ({ ...v, value: `${v.engine === 'gpt-sovits' ? 'neural' : 'windows'}:${v.id}`, label: `${v.name} · ${v.engine === 'gpt-sovits' ? '本地 TTS' : 'Windows 临时备用'}` })); } catch { this.localStatus = { error: '项目声音服务无法连接；请运行 npm.cmd start 后刷新声音。' }; }
     const browser = (globalThis.speechSynthesis?.getVoices() || []).map((v, index) => ({
       value: `browser:${index}`, name: v.name, label: `${v.name} · ${v.localService ? '浏览器本机' : '网络声音（禁用）'}`,
       language: v.lang, localService: v.localService, engine: 'browser', voice: v,
@@ -19,7 +20,7 @@ export class SpeechController {
     this.source = null;
     globalThis.speechSynthesis?.cancel();
     if (this.frame) cancelAnimationFrame(this.frame);
-    this.frame = null; this.onMouth(0); this.onState('已停止 · 生成中的旧音频不会播放');
+    this.frame = null; this.onMouth(0); this.onExpression('neutral'); this.onState('已停止 · 生成中的旧音频不会播放');
   }
   async speak(text, value, { emotion = 'neutral', speed = 1 } = {}) {
     this.stop(); const sequence = this.sequence;
@@ -28,6 +29,7 @@ export class SpeechController {
     const neural = voice.engine === 'gpt-sovits';
     if (neural && text.length > 300) { this.onState('本地 TTS 每次最多 300 字，请缩短朗读内容。'); return; }
     if (neural && !voice.emotions.includes(emotion)) { this.onState('这份声音尚未登记所选表达。'); return; }
+    this.onExpression(neural ? emotion : 'neutral');
     this.onState(neural ? '本地 TTS 正在生成…' : '正在准备系统备用语音…');
     try {
       if (voice.engine === 'windows-sapi' || neural) {
@@ -43,7 +45,7 @@ export class SpeechController {
         const analyser = this.context.createAnalyser(); analyser.fftSize = 256;
         source.connect(analyser); analyser.connect(this.context.destination);
         this.source = source;
-        source.onended = () => { if (sequence !== this.sequence) return; cancelAnimationFrame(this.frame); this.onMouth(0); this.onState(neural ? '语音结束 · 本地测试声线 / 角色相似度待验收' : '语音结束 · 本机系统备用声'); this.source = null; };
+        source.onended = () => { if (sequence !== this.sequence) return; cancelAnimationFrame(this.frame); this.onMouth(0); this.onExpression('neutral'); this.onState(neural ? '语音结束 · 本地测试声线 / 角色相似度待验收' : '语音结束 · 本机系统备用声'); this.source = null; };
         const bytes = new Uint8Array(analyser.fftSize);
         const animate = () => {
           if (sequence !== this.sequence) return;
@@ -69,7 +71,7 @@ export class SpeechController {
       }
     } catch (error) {
       if (sequence !== this.sequence) return;
-      this.onMouth(0); this.onState(error.name === 'AbortError' ? '语音已取消' : `${error.message || '语音失败'} · 请在设置中切换声音`);
+      this.onMouth(0); this.onExpression('neutral'); this.onState(error.name === 'AbortError' ? '语音已取消' : `${error.message || '语音失败'} · 请启动本地 TTS 后刷新，或在设置中显式选择系统备用声`);
     }
   }
 }

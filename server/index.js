@@ -9,6 +9,7 @@ import { RemoteBudget } from './budget.js';
 import { WindowsSpeech } from './speech.js';
 import { SPEECH_BACKENDS, validateSpeechOptions } from './tts-contract.js';
 import { LocalTts, loadTtsConfig } from './local-tts.js';
+import { CHARACTER_OPTIONS, characterConfig } from './persona.js';
 
 const PROJECT = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.bmp': 'image/bmp', '.pmx': 'application/octet-stream', '.svg': 'image/svg+xml' };
@@ -59,9 +60,12 @@ export async function createApp({ projectRoot = PROJECT, dataDir = join(PROJECT,
       if (req.headers['sec-fetch-site'] === 'cross-site') return json(res, 403, { error: '跨站请求被拒绝。' });
       const url = new URL(req.url, `http://${host}`);
       const pathname = decodeURIComponent(url.pathname);
-      if (pathname === '/api/status' && req.method === 'GET') return json(res, 200, { mode: 'offline', providers: PROVIDERS, speechBackends: SPEECH_BACKENDS, localTts: ttsConfigError ? { ready: false, error: ttsConfigError, voices: [] } : await localTts.status(),
+      if (pathname === '/api/status' && req.method === 'GET') return json(res, 200, { mode: 'offline', providers: PROVIDERS, characterOptions: CHARACTER_OPTIONS, speechBackends: SPEECH_BACKENDS, localTts: ttsConfigError ? { ready: false, error: ttsConfigError, voices: [] } : await localTts.status(),
         models: modelNames.map(name => ({ name, available: existsSync(join(assetRoot, name)), url: `/character-assets/${encodeURIComponent(name)}` })), budget: budget.status() });
-      if (pathname === '/api/history' && req.method === 'GET') return json(res, 200, store.history());
+      if (pathname === '/api/history' && req.method === 'GET') {
+        const character = characterConfig({ timeline: url.searchParams.get('timeline') ?? undefined, style: url.searchParams.get('style') ?? undefined });
+        return json(res, 200, store.history(16, character.contextKey));
+      }
       if (pathname === '/api/memories') {
         if (req.method === 'GET') return json(res, 200, store.list());
         if (req.method === 'POST') { const input = await body(req); return json(res, 201, store.save(input.text, input.sourceId)); }
@@ -73,16 +77,20 @@ export async function createApp({ projectRoot = PROJECT, dataDir = join(PROJECT,
       }
       if (pathname === '/api/chat' && req.method === 'POST') {
         const input = await body(req), text = validText(input.text, 1500);
+        const character = characterConfig(input.character);
         const memories = store.recall(text);
         const contextGeneration = store.contextGeneration;
-        const messages = messagesFor(text, memories, store.history());
+        const messages = messagesFor(text, memories, store.history(16, character.contextKey), character);
         const config = input.config || { provider: 'offline' };
-        let result = { text: offlineReply(text, memories) }, provider = 'offline', error = null;
+        if (typeof config !== 'object' || Array.isArray(config) || ['provider', 'model', 'baseUrl', 'apiKey'].some(k => config[k] !== undefined && (typeof config[k] !== 'string' || config[k].length > (k === 'apiKey' ? 4096 : 500)))) throw Object.assign(new Error('模型配置字段无效或过长。'), { status: 400 });
+        if (config.apiKey && text.includes(config.apiKey)) throw Object.assign(new Error('聊天正文不能包含当前密钥。'), { status: 400 });
+        let result = { text: offlineReply(text, memories, character), emotion: 'neutral', expressionSource: 'limited-rule' }, provider = 'offline', error = null;
         let reservation;
         if (config.provider && config.provider !== 'offline') {
           const definition = PROVIDERS.find(p => p.id === config.provider);
           if (!definition) throw Object.assign(new Error('未知模型提供商。'), { status: 400 });
-          const endpoint = new URL(config.baseUrl || definition.baseUrl);
+          let endpoint;
+          try { endpoint = new URL(config.baseUrl || definition.baseUrl); } catch { throw Object.assign(new Error('模型端点无效，请填写 HTTP 基地址。'), { status: 400 }); }
           if (endpoint.username || endpoint.password || endpoint.search || endpoint.hash) throw Object.assign(new Error('端点格式被拒绝。'), { status: 400 });
           const local = LOOPBACK.has(endpoint.hostname);
           if (local) {
@@ -106,9 +114,9 @@ export async function createApp({ projectRoot = PROJECT, dataDir = join(PROJECT,
         if (contextGeneration !== store.contextGeneration) return json(res, 409, {
           code: 'CONTEXT_CHANGED', error: '记忆已修改或删除，本次回复已取消。请重新发送。',
         });
-        const user = store.event('user', text, { provider });
-        const assistant = store.event('assistant', result.text, { turnId: user.turnId, provider });
-        return json(res, 200, { user, assistant, provider, error, recalled: memories.map(m => ({ id: m.id, text: m.text })), usage: result.usage || null, budget: budget.status() });
+        const user = store.event('user', text, { provider, contextKey: character.contextKey });
+        const assistant = store.event('assistant', result.text, { turnId: user.turnId, provider, contextKey: character.contextKey });
+        return json(res, 200, { user, assistant, provider, error, character, emotion: result.emotion, expressionSource: result.expressionSource, recalled: memories.map(m => ({ id: m.id, text: m.text })), usage: result.usage || null, budget: budget.status() });
       }
       if (pathname === '/api/voices' && req.method === 'GET') {
         const neural = ttsConfigError ? { ready: false, error: ttsConfigError, voices: [] } : await localTts.status();

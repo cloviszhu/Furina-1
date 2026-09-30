@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 
 // Official CNY peak/cache-miss prices verified 2026-09-30. No discount assumptions.
 export const PRICING = {
-  verifiedAt: '2026-09-30T07:35:00Z',
+  verifiedAt: '2026-09-30T10:15:00Z',
   source: 'https://api-docs.deepseek.com/zh-cn/quick_start/pricing/',
   models: { 'deepseek-flash': { input: 2, output: 8 }, 'deepseek-v4-pro': { input: 9, output: 27 } },
 };

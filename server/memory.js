@@ -33,19 +33,20 @@ export class MemoryStore {
         prompt_tokens INTEGER, completion_tokens INTEGER, estimated_cny REAL,
         status TEXT NOT NULL, created_at TEXT NOT NULL
       );`);
+    if (!this.db.prepare('PRAGMA table_info(events)').all().some(c => c.name === 'context_key')) this.db.exec("ALTER TABLE events ADD COLUMN context_key TEXT NOT NULL DEFAULT 'aftermath:natural'");
   }
 
-  event(role, text, { turnId = randomUUID(), kind = 'conversation', provider = 'offline' } = {}) {
+  event(role, text, { turnId = randomUUID(), kind = 'conversation', provider = 'offline', contextKey = 'aftermath:natural' } = {}) {
     const event = { id: randomUUID(), turnId, role, text: validText(text, 6000), kind, provider, createdAt: new Date().toISOString() };
-    this.db.prepare('INSERT INTO events VALUES (?, ?, ?, ?, ?, ?, ?)').run(
-      event.id, turnId, role, event.text, kind, provider, event.createdAt,
+    this.db.prepare('INSERT INTO events (id,turn_id,role,text,kind,provider,created_at,context_key) VALUES (?, ?, ?, ?, ?, ?, ?, ?)').run(
+      event.id, turnId, role, event.text, kind, provider, event.createdAt, contextKey,
     );
     return event;
   }
 
-  history(limit = 16) {
+  history(limit = 16, contextKey = null) {
     return this.db.prepare(`SELECT id, turn_id AS turnId, role, text, provider, created_at AS createdAt
-      FROM events WHERE kind='conversation' ORDER BY rowid DESC LIMIT ?`).all(limit).reverse();
+      FROM events WHERE kind='conversation' AND (? IS NULL OR context_key=?) ORDER BY rowid DESC LIMIT ?`).all(contextKey, contextKey, limit).reverse();
   }
 
   list() {

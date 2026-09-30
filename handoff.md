@@ -1,3 +1,3 @@
-# 第一阶段交接
+# 第三阶段交接
 
-完整检查点见 [docs/handoff.md](docs/handoff.md)。下一阶段优先角色声线与情绪 TTS，真实 API 凭证留待用户本人操作。
+最新服务、Git、截图和下一步见 [docs/handoff.md](docs/handoff.md)。已集成独立 QA，41 单元/10 浏览器通过；真实模型及角色声线/人工听感未验收，凭证仍留待用户本人操作。
