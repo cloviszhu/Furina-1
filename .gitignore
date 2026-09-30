@@ -33,3 +33,5 @@ coverage/
 playwright-report/
 test-results/
 *.log
+# Isolated local TTS runtimes and downloaded third-party dependencies.
+/.runtime/

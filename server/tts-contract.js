@@ -1,5 +1,6 @@
 // Capabilities must describe implemented behavior, not desired future features.
 export const SPEECH_BACKENDS = [
+  { id: 'gpt-sovits', label: 'GPT-SoVITS · 本地参考声线（非角色验收）', reference: true, emotion: true, emotionMode: 'reference-profile', stream: false, cancel: true, hardCancel: false, pcm: true },
   { id: 'windows-sapi', label: 'Windows 本机系统声 · 测试备用', reference: false, emotion: false, stream: false, cancel: true, pcm: true },
   { id: 'browser', label: '浏览器本机系统声 · 测试备用', reference: false, emotion: false, stream: false, cancel: true, pcm: false },
 ];

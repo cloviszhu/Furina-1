@@ -10,6 +10,7 @@ catch { $('model-state').textContent = '三维渲染不可用，请检查浏览�
 const speech = new SpeechController({ onState: text => { $('speech-state').textContent = text; }, onMouth: value => { if (stage) stage.mouth = value; } });
 let status, memorySourceId, providers = [], busy = false;
 const config = () => ({ provider: $('provider').value, model: $('model-name').value.trim(), baseUrl: $('base-url').value.trim(), apiKey: $('api-key').value });
+const speechOptions = () => ({ emotion: $('voice-emotion').value, speed: Number($('voice-speed').value) });
 const fail = error => { $('app-error').textContent = error.message || String(error); };
 
 async function api(path, options = {}) {
@@ -60,7 +61,7 @@ async function send(text, remoteTest = false) {
     if (result.error) fail(result.error);
     updateBudget(result.budget);
     stage?.trigger(result.recalled.length ? 'nod' : 'greet');
-    if ($('auto-speak').checked) await speech.speak(result.assistant.text, $('voice-select').value);
+    if ($('auto-speak').checked) await speech.speak(result.assistant.text, $('voice-select').value, speechOptions());
     showTab('chat');
   } catch (error) { fail(error); }
   finally { busy = false; $('send').disabled = false; $('remote-test').disabled = false; }
@@ -87,12 +88,24 @@ async function voices() {
   const previous = $('voice-select').value;
   const list = await speech.listVoices(); $('voice-select').replaceChildren();
   for (const voice of list) { const option = element('option', '', voice.label); option.value = voice.value; option.disabled = !voice.localService; $('voice-select').append(option); }
-  const preferred = list.find(v => v.value === previous && v.localService) || list.find(v => v.engine === 'windows-sapi' && v.language === '804') || list.find(v => v.engine === 'browser' && v.localService && /zh/i.test(v.language)) || list.find(v => v.localService);
+  const preferred = list.find(v => v.value === previous && v.localService) || list.find(v => v.engine === 'gpt-sovits') || list.find(v => v.engine === 'windows-sapi' && v.language === '804') || list.find(v => v.engine === 'browser' && v.localService && /zh/i.test(v.language)) || list.find(v => v.localService);
   if (preferred) $('voice-select').value = preferred.value;
   else { $('voice-select').append(element('option', '', '未发现本机声音')); }
-  $('voice-details').textContent = preferred ? '只启用已标记为本机的声音。网络声音禁用，避免未经确认上传对话。' : '没有找到可用本机声音；角色和记忆仍可测试。';
+  voiceDetails();
 }
-$('voice-test').onclick = () => void speech.speak('你终于来了。下一幕，就由我们一起写吧。', $('voice-select').value);
+function voiceDetails() {
+  const voice = speech.voices.find(v => v.value === $('voice-select').value);
+  const labels = { neutral: '参考原表达', happy: '开心', sad: '难过', angry: '生气', calm: '平静', surprised: '惊讶' };
+  $('voice-emotion').replaceChildren();
+  for (const emotion of voice?.emotions || ['neutral']) { const option = element('option', '', labels[emotion]); option.value = emotion; $('voice-emotion').append(option); }
+  $('voice-emotion').disabled = voice?.engine !== 'gpt-sovits';
+  $('voice-speed').disabled = voice?.engine !== 'gpt-sovits';
+  $('voice-details').textContent = voice?.engine === 'gpt-sovits'
+    ? `本地测试参考：${voice.source} · ${voice.license}。角色相似度待验收；表达来自登记录音。`
+    : `${speech.localStatus?.error || '成熟 TTS 可在声音列表选择。'} 当前为系统临时备用声。`;
+}
+$('voice-select').onchange = () => { speech.stop(); voiceDetails(); };
+$('voice-test').onclick = () => void speech.speak('你终于来了。下一幕，就由我们一起写吧。', $('voice-select').value, speechOptions());
 $('refresh-voices').onclick = () => void voices();
 speech.onVoicesChanged = () => { void voices(); };
 

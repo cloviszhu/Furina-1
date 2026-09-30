@@ -1,8 +1,8 @@
 # Project Exo · 数字芙宁娜
 
-第一阶段可运行：真实 PMX 模型、待机/眨眼/招呼/点头、中文系统 WAV、振幅口型、聊天与可纠正的持久共同经历。
+第二阶段可运行：真实 PMX、待机/眨眼/招呼/点头、本地 GPT-SoVITS v2ProPlus、六种表达参考、真实音频振幅口型、聊天与持久共同经历。
 
-**默认对话是有限规则演示，不是真实 LLM；系统声只是测试备用，不是芙宁娜原声，也不满足最终声线与情绪目标。** 下一阶段优先成熟 TTS，然后完善自然对话与长期成长。
+**默认对话是有限规则演示，不是真实 LLM。成熟 TTS 已跑通，但当前为 RAVDESS 非商业测试女声，未验收芙宁娜相似度或人工情绪自然度。系统声只是临时备用。** 见 [本地 TTS 安装与许可](docs/local-tts.md)。
 
 ## 本机启动
 
@@ -37,14 +37,14 @@ mmd/
 
 ## 使用与验证
 
-点击招呼/点头，在设置中试听中文系统声并测试停止。聊天后点击“保存为共同经历”，或手动记录。重启后询问“还记得我们的共同经历吗”，检查引用。纠正/删除会清空旧聊天上下文，防止旧说法回流，其他明确保存的记忆保留。
+点击招呼/点头，在设置中选择本地 TTS、表达并试听/停止，也可显式选择系统备用声。聊天后点击“保存为共同经历”，或手动记录。纠正/删除会清空已有聊天上下文，其他明确保存的记忆保留；生成中的旧回复仍有竞态待修，另有 demo 冲突前提误肯定和 pending 来源问题，见 [独立 review 待修](docs/stage-one-review-pending.md)。
 
 ```powershell
 npm.cmd test
 npm.cmd run test:browser
 ```
 
-浏览器测试使用已安装 Edge 与本地资产，先运行服务。无可用 SAPI 时真实语音测试会明确跳过，不能算通过。测试截图在忽略目录 `artifacts/`，包含模型图像，不上传。
+浏览器测试使用已安装 Edge 与本地资产，先运行项目与 TTS 服务。测试浏览器静音，仍验证真实音频解码/振幅口型；不代表人工试听验收。无可用 TTS/SAPI 时对应测试明确跳过，不能算通过。测试截图在忽略目录 `artifacts/`，包含模型图像，不上传。
 
 ## 模型与密钥
 
@@ -54,4 +54,4 @@ npm.cmd run test:browser
 
 共同经历和无密钥预算记录在忽略目录 `data/exo.sqlite`。临时语音文本/WAV 随后清理。素材、声音数据、权重、凭证、运行数据均不提交。
 
-OpenSpec 变更：`stage-one-interactive-furina`。见 [验收记录](docs/stage-one-validation.md)、[下一阶段交接](docs/handoff.md)。
+OpenSpec 变更：`stage-one-interactive-furina`、`stage-two-local-expressive-tts`。见 [第一阶段验收](docs/stage-one-validation.md)、[第二阶段实测](docs/stage-two-validation.md)、[交接](docs/handoff.md)。

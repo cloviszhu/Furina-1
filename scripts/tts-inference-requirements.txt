@@ -1,0 +1,35 @@
+# Inference subset of official GPT-SoVITS requirements (no training/ASR/UVR).
+# Torch/torchaudio are installed separately from the official CUDA wheel index.
+numpy==1.26.4
+scipy
+librosa==0.10.2
+numba
+pytorch-lightning>=2.4
+ffmpeg-python
+onnxruntime-gpu==1.22.0
+tqdm
+cn2an
+pypinyin
+g2p_en
+sentencepiece
+transformers>=4.51,<5
+peft<0.18.0
+chardet
+PyYAML
+psutil
+# Windows without C++ tools: launch wrapper aliases jieba_fast to pure Python jieba.
+jieba
+split-lang
+fast_langdetect==0.3.2
+wordsegment
+rotary_embedding_torch
+opencc
+fastapi>=0.115.2
+uvicorn
+torchmetrics<=1.5
+pydantic<=2.10.6
+x_transformers
+soundfile
+imageio-ffmpeg==0.6.0
+matplotlib
+python-multipart

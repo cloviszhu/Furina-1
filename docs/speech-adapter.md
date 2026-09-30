@@ -1,18 +1,19 @@
-# 后继语音适配
+# 声音适配器状态
 
-用户最终核心目标是角色声线与情绪，成熟 TTS 优先。当前系统声只作备用，不把 rate/pitch 当情感 TTS。
+当前已接入官方 GPT-SoVITS v2ProPlus，系统声保留为临时备用。完整部署与登记说明见 [本地 TTS](local-tts.md)，实际测量见 [第二阶段验收](stage-two-validation.md)。
 
-`/api/status` 的 `speechBackends` 声明 reference/emotion/stream/cancel/pcm 能力；不支持的参数明确报错。下一阶段概念接口（尚未完整实现）：
+`/api/status` 返回静态 `speechBackends` 能力与动态 `localTts.ready/error/voices`；每份声音的 `emotions` 只列真实登记 reference。`/api/voices` 仅枚举当前可用的本地声音。
 
 ```text
-synthesize({ text, voiceId, referenceId, emotion, stream, signal })
-  -> WAV / PCM, or cancellable PCM chunks
+POST /api/speech
+{ backend: "gpt-sovits", text, referenceId, emotion: "neutral", speed: 1 }
+  -> 完整 PCM16 WAV
 ```
 
-referenceId 对应用户确认许可的本地素材，不接受任意文件路径。身份参考与情绪参考按成熟后端区分。情绪使用后端原生参考/向量/指令，不是网页变声；流式和取消在实际验证后才标支持。单队列、batch 1、短句先测首音/全句延迟、RAM/VRAM 峰值、同句不同情绪和声线漂移。
+前端 AbortController 与 generation sequence 阻止取消后的迟到音频播放。Node 有界串行队列不因客户端断线提前释放 GPU 槽位。`cancel=true` 表示播放/投递取消，`hardCancel=false`、`stream=false`；不能把官方 API 的能力当成本项目已完成。
 
-父任务专项研究待后继验证：IndexTTS-2.5 支持身份与独立情绪，模型卡估计约 6 GB VRAM，未验证本机。Bilibili custom 许可需先核对用途/接受门槛，不能当 MIT 或自动接受新协议。[官方模型卡](https://huggingface.co/IndexTeam/IndexTTS-2.5)、[官方代码](https://github.com/index-tts/index-tts)。
+表达控制通过同一人不同情绪录音的 reference profile，未实现独立 emotion vector。路径只在本地登记配置中，网页不传任意路径。控制标签拒绝，不插入正文。
 
-Windows 后备 GPT-SoVITS v2ProPlus：调查参考语音情感路径，[官方代码](https://github.com/RVC-Boss/GPT-SoVITS)、[官方权重](https://huggingface.co/lj1995/GPT-SoVITS)。本阶段没有下载、部署或试听这些候选，不能宣称它们本机可用。
+当前获许可 reference 是非商业测试数据，角色声线/人工表达质量验收未完成。没有参考角色项目代码复制，没有训练，没有 Index 自定义许可接受或付费语音调用。
 
-本机 8 GiB RTX 4060 Laptop / 约 16 GiB RAM，曾测 free 3.7 GiB；一次一个候选，避免多权重并存。缺合法明确的角色参考录音，不凭粉丝 checkpoint 猜授权。先合法测试录音 zero-shot baseline，再考虑训练。声音部署不应等 API key。
+本机 RTX 4060 Laptop/约 16 GiB RAM；真实六表达同句 baseline 和资源测量已完成，人工试听结论尚缺。先取得允许的角色参考并评估零样本输出，再判断训练。

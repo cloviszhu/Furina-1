@@ -1,4 +1,30 @@
-# Project Exo · 第一阶段交接
+# Project Exo · 第二阶段交接
+
+2026-09-30 09:45 UTC 附近安全交接点；父任务要求结束当前执行轮次并接力，用户项目总授权窗口仍到 14:30 UTC。
+
+## 第二阶段实际成果
+
+已完成单方案 **GPT-SoVITS v2ProPlus** GPU 部署、自写 Node 适配器、六种表达 reference、设置界面/真实 PCM16 播放/振幅口型/有界队列与取消。官方源码 `48b1a0169a28582a8984402f82cf438d3bfa6aca`，未改源码、未复制参考角色项目。Index 自定义协议未接受，未下载 Index。
+
+项目 http://127.0.0.1:3000，最终重启运行会话 **9820**（替代21036，加载最后的busy/WAV防护）；TTS http://127.0.0.1:9880，会话 **56407**，已确认 TTS PID **75548**（接续时再核对，不能假设不变）。原阶段会话/PID 后来已退出，确认端口空闲后启动了当前服务。未泛杀 Node/Python 或关闭用户无关程序。
+
+安装器 `node scripts/setup-local-tts.mjs --verify` 已验证源码与118包依赖兼容、CUDA正常；`--skip-models` 幂等安装检查会话 **72426** 已成功结束，无需重复。环境主体在忽略目录 `.runtime/`：portable Python3.11.16、torch/torchaudio2.7.1+cu126、ORT1.22.0、推理依赖。uv zip约18MB、Python约24MiB、torch wheel约2.5GiB、官方权重子集1,892,104,076字节；RAVDESS官方zip208.5MB。逻辑文件合计15.77GB（含缓存/链接重复统计），观察C:减少约9.81GB。下载均已完成；没有正在下载的权重。
+
+真实同句六表达（neutral/calm/happy/sad/angry/surprised）全部成功：32kHz、4.64–6.04秒、削波0；冷进程9.272秒，热1.109–1.354秒。采样进程RAM峰值4811.7MiB、整机GPU峰值4849MiB、最低空余RAM1498.2MiB。仅短句实证，未证明训练或长文本资源。
+
+18/18 Node、3/3真实Edge浏览器（无跳过）、build、OpenSpec严格校验通过；最后的busy健康状态和WAV重复块防护由Node回归与现有真实样本再核验。浏览器静音不等于人工音质验收。完整证据见 [第二阶段实测](stage-two-validation.md)、[运行指南](local-tts.md)。本机 `artifacts/tts/` 保存六段WAV、baseline-6.json、acoustic-diagnostics.json，不能公开上传。
+
+## 第二阶段限制与下一步
+
+- 获许可reference是RAVDESS Actor24女声，CC BY-NC-SA4.0，仅非商业本机测试；没有芙宁娜许可录音，不能证明角色相似度。LibriSpeech测试样本另已下载，未参与最终六表达基线。
+- 情绪通过同一人的不同表演reference控制，不是独立emotion vector；声线cosine相对生成neutral约0.857–0.958，angry/surprised漂移较大。指标未校准，不是准确率或身份保证。人工音质/情绪自然度/身份试听均尚未完成。
+- 不训练：先让用户试听并确认/提供允许的角色reference，再决定零样本或少量微调。不等API key才能继续独立工作。
+- 完整WAV返回，stream=false；取消立即停止播放/投递并丢弃迟到音频，hardCancel=false，必须等上游计算释放再跑下一句。120秒超时隔离需要重启两个项目服务。
+- 三个记忆review问题仍未修：[待修记录](stage-one-review-pending.md)。父任务另有隔离git worktree QA，负责revision竞态、冲突前提误肯定、pending来源；本工作树未重复修复，不要声称已解决。
+- 真实远程模型调用0、预算使用0；未读任何密钥文件。DeepSeek价格最后实际测试前重核、key仍需用户本人最后输入，不调用其他收费服务。
+- 初次上游NLTK下载曾落在AppData；后续数据明确准备在.runtime/nltk-data。不清理可能共享的数据，不改安全/执行策略，不安装管理员组件。
+
+## 第一阶段历史交接
 
 2026-09-30 08:31 UTC 检查点。用户总窗口更新到 14:30 UTC / 多伦多 10:30 EDT；结束本阶段是接力，不是停止项目。
 

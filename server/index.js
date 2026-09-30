@@ -8,6 +8,7 @@ import { PROVIDERS, messagesFor, offlineReply, complete } from './providers.js';
 import { RemoteBudget } from './budget.js';
 import { WindowsSpeech } from './speech.js';
 import { SPEECH_BACKENDS, validateSpeechOptions } from './tts-contract.js';
+import { LocalTts, loadTtsConfig } from './local-tts.js';
 
 const PROJECT = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.bmp': 'image/bmp', '.pmx': 'application/octet-stream', '.svg': 'image/svg+xml' };
@@ -34,10 +35,13 @@ async function serveFile(res, root, relative) {
   createReadStream(canonical).pipe(res);
 }
 
-export async function createApp({ projectRoot = PROJECT, dataDir = join(PROJECT, 'data'), dev = false, fetchImpl = fetch } = {}) {
+export async function createApp({ projectRoot = PROJECT, dataDir = join(PROJECT, 'data'), dev = false, fetchImpl = fetch, localTtsImpl } = {}) {
   const store = new MemoryStore(join(dataDir, 'exo.sqlite'));
   const budget = new RemoteBudget(store.db);
   const speech = new WindowsSpeech(projectRoot, dataDir);
+  let ttsConfig = null, ttsConfigError = null;
+  try { ttsConfig = await loadTtsConfig(dataDir); } catch { ttsConfigError = '本地 TTS 登记无效，请检查参考来源、许可与文件。'; }
+  const localTts = localTtsImpl || new LocalTts(ttsConfig, { fetchImpl });
   const assetRoot = join(projectRoot, 'assets/characters/furina/source/mmd');
   const modelNames = ['【芙宁娜】.pmx', '【芙宁娜_荒】.pmx'];
   let vite;
@@ -55,7 +59,7 @@ export async function createApp({ projectRoot = PROJECT, dataDir = join(PROJECT,
       if (req.headers['sec-fetch-site'] === 'cross-site') return json(res, 403, { error: '跨站请求被拒绝。' });
       const url = new URL(req.url, `http://${host}`);
       const pathname = decodeURIComponent(url.pathname);
-      if (pathname === '/api/status' && req.method === 'GET') return json(res, 200, { mode: 'offline', providers: PROVIDERS, speechBackends: SPEECH_BACKENDS,
+      if (pathname === '/api/status' && req.method === 'GET') return json(res, 200, { mode: 'offline', providers: PROVIDERS, speechBackends: SPEECH_BACKENDS, localTts: ttsConfigError ? { ready: false, error: ttsConfigError, voices: [] } : await localTts.status(),
         models: modelNames.map(name => ({ name, available: existsSync(join(assetRoot, name)), url: `/character-assets/${encodeURIComponent(name)}` })), budget: budget.status() });
       if (pathname === '/api/history' && req.method === 'GET') return json(res, 200, store.history());
       if (pathname === '/api/memories') {
@@ -101,13 +105,26 @@ export async function createApp({ projectRoot = PROJECT, dataDir = join(PROJECT,
         return json(res, 200, { user, assistant, provider, error, recalled: memories.map(m => ({ id: m.id, text: m.text })), usage: result.usage || null, budget: budget.status() });
       }
       if (pathname === '/api/voices' && req.method === 'GET') {
-        try { return json(res, 200, { voices: await speech.voices(), error: null }); }
-        catch { return json(res, 200, { voices: [], error: 'Windows 声音不可用；可选择浏览器声音。' }); }
+        const neural = ttsConfigError ? { ready: false, error: ttsConfigError, voices: [] } : await localTts.status();
+        let windows = [], error = null;
+        try { windows = await speech.voices(); } catch { error = 'Windows 声音不可用；可选择浏览器声音。'; }
+        return json(res, 200, { voices: [...(neural.ready ? neural.voices : []), ...windows], error, localTts: neural });
       }
       if (pathname === '/api/speech' && req.method === 'POST') {
         const input = await body(req);
-        validateSpeechOptions(input);
-        const wav = await speech.synthesize(validText(input.text, 1000), input.voice);
+        const backend = input.backend || 'windows-sapi';
+        if (!['windows-sapi', 'gpt-sovits'].includes(backend)) throw Object.assign(new Error('该声音后端不使用服务器合成接口。'), { status: 400 });
+        validateSpeechOptions(input, backend);
+        const controller = new AbortController();
+        const cancelled = () => { if (!res.writableEnded) controller.abort(); };
+        res.on('close', cancelled);
+        let wav;
+        try {
+          wav = backend === 'gpt-sovits'
+            ? await localTts.synthesize({ text: validText(input.text, 300), referenceId: input.referenceId, emotion: input.emotion, speed: input.speed, signal: controller.signal })
+            : await speech.synthesize(validText(input.text, 1000), input.voice);
+        } finally { res.off('close', cancelled); }
+        if (res.destroyed || controller.signal.aborted) return;
         res.writeHead(200, { 'Content-Type': 'audio/wav', 'Cache-Control': 'no-store' }); res.end(wav); return;
       }
       if (pathname.startsWith('/api/')) return json(res, 404, { error: '接口不存在。' });
