@@ -28,6 +28,17 @@ export function softenStageFrame(frame, { time, expression, mode, action, elapse
   return frame;
 }
 
+// Exponential settling alone can rotate a raised elbow by 20 degrees on the
+// first cancelled frame. Bound angular travel as well, including when callers
+// clear action directly, while retaining the existing small-motion settling.
+export function settlePoseOffset(current, target, dt, arm = false) {
+  const angle = current.angleTo(target);
+  const blend = 1 - Math.exp(-dt * (arm ? 10 : 8));
+  const maxStep = dt * (arm ? 4.5 : 2);
+  current.slerp(target, angle > 0 ? Math.min(blend, maxStep / angle) : blend);
+  return current;
+}
+
 export class CharacterStage {
   constructor(element, onState) {
     this.element = element; this.onState = onState; this.mouth = 0; this.action = null; this.expression = 'neutral';
@@ -96,6 +107,7 @@ export class CharacterStage {
     if (!['greet', 'nod'].includes(action) || this.action) return false;
     this.action = { name: action, start: performance.now() }; return true;
   }
+  cancelAction() { const active = Boolean(this.action); this.action = null; return active; }
   setMode(value) { this.mode = ['idle', 'listening', 'speaking'].includes(value) ? value : 'idle'; }
   setExpression(value) { this.expression = ['neutral', 'calm', 'happy', 'sad', 'angry', 'surprised'].includes(value) ? value : 'neutral'; }
   morph(names, value) { for (const name of names) { const index = this.mesh?.morphTargetDictionary?.[name]; if (index !== undefined) this.mesh.morphTargetInfluences[index] = value; } }
@@ -117,7 +129,7 @@ export class CharacterStage {
         const target = this.offset.setFromEuler(this.euler.set(...angles));
         let current = this.smoothed.get(name);
         if (!current) { current = target.clone(); this.smoothed.set(name, current); }
-        else current.slerp(target, 1 - Math.exp(-dt * (/腕|ひじ|手首/.test(name) ? 10 : 8)));
+        else settlePoseOffset(current, target, dt, /腕|ひじ|手首/.test(name));
         bone.quaternion.copy(this.base.get(bone)).multiply(current);
       }
       for (const [name, target] of Object.entries(frame.morphs)) {
