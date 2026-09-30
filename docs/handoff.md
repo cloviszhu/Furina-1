@@ -1,9 +1,9 @@
 
-## 2026-09-30 persona continuity relay（待父协调部署）
+## 2026-09-30 persona continuity relay（已 app-only 部署，待用户验收）
 
-最新阶段见 [人设与多轮验收接力](persona-quality-handoff.md)：六组三轮、角色语义 fixture、实际 prompt/history 安全报告、同时间线 style 连续与旧键非破坏兼容。74/74 隔离 Node tests、build、OpenSpec strict 与独立 Edge 浏览器检查通过；真实角色表现及跨会话持久记忆仍未验收。未重启/刷新旧服务与用户页，未读取 key/正式 DB，未调用真实 API。历史累计七次/估算 ¥0.007372/reserve ¥0.46346 未改。父协调安全刷新和 app-only 部署后再由用户本人启动。
+最新阶段见 [人设与多轮验收接力](persona-quality-handoff.md)：六组三轮、角色语义 fixture、实际 prompt/history 安全报告、同时间线 style 连续与旧键非破坏兼容。74/74 隔离 Node tests、build、OpenSpec strict 与独立 Edge 浏览器检查通过；部署后十五项临时 DB/随机端口检查再次通过。真实角色表现及跨会话持久记忆仍未验收。父授权 app-only launcher 重启后，3000 为 PID80944/ready=true/mode=offline，测试 manifest 十八 steps；9880 PID67988 未重启且健康。历史累计七次/估算 ¥0.007372/reserve ¥0.46346 只读核对未改，社区 reference profile 可见未删改。用户页面/key 未读取或刷新，没有真实 API。用户自行安全刷新并本人显式启动收费测试。
 
-本地代码提交 `0351cf8`；push 被自动审批阻止，精确核实目的地 `github.com/cloviszhu/Furina-1` 后仍因私有代码外传目的地未确认为受信任组织仓库而拒绝。远端未更新，父协调需先处理该目的地的推送授权/信任条件；没有绕过拒绝。
+代码 `0351cf8` 与交接 `e2215c3` 已推送；补充用户指定“咱们项目的仓库”的原话授权后，同一个 push 审批通过，GitHub `cloviszhu/Furina-1/main` 与本地 `e2215c3` 核对一致。此前 push 阻塞已解除，未换目的地、权限或通道。
 
 ## 2026-09-30 reliability relay（历史阶段，待父协调部署）
 

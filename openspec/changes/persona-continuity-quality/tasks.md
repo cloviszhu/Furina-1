@@ -12,4 +12,4 @@
 
 ## 3. 交付
 
-- [ ] 3.1 运行隔离测试、build、OpenSpec strict；记录证据、commit/push 核对与待部署交接。（测试/build/strict/本地 commit 与交接完成；push 被自动审批拒绝，待父协调处理授权。）
+- [x] 3.1 运行隔离测试、build、OpenSpec strict；记录证据、commit/push 核对与交接。（补充原话授权后 push 成功并核对远端；父授权 app-only 部署完成，未调用真实 API，真实人设与持久记忆仍待用户审核。）

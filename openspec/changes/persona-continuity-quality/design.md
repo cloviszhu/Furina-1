@@ -24,4 +24,4 @@ Non-Goals: 本阶段无真实 API、部署、音频或模型下载；不声称�
 
 ## Migration Plan
 
-提交与 push 后由父协调安排用户安全刷新与 app-only 部署。兼容读取无需改写正式数据库；回滚代码仍可读原 style 键与新 timeline 键（新键需要当前兼容读取）。
+提交与 push 后已按父授权通过 launcher 完成 app-only 部署（app PID80944/3000，TTS PID67988/9880 未变），用户页未刷新。兼容读取无需改写正式数据库；回滚代码仍可读原 style 键与新 timeline 键（新键需要当前兼容读取）。真实 API 与人工验收由用户本人后续启动。
