@@ -2,6 +2,8 @@
 
 2026-09-30 第三阶段已稳定收口，停止继续加功能，供新会话接续。用户总授权截止 14:30 UTC / 多伦多 10:30；此交接不自动延长时限。前两阶段均已停止。远程 `https://github.com/cloviszhu/Furina-1.git`，main；不强推。
 
+Git verified checkpoint：实现提交 **`d050f046f4b70907cfe75db4feb55d805ea94169`** 已推送，2026-09-30 10:46 UTC `git ls-remote origin refs/heads/main` 与 HEAD 一致。此后只提交交接检查点和任务完成记录，没有新实现；最终文档 HEAD 以 `git log -1` 为准。
+
 ## 本阶段结果
 
 - 独立 QA `1d757191ebfad1a77cd9faabcad38ea538c9299c` 已 cherry-pick 为 `fad06848e9664153bb88bbeefa22b7a994975420` 并 push/ls-remote 核对，保留 TTS。修复记忆改删期间旧回复回流、demo 冲突前提误肯定与 stale sourceId。

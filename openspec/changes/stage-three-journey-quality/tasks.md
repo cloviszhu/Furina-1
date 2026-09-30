@@ -15,4 +15,4 @@
 
 - [x] 3.1 验证缺资产/声音/服务后的修复提示，复查 loopback/输入/预算/秘密边界
 - [x] 3.2 全套 unit/browser/build/spec，保存真实截图与通过/未测记录
-- [ ] 3.3 审计 Git、commit/push、核对远程，更新进程/启动/handoff
+- [x] 3.3 审计 Git、commit/push、核对远程，更新进程/启动/handoff
