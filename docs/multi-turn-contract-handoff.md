@@ -2,6 +2,8 @@
 
 2026-09-30。基线 main `b3382e88d7721b583901af783e4eabb28b844fb6`，仓库 `cloviszhu/Furina-1`。本阶段仅主目录写入，无部署/服务重启/用户页面刷新/真实凭据操作/收费调用。
 
+修复提交 `dc85158093a11650ad85f08fd439951acdf58ae5` 已推送；`git ls-remote origin refs/heads/main` 与本地 SHA 核对一致。随后仅交接和任务完成标记提交；最终 main SHA 以 Git log 与远端为准。Git 身份沿用既有 Codex <codex@localhost>，未改全局配置。
+
 ## 真实证据与根因
 
 只读本地安全报告 `e0bffb29-5d4a-43fe-8215-92314ae69db8`，用户完成于 16:56:24–47 UTC，deepseek-flash。18 请求 completed，7 条 structured=true、11 条 false。7 个空历史回合均为结构输出，11 个带历史回合均丢失结构；后者 neutral 是 plain-text 回退，不能算成功情绪输出。最后新会话题 persistence=not-tested，仍不是持久记忆 bug 证据。
