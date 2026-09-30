@@ -11,6 +11,10 @@ The application SHALL preserve the persisted preferred voice and emotion during 
 - **WHEN** a user explicitly selects another voice during an outstanding list request
 - **THEN** the new selection becomes preferred and delayed responses do not restore the old preference
 
+#### Scenario: Confirm the already selected temporary fallback
+- **WHEN** the native dropdown already shows a temporary fallback and the user clicks the explicit set-as-preferred control
+- **THEN** that same value becomes persistent preference without a dropdown change event, survives reload and does not revert when the old voice returns
+
 ### Requirement: Confirmed deletion boundary
 The application SHALL distinguish confirmed profile or emotion deletion from temporary unavailability using existing deletion metadata/notifications. Restoring a registration SHALL NOT overwrite the user's later preferred selection.
 

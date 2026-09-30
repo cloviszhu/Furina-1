@@ -3,3 +3,4 @@
 - [x] 1.2 Add temporary fallback/origin hints without migration or credential changes.
 - [x] 1.3 Verify isolated delayed/failing/missing/recovered lists, explicit user choices and deletion/restoration; run related checks/build.
 - [x] 1.4 Document evidence and remaining user acceptance, commit/push for review before deployment.
+- [x] 1.5 Add explicit same-value fallback confirmation and native browser regression after fast review.

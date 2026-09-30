@@ -261,6 +261,7 @@ async function voices({ deletedProfileId, deletedExpression } = {}) {
 }
 function voicePreferenceNote(reason = 'ready') {
   const label = $('voice-select').selectedOptions?.[0]?.textContent;
+  $('confirm-voice-preference').hidden = reason !== 'temporary' || !$('voice-select').value || $('voice-select').value === preferredVoice;
   $('voice-preference').textContent = reason === 'temporary'
     ? `首选声线暂不可用；${$('voice-select').value ? `当前临时使用 ${label}` : '当前没有可用声线'}。首选和表情已保留；恢复可用后刷新声音会重新选用。`
     : reason === 'deleted' ? '首选声线已明确删除，已取消该首选；恢复登记不会自动撤销你后来的选择。'
@@ -280,7 +281,12 @@ function voiceDetails() {
     ? `本地${voice.managed ? '用户登记' : '测试'}参考：${reference.source} · ${reference.license}。角色相似度待验收，人工听感未验证；表达来自登记录音。`
     : `${speech.localStatus?.error || '成熟 TTS 可在声音列表选择。'} ${voice ? '当前为系统临时备用声。' : '尚未选择可用声音；系统备用声需要你显式选择。'}`;
 }
-$('voice-select').onchange = () => { speech.stop(); preferredVoice = $('voice-select').value; voiceDetails(); preferredEmotion = $('voice-emotion').value; voicePreferenceNote(); };
+function selectPreferredVoice() { speech.stop(); preferredVoice = $('voice-select').value; voiceDetails(); preferredEmotion = $('voice-emotion').value; voicePreferenceNote(); }
+$('voice-select').onchange = selectPreferredVoice;
+$('confirm-voice-preference').onclick = () => {
+  if ($('confirm-voice-preference').hidden || !$('voice-select').value || $('voice-select').value === preferredVoice) return;
+  selectPreferredVoice(); persistSettings();
+};
 $('voice-emotion').onchange = () => { speech.stop(); preferredEmotion = $('voice-emotion').value; stage?.setExpression?.(preferredEmotion); voiceDetails(); };
 $('voice-speed').onchange = () => speech.stop();
 $('expression-mode').onchange = () => { speech.stop(); $('expression-state').textContent = $('expression-mode').value === 'reply' ? '下一条回复使用经验证的表达字段；演示/纯文本为 neutral。' : '下一条回复使用手动选择的参考表达。'; };

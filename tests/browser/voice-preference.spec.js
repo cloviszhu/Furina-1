@@ -35,9 +35,22 @@ test('voice preference survives delayed boot, failure, missing/recovery, user ch
     await expect(page.locator('#settings')).toContainText('localhost 与 127.0.0.1 不共享偏好');
     mode = 'missing'; await refresh(); await expect(page.locator('#voice-select')).toHaveValue('neural:pref-two');
     await expect(page.locator('#voice-preference')).toContainText('临时使用');
+    // The native select already shows Two: confirm that SAME effective value
+    // by a real button click, without selectOption/dispatching a change event.
+    await expect(page.locator('#confirm-voice-preference')).toBeVisible();
+    await page.evaluate(() => { window.__voiceChanges = 0; document.getElementById('voice-select').addEventListener('change', () => window.__voiceChanges++); });
+    await page.locator('#confirm-voice-preference').click();
+    await expect(page.locator('#voice-select')).toHaveValue('neural:pref-two'); expect((await saved()).voice).toBe('neural:pref-two');
+    expect(await page.evaluate(() => window.__voiceChanges)).toBe(0); await expect(page.locator('#confirm-voice-preference')).toBeHidden();
+    mode = 'full'; await refresh(); await expect(page.locator('#voice-select')).toHaveValue('neural:pref-two');
+    await page.reload(); await page.locator('#open-settings').click(); await expect(page.locator('#voice-select')).toHaveValue('neural:pref-two');
+    await expect(page.locator('#confirm-voice-preference')).toBeHidden();
+    await page.locator('#voice-select').selectOption('neural:pref-one'); await page.locator('#voice-emotion').selectOption('calm');
+    mode = 'missing'; await refresh(); await expect(page.locator('#voice-select')).toHaveValue('neural:pref-two');
     await page.locator('#model-name').fill('fixture-model'); expect((await saved()).voice).toBe('neural:pref-one'); expect((await saved()).emotion).toBe('calm');
     await page.reload(); await page.locator('#open-settings').click(); await expect(page.locator('#voice-select')).toHaveValue('neural:pref-two'); expect((await saved()).voice).toBe('neural:pref-one');
     mode = 'failure'; await refresh(); await expect(page.locator('#voice-select')).toHaveValue(''); expect((await saved()).voice).toBe('neural:pref-one');
+    await expect(page.locator('#confirm-voice-preference')).toBeHidden();
     mode = 'full'; await refresh(); await expect(page.locator('#voice-select')).toHaveValue('neural:pref-one'); await expect(page.locator('#voice-emotion')).toHaveValue('calm');
     hold = true; const previous = pending; await refresh(); await expect.poll(() => pending).toBe(previous+1);
     await page.locator('#voice-select').selectOption('neural:pref-two'); release();
