@@ -51,7 +51,7 @@ test('explicit real chat authorization, credential boundary, errors, budget, sou
     behavior = 'ok';
     const callsBefore = calls; context.budget.limits = { ...context.budget.limits, cny: context.budget.status().reservedCny };
     assert.equal((await post(input)).status, 400); assert.equal(calls, callsBefore);
-    assert(messagesFor('x', [])[0].content.includes('反复失约'));
+    assert(messagesFor('x', [])[0].content.includes('没有用户明确陈述或已确认记忆支持'));
   } finally {
     unblock?.(); await context.close();
     assert(resolve(directory).startsWith(resolve(tmpdir()) + sep)); rmSync(directory, { recursive: true, force: true });
