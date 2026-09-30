@@ -29,4 +29,4 @@
 
 ## Git
 
-实现和文档提交后正常 push main，并以 `git ls-remote origin refs/heads/main` 核对；具体 hash 以最终交接结果与 `git log -1` 为准。不提交 assets/data/artifacts/.runtime/秘密。
+实现与主体文档提交 **`3dbd071315ece6e9f081becb0812d0aa800d912a`** 已正常 push main，`git ls-remote origin refs/heads/main` 核对一致。之后只有任务完成/交接 checkpoint，最终 hash 见 `git log -1` 与交接结果。不提交 assets/data/artifacts/.runtime/秘密。

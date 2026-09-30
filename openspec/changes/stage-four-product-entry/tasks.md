@@ -5,4 +5,4 @@
 ## 2. Verification and delivery
 - [x] 2.1 解码后密钥检查及假密钥回归；修复早期聊天来源分页误判并保留验证失败草稿，核对现有取消、memory来源与 persona 测试。
 - [x] 2.2 完整 unit/browser/build/spec、真实 TTS、视觉截图及干净重启。
-- [ ] 2.3 START、验证文档与精简 handoff，commit/push 并核对远程。
+- [x] 2.3 START、验证文档与精简 handoff，commit/push 并核对远程。
