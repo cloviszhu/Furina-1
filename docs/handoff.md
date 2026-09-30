@@ -1,3 +1,15 @@
+
+## 2026-09-30 reliability relay（待父协调部署）
+
+代码已提交但未在 3000 部署。本次没有重启 app84100/3000 或 TTS67988/9880，没有刷新用户页面、读取 key/.env、追加真实 API，也没有改正式聊天/记忆/预算。旧页面中的六项报告未迁移或伪造；旧服务不持有六条结果，不能在重启后补录。父已收集用户复制的真实 reply，请先保留旧页报告再协调 app-only 重启。
+
+启动采用浏览器预生成 UUID → start → activate → 首个 step 握手。未产生模型调用的 starting 占位可由新显式 start 替换，断连/提前取消可释放；busy 即使取消或过期也拒新 start，直到真实在途请求 settle。并发/序号、9 元原子预算、取消预扣不退款、迟到结果隔离、固定六项串行、连续两失败停、无重试均保留。
+
+之后明确启动的测试按 allowlist 留存 data/test-reports/<UUID>.json（已被 /data/ Git 忽略），不写正式历史/记忆。不保存 key、headers、config 或 provider 原始 error。100 个目录项上限、每报告 128 KiB；满或不可写时停止/拒新测试，不自动永久删除旧文件。GET /api/test-reports 只列概要，GET /api/test-reports/<UUID> 只读安全字段，沿用 Host/Origin/Sec-Fetch-Site 保护，拒绝路径穿越和目录 junction。页面“本地测试报告”可刷新列表、读取、全选复制或导出 JSON。当前无旧报告迁移；只读接口可供父在部署后直接读取新 run。
+
+验证：独立临时 DB + loopback 随机端口 + fake provider。71/71 Node tests 通过（含目录 junction 边界）；针对性 Edge browser 测试通过，包括六项留存、读取、JSON 下载、取消/刷新隔离；build 通过（既有 bundle-size 提示）。HTTP start 响应 socket 强制中断后可重开且 0 模型调用/0 预算调用；真实在途取消后保持互斥，迟到成功不进报告。未执行会清空正式 history 的旧验收脚本。
+
+父提供的真实统计（本接力未独立复验）：六项全请求成功，2208 输入 / 240 输出 tokens，估算 ￥0.006336；累计 7 calls、估算 ￥0.007372、reserve ￥0.46346。请求成功/JSON pass 不代表语义或角色验收。后继 persona 工作：fixture/测试元数据留在 UI、报告、manifest，不能进入角色文本；模拟已确认计划仍不能说已赴约；需要多轮真实性及角色表现评审。本次不改 persona。
 # Project Exo — 最终独立验收交接
 
 2026-09-30 最新：用户已撤销 14:30 UTC / 多伦多10:30 截止，并明确反馈声音不像芙宁娜、动作僵硬；体验目标尚未通过。当前按实际效果继续，不以测试数量代替主观验收。

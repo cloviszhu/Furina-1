@@ -6,11 +6,15 @@ export class BoundedTestRunner {
   async start(config, character) {
     if (this.running) return;
     const generation = ++this.generation;
-    Object.assign(this, { running: true, state: 'starting', rows: [], id: null, error: '', controller: new AbortController() });
+    Object.assign(this, { running: true, state: 'starting', rows: [], id: globalThis.crypto.randomUUID(), error: '', controller: new AbortController() });
+    const id = this.id;
     const signal = this.controller.signal; this.onUpdate(this);
     try {
-      const run = await this.request('/api/remote-tests', { method: 'POST', signal, body: JSON.stringify({ confirmed: true, config, character }) });
+      const run = await this.request('/api/remote-tests', { method: 'POST', signal, body: JSON.stringify({ id, confirmed: true, config, character }) });
       if (generation !== this.generation) return;
+      if (run.id !== id) throw new Error('Test handshake mismatch');
+      await this.request('/api/remote-tests/' + id + '/activate', { method: 'POST', signal, body: '{}' });
+      if (generation !== this.generation || signal.aborted) return;
       this.id = run.id; this.onBudget(run.budget);
       this.rows = run.scenarios.map(s => ({ ...s, status: 'pending' })); this.state = 'running'; this.onUpdate(this);
       for (let index = 0; index < this.rows.length; index++) {
@@ -51,6 +55,34 @@ export class BoundedTestRunner {
 
 export function mountRemoteTests({ api, config, character, updateBudget, isBusy = () => false }) {
   const $ = id => document.getElementById(id);
+  let selectedReport = null;
+  const refreshReports = async () => {
+    try {
+      const { reports } = await api('/api/test-reports');
+      $('batch-report-list').replaceChildren();
+      for (const report of reports.sort((a, b) => b.createdAt - a.createdAt)) {
+        const option = document.createElement('option'); option.value = report.id;
+        option.textContent = `${new Date(report.createdAt).toLocaleString()} · ${report.model} · ${report.state} · ${report.count}/6`;
+        $('batch-report-list').append(option);
+      }
+      $('batch-report-status').textContent = `本地隔离报告 ${reports.length}/100；不写正式聊天或记忆，不自动删除。`;
+    } catch { $('batch-report-status').textContent = '报告区无法读取；已有报告不会自动删除。'; }
+  };
+  $('batch-report-refresh').onclick = refreshReports;
+  $('batch-report-read').onclick = async () => {
+    try {
+      selectedReport = await api(`/api/test-reports/${$('batch-report-list').value}`);
+      $('batch-report-output').value = JSON.stringify(selectedReport, null, 2);
+      $('batch-report-export').disabled = false;
+    } catch { $('batch-report-status').textContent = '所选报告不可读取。'; }
+  };
+  $('batch-report-export').onclick = () => {
+    if (!selectedReport) return;
+    const url = URL.createObjectURL(new Blob([JSON.stringify(selectedReport, null, 2)], { type: 'application/json' }));
+    const link = document.createElement('a'); link.href = url; link.download = `exo-test-${selectedReport.id}.json`; link.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  };
+  void refreshReports();
   const labels = { idle: '尚未启动真实测试', starting: '检查配置（尚未调用模型）', running: '真实 API 测试进行中', completed: '六项真实测试结束，待人工审阅', stopped: '已停止；没有重试', cancelled: '已取消；不会继续调用', pending: '待执行', failed: '失败', skipped: '未执行' };
   const controls = ['remote-test', 'batch-start', 'provider', 'model-name', 'base-url', 'api-key', 'clear-key'];
   const runner = new BoundedTestRunner({ request: api, onBudget: updateBudget, onUpdate: run => {

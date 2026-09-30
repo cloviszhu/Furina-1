@@ -1,4 +1,4 @@
-import { randomUUID } from 'node:crypto';
+import { validRunId } from './test-reports.js';
 import { complete, messagesFor } from './providers.js';
 import { characterConfig } from './persona.js';
 
@@ -30,10 +30,14 @@ export function validateRemoteConfig(value, budget) {
 }
 
 export class RemoteTests {
-  constructor(budget, { fetchImpl = fetch, now = () => Date.now() } = {}) {
-    this.budget = budget; this.fetchImpl = fetchImpl; this.now = now; this.run = null;
+  constructor(budget, { fetchImpl = fetch, now = () => Date.now(), reports } = {}) {
+    this.budget = budget; this.fetchImpl = fetchImpl; this.now = now; this.run = null; this.reports = reports; this.cancelledStarts = new Map();
   }
   start(input) {
+    if (!validRunId(input.id)) throw fail('Invalid test start ID.');
+    for (const [id, time] of this.cancelledStarts) if (this.now() - time > 600000) this.cancelledStarts.delete(id);
+    if (this.cancelledStarts.has(input.id)) throw fail('Test start cancelled.', 409);
+    if (this.run?.busy) throw fail('Test request still in flight.', 409);
     if (input.confirmed !== true) throw fail('请明确点击启动收费测试。');
     const config = validateRemoteConfig(input.config, this.budget);
     const character = characterConfig(input.character);
@@ -41,10 +45,30 @@ export class RemoteTests {
       if (this.now() - this.run.createdAt < 600000) throw fail('已有测试在进行，请先取消。', 409);
       this.cancel(this.run.id);
     }
-    // Store only non-secret scope/counters. Keys live only in each active request.
-    this.run = { id: randomUUID(), model: config.model, baseUrl: config.baseUrl, character,
-      createdAt: this.now(), next: 0, failures: 0, state: 'running', busy: false };
+    if (this.run?.state === 'starting') this.cancel(this.run.id);
+    this.reports?.checkCapacity();
+    // Acknowledgement alone never reserves budget. Only the first valid step
+    // starts protected work; abandoned handshakes may be replaced immediately.
+    // Keys live only in each active request, never in scope/results/reports.
+    const run = { id: input.id, model: config.model, baseUrl: config.baseUrl, character,
+      createdAt: this.now(), next: 0, failures: 0, state: 'starting', busy: false, rows: [] };
+    try { this.reports?.save(run, true); }
+    catch { throw fail('Test report area unavailable or full; existing reports retained.', 409); }
+    this.run = run;
     return { id: this.run.id, scenarios: remoteTestManifest(), budget: this.budget.status() };
+  }
+  activate(id) {
+    const run = this.get(id);
+    if (run.state !== 'starting') throw fail('Test handshake expired or cancelled.', 409);
+    run.activated = true;
+    return { state: run.state };
+  }
+  persist(run) {
+    try { this.reports?.save(run); }
+    catch { run.state = 'stopped'; throw fail('Test report save failed; further calls stopped.', 409); }
+  }
+  disconnectStart(id) {
+    if (this.run?.id === id && this.run.state === 'starting') this.cancel(id);
   }
   get(id) {
     if (!this.run || this.run.id !== id) throw fail('测试已失效，请重新显式启动。', 404);
@@ -52,8 +76,16 @@ export class RemoteTests {
     return this.run;
   }
   cancel(id) {
+    if (!validRunId(id)) throw fail('Invalid test ID.', 404);
+    if (!this.run || this.run.id !== id) {
+      for (const [key, time] of this.cancelledStarts) if (this.now() - time > 600000) this.cancelledStarts.delete(key);
+      if (this.cancelledStarts.size >= 256) throw fail('Too many pending cancellations.', 409);
+      this.cancelledStarts.set(id, this.now());
+      return { state: 'cancelled', budget: this.budget.status() };
+    }
     const run = this.getWithoutExpiry(id);
-    run.state = 'cancelled'; run.controller?.abort();
+    if (!['starting', 'running'].includes(run.state)) return { state: run.state, budget: this.budget.status() };
+    run.state = 'cancelled'; run.controller?.abort(); this.persist(run);
     return { state: run.state, budget: this.budget.status() };
   }
   getWithoutExpiry(id) {
@@ -62,6 +94,7 @@ export class RemoteTests {
   }
   async step(id, input, disconnectSignal) {
     const run = this.get(id);
+    if (run.state === 'starting' && run.activated) run.state = 'running';
     if (run.state !== 'running' || run.busy || input.index !== run.next) throw fail('测试已停止或步骤重复；未产生调用。', 409);
     const config = validateRemoteConfig(input.config, this.budget);
     if (config.model !== run.model || config.baseUrl !== run.baseUrl) throw fail('运行中不能改变模型或 API 地址。');
@@ -70,10 +103,11 @@ export class RemoteTests {
     if (!scenario) throw fail('测试任务已完成。', 409);
     const started = this.now();
     const messages = messagesFor(scenario.text, scenario.memories || [], [], run.character);
+    this.persist(run);
     // Reserve atomically in the SAME lifetime ledger as manual remote tests.
     let reservation;
     try { reservation = this.budget.reserve(config.model, messages); }
-    catch (error) { run.state = 'stopped'; throw error; }
+    catch (error) { run.state = 'stopped'; this.persist(run); throw error; }
     run.busy = true; run.controller = new AbortController();
     const signal = disconnectSignal ? AbortSignal.any([run.controller.signal, disconnectSignal]) : run.controller.signal;
     let reply, error;
@@ -100,11 +134,14 @@ export class RemoteTests {
     }
     const budget = this.budget.status();
     const record = budget.records.find(row => row.id === reservation);
-    return { index, scenario: scenario.id, status: reply ? 'completed' : 'failed', state: run.state,
+    const result = { index, scenario: scenario.id, status: reply ? 'completed' : 'failed', state: run.state,
       elapsedMs: Math.max(0, this.now() - started), text: reply?.text || '', emotion: reply?.emotion || null,
       structured: reply?.expressionSource === 'model-contract', usage: reply?.usage || null,
       estimatedCny: record.estimated_cny, reservedCny: record.reserved_cny, error: error || null,
       review: '结构字段可核验；角色相似度、情绪自然度及记忆回答仍需人工审阅。', budget };
+    const { budget: _budget, error: _error, ...row } = result;
+    run.rows.push(row); this.persist(run);
+    return result;
   }
   close() { if (this.run) this.cancel(this.run.id); }
 }

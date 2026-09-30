@@ -8,6 +8,7 @@ import { MemoryStore, validText } from './memory.js';
 import { PROVIDERS, messagesFor, offlineReply, complete } from './providers.js';
 import { RemoteBudget } from './budget.js';
 import { RemoteTests, remoteTestManifest } from './remote-tests.js';
+import { TestReports } from './test-reports.js';
 import { WindowsSpeech } from './speech.js';
 import { SPEECH_BACKENDS, validateSpeechOptions } from './tts-contract.js';
 import { LocalTts, loadTtsConfig } from './local-tts.js';
@@ -42,7 +43,8 @@ async function serveFile(res, root, relative) {
 export async function createApp({ projectRoot = PROJECT, dataDir = join(PROJECT, 'data'), dev = false, fetchImpl = fetch, localTtsImpl } = {}) {
   const store = new MemoryStore(join(dataDir, 'exo.sqlite'));
   const budget = new RemoteBudget(store.db);
-  const remoteTests = new RemoteTests(budget, { fetchImpl });
+  const testReports = new TestReports(join(dataDir, 'test-reports'));
+  const remoteTests = new RemoteTests(budget, { fetchImpl, reports: testReports });
   const speech = new WindowsSpeech(projectRoot, dataDir);
   let ttsConfig = null, ttsConfigError = null;
   try { ttsConfig = await loadTtsConfig(dataDir); } catch { ttsConfigError = '本地 TTS 登记无效，请检查参考来源、许可与文件。'; }
@@ -66,10 +68,22 @@ export async function createApp({ projectRoot = PROJECT, dataDir = join(PROJECT,
       const url = new URL(req.url, `http://${host}`);
       const pathname = decodeURIComponent(url.pathname);
       if (pathname === '/api/remote-tests' && req.method === 'GET') return json(res, 200, { scenarios: remoteTestManifest() });
-      if (pathname === '/api/remote-tests' && req.method === 'POST') return json(res, 201, remoteTests.start(await body(req)));
-      const testStep = pathname.match(/^\/api\/remote-tests\/([a-z0-9-]{36})\/(step|cancel)$/i);
+      if (pathname === '/api/test-reports' && req.method === 'GET') return json(res, 200, { reports: testReports.list() });
+      const report = pathname.match(/^\/api\/test-reports\/([a-f0-9-]{36})$/i);
+      if (report && req.method === 'GET') return json(res, 200, testReports.read(report[1]));
+      if (pathname === '/api/remote-tests' && req.method === 'POST') {
+        const input = await body(req);
+        if (req.aborted || res.destroyed) return;
+        const run = remoteTests.start(input);
+        res.once('close', () => {
+          if (!res.writableFinished) { try { remoteTests.disconnectStart(run.id); } catch {} }
+        });
+        return json(res, 201, run);
+      }
+      const testStep = pathname.match(/^\/api\/remote-tests\/([a-z0-9-]{36})\/(step|cancel|activate)$/i);
       if (testStep && req.method === 'POST') {
         if (testStep[2] === 'cancel') return json(res, 200, remoteTests.cancel(testStep[1]));
+        if (testStep[2] === 'activate') return json(res, 200, remoteTests.activate(testStep[1]));
         const input = await body(req), disconnect = new AbortController();
         const onClose = () => { if (!res.writableEnded) disconnect.abort(); };
         res.on('close', onClose);

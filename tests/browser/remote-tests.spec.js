@@ -29,6 +29,16 @@ test('single explicit click runs six fixture calls; report isolated from formal 
     await expect(page.locator('#batch-results')).toContainText('30/12');
     await expect(page.locator('#batch-results')).not.toContainText('fake-qa-key-only');
     expect(app.store.history()).toEqual([]); expect(app.store.list()).toEqual([]);
+    await page.locator('#batch-report-refresh').click();
+    await expect(page.locator('#batch-report-list option')).toHaveCount(1);
+    await page.locator('#batch-report-read').click();
+    await expect(page.locator('#batch-report-output')).toHaveValue(/"state": "completed"/);
+    const saved = JSON.parse(await page.locator('#batch-report-output').inputValue());
+    expect(saved.rows).toHaveLength(6); expect(saved.rows[0].structured).toBe(true);
+    expect(JSON.stringify(saved)).not.toContain('fake-qa-key-only');
+    const downloadPromise = page.waitForEvent('download');
+    await page.locator('#batch-report-export').click();
+    const download = await downloadPromise; expect(download.suggestedFilename()).toBe(`exo-test-${saved.id}.json`);
     await expect(page.locator('#mode-status')).toContainText('演示');
     await page.screenshot({ path: 'artifacts/motion-review/batch-fixture-report.png' });
     block = true; await page.locator('#batch-start').click();
