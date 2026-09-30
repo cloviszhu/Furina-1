@@ -26,7 +26,7 @@ for (const mutation of ['PATCH', 'DELETE']) {
         if (providerCalls === 2) entered.resolve();
         await release.promise;
         if (fails) throw new Error('mock failure');
-        return { ok: true, json: async () => ({ choices: [{ message: { content: '旧蛋糕回复' } }] }) };
+        return { ok: true, json: async () => ({ message: { content: '{"text":"旧蛋糕回复","emotion":"calm"}' } }) };
       } });
       await new Promise(r => context.app.listen(0, '127.0.0.1', r));
       const base = `http://127.0.0.1:${context.app.address().port}`;

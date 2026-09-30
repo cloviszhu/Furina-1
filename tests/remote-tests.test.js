@@ -27,9 +27,14 @@ test('eighteen multi-turn fixtures preserve real prior output, isolate groups an
       assert.equal(result.status, 'completed'); assert(result.structured);
       assert.equal(result.state, index === 17 ? 'completed' : 'running');
       assert.deepEqual(result.prompt, bodies[index].messages);
+      assert.deepEqual(bodies[index].response_format, { type: 'json_object' });
+      for (const message of result.prompt.filter(m => m.role === 'assistant')) {
+        assert.deepEqual(JSON.parse(message.content), { text: '安全的本地fixture', emotion: 'calm' });
+      }
       assert.equal(result.history.length, index === 17 ? 0 : (index % 3) * 2);
       if (index % 3 && index !== 17) {
         assert.equal(result.history.at(-1).text, '安全的本地fixture');
+        assert.equal(result.history.at(-1).emotion, 'calm');
         assert.equal(result.history.at(-2).text, REMOTE_SCENARIOS[index - 1].text);
       }
       assert(!JSON.stringify(result.prompt).includes('测试用虚构记录'));

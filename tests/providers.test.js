@@ -24,11 +24,12 @@ test('OpenAI-compatible provider request/response contract, local stub only', as
   for (const provider of ['openai', 'glm', 'deepseek', 'kimi', 'compatible']) {
     let call;
     const result = await complete({ provider, model: 'test-model', apiKey: 'test-fixture-not-a-secret', baseUrl: 'http://127.0.0.1:1111/v1' }, messages, {
-      fetchImpl: async (url, options) => { call = { url, options, body: JSON.parse(options.body) }; return { ok: true, json: async () => ({ choices: [{ message: { content: '测试回复' } }], usage: { prompt_tokens: 10, completion_tokens: 5 } }) }; },
+      fetchImpl: async (url, options) => { call = { url, options, body: JSON.parse(options.body) }; return { ok: true, json: async () => ({ choices: [{ message: { content: '{"text":"测试回复","emotion":"happy"}' } }], usage: { prompt_tokens: 10, completion_tokens: 5 } }) }; },
     });
     assert.equal(result.text, '测试回复'); assert.equal(call.url, 'http://127.0.0.1:1111/v1/chat/completions');
     assert.equal(call.body.max_tokens, 128); assert.equal(call.body.model, 'test-model'); assert.equal(call.options.redirect, 'error');
-    if (provider === 'deepseek') assert.equal(call.body.thinking.type, 'disabled');
+    if (provider === 'deepseek') { assert.equal(call.body.thinking.type, 'disabled'); assert.deepEqual(call.body.response_format, { type: 'json_object' }); }
+    else assert.equal(call.body.response_format, undefined);
   }
 });
 test('Anthropic dedicated protocol separates system and user; no real network', async () => {
@@ -46,7 +47,7 @@ test('Ollama protocol and invalid/failing provider responses', async () => {
   assert.equal(result.usage.completion_tokens, 2);
   await assert.rejects(complete({ provider: 'openai', model: '' }, messages), /模型名/);
   await assert.rejects(complete({ provider: 'openai', model: 'fixture' }, messages, { fetchImpl: async () => ({ ok: false, status: 401 }) }), /HTTP 401/);
-  await assert.rejects(complete({ provider: 'openai', model: 'fixture' }, messages, { fetchImpl: async () => ({ ok: true, json: async () => ({ choices: [] }) }) }), /有效文字/);
+  await assert.rejects(complete({ provider: 'openai', model: 'fixture' }, messages, { fetchImpl: async () => ({ ok: true, json: async () => ({ choices: [] }) }) }), /JSON 表达契约/);
 });
 test('offline mode admits missing memories and has no implicit model configuration', () => {
   assert.match(offlineReply('你记得我们去年旅行吗？', []), /没有找到记录/);

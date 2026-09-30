@@ -124,24 +124,26 @@ export class RemoteTests {
     catch (error) { run.state = 'stopped'; this.persist(run); throw error; }
     run.busy = true; run.controller = new AbortController();
     const signal = disconnectSignal ? AbortSignal.any([run.controller.signal, disconnectSignal]) : run.controller.signal;
-    let reply, error;
+    let reply, error, failureUsage, errorCode;
     try {
       reply = await complete(config, messages, { fetchImpl: this.fetchImpl, signal });
       if (signal.aborted || run.state !== 'running') throw new Error('cancelled');
       this.budget.finish(reservation, reply.usage, true); run.failures = 0;
     } catch (failure) {
-      this.budget.finish(reservation, null, false); run.failures++;
+      this.budget.finish(reservation, failure.usage || null, false); run.failures++;
+      failureUsage = failure.usage || null;
+      if (failure.code === 'INVALID_EXPRESSION_CONTRACT') errorCode = failure.code;
       const http = /^模型服务返回 HTTP (\d{3})，没有自动重试。$/.exec(failure.message || '');
       const reason = failure.name === 'TimeoutError' ? '请求超过 20 秒时限'
         : failure.code === 'UNSAFE_PROVIDER_REPLY' ? '响应安全检查失败'
         : http ? `服务返回 HTTP ${http[1]}`
-        : failure.message === '模型表达结构无效。' ? 'JSON 表达结构无效'
+        : failure.code === 'INVALID_EXPRESSION_CONTRACT' ? '模型未提供有效的 JSON 表达契约'
         : '连接失败或响应无效';
       error = signal.aborted ? '已取消；本次请求可能已计费，预留不退。' : `${reason}；没有重试，预留不退。`;
       reply = null;
       if (signal.aborted) run.state = 'cancelled';
     } finally { run.busy = false; run.controller = null; }
-    if (reply) run.history.push({ role: 'user', text: scenario.text }, { role: 'assistant', text: reply.text });
+    if (reply) run.history.push({ role: 'user', text: scenario.text }, { role: 'assistant', text: reply.text, emotion: reply.emotion });
     const index = run.next++;
     if (run.state === 'running') {
       if (run.failures >= 1) run.state = 'stopped';
@@ -156,7 +158,8 @@ export class RemoteTests {
       reviewCriteria: REVIEW_CRITERIA[scenario.group],
       reviewHints: reply && /数据库|检索|记录编号|测试用|虚构记录/.test(reply.text) ? ['可能出戏：请人工检查技术或测试措辞'] : [],
       elapsedMs: Math.max(0, this.now() - started), text: reply?.text || '', emotion: reply?.emotion || null,
-      structured: reply?.expressionSource === 'model-contract', usage: reply?.usage || null,
+      structured: reply?.expressionSource === 'model-contract', usage: reply?.usage || failureUsage || null,
+      ...(errorCode && { errorCode }),
       estimatedCny: record.estimated_cny, reservedCny: record.reserved_cny, error: error || null,
       review: '结构字段可核验；角色相似度、情绪自然度及记忆回答仍需人工审阅。', budget };
     const { budget: _budget, error: _error, ...row } = result;

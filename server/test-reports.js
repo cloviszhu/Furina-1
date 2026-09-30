@@ -14,7 +14,8 @@ const string = value => { if (typeof value !== 'string' || value.length > 6000) 
 const messages = value => (Array.isArray(value) ? value : []).slice(0, 6)
   .filter(e => ['system', 'user', 'assistant'].includes(e.role)).map(e => ({ role: e.role, content: string(e.content) }));
 const history = value => (Array.isArray(value) ? value : []).slice(0, 4)
-  .filter(e => ['user', 'assistant'].includes(e.role)).map(e => ({ role: e.role, text: string(e.text) }));
+  .filter(e => ['user', 'assistant'].includes(e.role)).map(e => ({ role: e.role, text: string(e.text),
+    ...(e.role === 'assistant' && emotions.has(e.emotion) ? { emotion: e.emotion } : {}) }));
 const fixtures = value => (Array.isArray(value) ? value : []).slice(0, 5).map(e => ({
   text: string(e.text), source: ['user-statement', 'mutual-agreement', 'shared-experience', 'imagined-story'].includes(e.source) ? e.source : 'user-statement',
   ...(e.state === 'planned-not-confirmed-completed' && { state: e.state }),
@@ -39,6 +40,7 @@ export function safeReport(run) {
       }),
       text: typeof row.text === 'string' ? row.text.slice(0, 6000) : '', emotion: emotions.has(row.emotion) ? row.emotion : null,
       structured: row.structured === true, elapsedMs: number(row.elapsedMs),
+      ...(row.errorCode === 'INVALID_EXPRESSION_CONTRACT' && { errorCode: row.errorCode }),
       usage: { prompt_tokens: number(row.usage?.prompt_tokens), completion_tokens: number(row.usage?.completion_tokens) },
       estimatedCny: number(row.estimatedCny), reservedCny: number(row.reservedCny), review: '人工审查待完成',
     })) };

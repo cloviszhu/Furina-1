@@ -35,19 +35,21 @@ export class MemoryStore {
         status TEXT NOT NULL, created_at TEXT NOT NULL
       );`);
     if (!this.db.prepare('PRAGMA table_info(events)').all().some(c => c.name === 'context_key')) this.db.exec("ALTER TABLE events ADD COLUMN context_key TEXT NOT NULL DEFAULT 'aftermath:natural'");
+    if (!this.db.prepare('PRAGMA table_info(events)').all().some(c => c.name === 'emotion')) this.db.exec('ALTER TABLE events ADD COLUMN emotion TEXT');
   }
 
-  event(role, text, { turnId = randomUUID(), kind = 'conversation', provider = 'offline', contextKey = 'aftermath:natural' } = {}) {
+  event(role, text, { turnId = randomUUID(), kind = 'conversation', provider = 'offline', contextKey = 'aftermath:natural', emotion = null } = {}) {
+    if (emotion !== null && (role !== 'assistant' || !['neutral', 'calm', 'happy', 'sad', 'angry', 'surprised'].includes(emotion))) throw new Error('历史表达字段无效。');
     const event = { id: randomUUID(), turnId, role, text: validText(text, 6000), kind, provider, createdAt: new Date().toISOString() };
-    this.db.prepare('INSERT INTO events (id,turn_id,role,text,kind,provider,created_at,context_key) VALUES (?, ?, ?, ?, ?, ?, ?, ?)').run(
-      event.id, turnId, role, event.text, kind, provider, event.createdAt, contextKey,
+    this.db.prepare('INSERT INTO events (id,turn_id,role,text,kind,provider,created_at,context_key,emotion) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)').run(
+      event.id, turnId, role, event.text, kind, provider, event.createdAt, contextKey, emotion,
     );
     return event;
   }
 
   history(limit = 16, contextKey = null) {
     const keys = contextKey === null ? [] : contextKeys(contextKey);
-    return this.db.prepare(`SELECT id, turn_id AS turnId, role, text, provider, created_at AS createdAt
+    return this.db.prepare(`SELECT id, turn_id AS turnId, role, text, provider, created_at AS createdAt, emotion
       FROM events WHERE kind='conversation' ${keys.length ? `AND context_key IN (${keys.map(() => '?').join(',')})` : ''} ORDER BY rowid DESC LIMIT ?`).all(...keys, limit).reverse();
   }
 

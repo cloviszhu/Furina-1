@@ -40,7 +40,7 @@ test('isolated HTTP style switch passes prior facts to provider and timeline swi
     await chat('我们约好周六海边柠檬蛋糕，尚未赴约。', 'aftermath', 'natural');
     await chat('说短一点，约在哪里？', 'aftermath', 'quiet');
     assert(bodies[1].some(e => e.role === 'user' && e.content.includes('周六海边柠檬蛋糕')));
-    assert(bodies[1].some(e => e.role === 'assistant' && e.content === 'fixture reply'));
+    assert(bodies[1].some(e => e.role === 'assistant' && JSON.parse(e.content).text === 'fixture reply' && JSON.parse(e.content).emotion === 'calm'));
     await chat('你好', 'performer', 'quiet'); assert.equal(bodies[2].length, 2);
     const history = await (await fetch(url + '/api/history?timeline=aftermath&style=theatrical')).json();
     assert.equal(history.length, 4); assert.equal(context.store.history().length, 6);

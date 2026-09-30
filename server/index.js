@@ -172,8 +172,9 @@ export async function createApp({ projectRoot = PROJECT, dataDir = join(PROJECT,
             result = await complete(config, messages, { fetchImpl }); provider = config.provider;
             if (reservation) budget.finish(reservation, result.usage, true);
           } catch (failure) {
-            if (reservation) budget.finish(reservation, null, false);
+            if (reservation) budget.finish(reservation, failure.usage || null, false);
             if (failure.code === 'UNSAFE_PROVIDER_REPLY') throw Object.assign(new Error('模型响应安全检查失败；本轮未保存或朗读。'), { status: 502 });
+            if (failure.code === 'INVALID_EXPRESSION_CONTRACT') throw Object.assign(new Error('模型未提供有效的 JSON 表达契约；本轮未保存或朗读，没有自动重试。'), { status: 502 });
             error = '模型服务未成功回应，当前为本地演示回复；没有自动重试。';
           }
         }
@@ -183,7 +184,8 @@ export async function createApp({ projectRoot = PROJECT, dataDir = join(PROJECT,
           code: 'CONTEXT_CHANGED', error: '记忆已修改或删除，本次回复已取消。请重新发送。',
         });
         const user = store.event('user', text, { provider, contextKey: character.contextKey });
-        const assistant = store.event('assistant', result.text, { turnId: user.turnId, provider, contextKey: character.contextKey });
+        const assistant = store.event('assistant', result.text, { turnId: user.turnId, provider, contextKey: character.contextKey,
+          emotion: result.expressionSource === 'model-contract' ? result.emotion : null });
         return json(res, 200, { user, assistant, provider, error, character, emotion: result.emotion, expressionSource: result.expressionSource, recalled: memories.map(m => ({ id: m.id, text: m.text })), usage: result.usage || null, budget: budget.status() });
       }
       if (pathname === '/api/voices' && req.method === 'GET') {

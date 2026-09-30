@@ -5,6 +5,34 @@ import { join } from 'node:path';
 import { createApp } from '../../server/index.js';
 import { WindowsCredentials } from '../../server/credentials.js';
 
+test('second-turn missing JSON stops visibly without neutral success, retry or formal writes', async ({ page }) => {
+  const dataDir = await mkdtemp(join(tmpdir(), 'exo-contract-browser-')); let calls = 0;
+  const app = await createApp({ dataDir, credentials: new WindowsCredentials({ bridge: async () => ({ ok: true, saved: false }) }),
+    fetchImpl: async (_url, options) => {
+      const body = JSON.parse(options.body); calls++;
+      expect(body.response_format).toEqual({ type: 'json_object' });
+      if (calls === 2) expect(JSON.parse(body.messages.find(m => m.role === 'assistant').content)).toEqual({ text: '模拟第一回合', emotion: 'happy' });
+      return Response.json({ choices: [{ message: { content: calls === 1 ? '{"text":"模拟第一回合","emotion":"happy"}' : '模拟丢失结构' } }], usage: { prompt_tokens: 20, completion_tokens: 8 } });
+    } });
+  await new Promise(r => app.app.listen(0, '127.0.0.1', r));
+  try {
+    await page.goto(`http://127.0.0.1:${app.app.address().port}`);
+    await page.locator('#open-settings').click();
+    await page.locator('#provider').selectOption('deepseek'); await page.locator('#model-name').fill('deepseek-flash');
+    await page.locator('#api-key').fill('fake-contract-fixture'); await page.locator('#batch-start').click();
+    await expect(page.locator('#batch-state')).toContainText('已停止');
+    const failed = page.locator('#batch-results li').nth(1);
+    await expect(failed).toContainText('失败'); await expect(failed).toContainText('JSON 表达契约');
+    await expect(failed).toContainText('没有重试'); await expect(failed).not.toContainText('emotion=neutral');
+    expect(calls).toBe(2); expect(app.store.history()).toEqual([]); expect(app.store.list()).toEqual([]);
+    await page.locator('#batch-report-refresh').click(); await expect(page.locator('#batch-report-list option')).toHaveCount(1);
+    await page.locator('#batch-report-read').click(); await expect(page.locator('#batch-report-output')).toHaveValue(/INVALID_EXPRESSION_CONTRACT/);
+    const saved = JSON.parse(await page.locator('#batch-report-output').inputValue());
+    expect(saved.rows[1]).toMatchObject({ status: 'failed', structured: false, emotion: null, text: '' });
+    expect(saved.rows[0].structured).toBe(true); expect(calls).toBe(2);
+  } finally { await app.close(); await rm(dataDir, { recursive: true, force: true }); }
+});
+
 test('single explicit click runs eighteen multi-turn fixture calls; report isolated from formal chat and safe cancellation', async ({ page }) => {
   const dataDir = await mkdtemp(join(tmpdir(), 'exo-batch-browser-'));
   let calls = 0, block = false;

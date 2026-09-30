@@ -1,3 +1,5 @@
+[2026-09-30 multi-turn expression contract and epistemic boundary: mock verified; parent review/deployment pending](docs/multi-turn-contract-handoff.md)
+
 [2026-09-30 local settings: implementation verified; app-only deployment and first real credential save pending](docs/local-settings-handoff.md)
 
 # 第四阶段交接
