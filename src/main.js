@@ -24,6 +24,7 @@ catch { $('model-state').textContent = '三维渲染不可用，请检查浏览�
 const speech = new SpeechController({ onState: text => { $('speech-state').textContent = text; }, onMouth: value => { if (stage) stage.mouth = value; }, onExpression: value => stage?.setExpression?.(value), onStop: preservePreview => { if (!preservePreview) $('reference-preview')?.pause(); } });
 let status, memorySourceId, providers = [], busy = false, batchRunner;
 let contextGeneration = 0;
+let memorySaving = false;
 function resetMemorySource(clearText = false) {
   memorySourceId = null;
   if (clearText) $('memory-text').value = '';
@@ -258,10 +259,12 @@ async function memories() {
 }
 $('memory-form').onsubmit = async event => {
   event.preventDefault();
+  if (memorySaving) return;
+  memorySaving = true; $('memory-save').disabled = true;
+  const generation = contextGeneration, sourceId = memorySourceId, text = $('memory-text').value;
   try {
     // Revalidate immediately before saving, including changes from another tab.
     if (memorySourceId) {
-      const generation = contextGeneration, sourceId = memorySourceId;
       const source = await api(sourcePath(sourceId));
       if (generation !== contextGeneration || memorySourceId !== sourceId) return;
       if (!source.valid) {
@@ -269,10 +272,12 @@ $('memory-form').onsubmit = async event => {
         throw new Error('原聊天来源已失效，请重新选择消息或选择手动记录后填写。');
       }
     }
-    await api('/api/memories', { method: 'POST', body: JSON.stringify({ text: $('memory-text').value, sourceId: memorySourceId }) });
-    resetMemorySource(true); await memories();
+    await api('/api/memories', { method: 'POST', body: JSON.stringify({ text, sourceId }) });
+    if (generation === contextGeneration && sourceId === memorySourceId && text === $('memory-text').value) resetMemorySource(true);
+    await memories();
   }
   catch (error) { fail(error); }
+  finally { memorySaving = false; $('memory-save').disabled = false; }
 };
 $('memory-manual').onclick = () => resetMemorySource();
 

@@ -65,6 +65,29 @@ async function ui() {
   return { nodes, context, posts, spoken, pending, stops: () => stops, clearHistory: () => { history = []; } };
 }
 
+test('unsubmitted/cancelled draft writes nothing, in-flight save ignores duplicate submit and preserves newer draft', async () => {
+  const app = await ui(), { nodes, context } = app;
+  button(nodes.messages, '保存为共同经历').onclick();
+  assert.deepEqual(app.posts, []); // Selecting a source is a draft, not confirmation.
+  nodes['memory-manual'].onclick(); nodes['memory-text'].value = '';
+  assert.deepEqual(app.posts, []); // Discarding the draft does not POST.
+  button(nodes.messages, '保存为共同经历').onclick();
+  const pending = deferred(), original = context.fetch;
+  context.fetch = async (path, options) => {
+    if (path === '/api/memories' && options?.method === 'POST') { await pending.promise; }
+    return original(path, options);
+  };
+  const first = nodes['memory-form'].onsubmit({ preventDefault() {} });
+  await new Promise(r => setImmediate(r));
+  assert.equal(nodes['memory-save'].disabled, true);
+  await nodes['memory-form'].onsubmit({ preventDefault() {} });
+  nodes['memory-text'].value = '新的未提交草稿';
+  pending.resolve(); await first;
+  assert.deepEqual(app.posts, [{ text: event.text, sourceId: event.id }]);
+  assert.equal(nodes['memory-text'].value, '新的未提交草稿');
+  assert.equal(nodes['memory-save'].disabled, false);
+});
+
 for (const mutation of ['PATCH', 'DELETE']) {
   test(`UI ${mutation} clears selected source and blocks late chat display/speech; manual save recovers`, async () => {
     const app = await ui(); const { nodes, context } = app;

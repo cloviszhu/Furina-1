@@ -70,6 +70,12 @@ export class MemoryStore {
     try {
       let source = sourceId && this.db.prepare('SELECT * FROM events WHERE id=?').get(sourceId);
       if (sourceId && (!source || source.role !== 'user')) throw Object.assign(new Error('来源必须是已存在的用户记录。'), { status: 400 });
+      // Retrying one explicit confirmation must not create duplicate memories.
+      // Different sources or edited text remain distinct confirmations.
+      if (source && this.db.prepare('SELECT 1 FROM memories WHERE source_id=? AND text=?').get(source.id, text)) {
+        this.db.exec('COMMIT');
+        return this.list();
+      }
       if (!source) source = this.event('user', text, { kind: 'memory' });
       const now = new Date().toISOString();
       this.db.prepare('INSERT INTO memories VALUES (?, ?, ?, ?, ?, 1)').run(randomUUID(), text, source.id, now, now);

@@ -1,3 +1,5 @@
+[2026-09-30 persistent SQLite memory chain and mock request verification; not deployed](docs/persistent-memory-handoff.md)
+
 [2026-09-30 multi-turn contract app-only deployed: app PID78928, TTS PID67988 retained; real model validation pending](docs/multi-turn-deployment-2026-09-30.md)
 
 [2026-09-30 multi-turn expression contract and epistemic boundary: mock verification and implementation](docs/multi-turn-contract-handoff.md)
