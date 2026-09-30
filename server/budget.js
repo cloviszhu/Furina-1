@@ -6,7 +6,7 @@ export const PRICING = {
   source: 'https://api-docs.deepseek.com/zh-cn/quick_start/pricing/',
   models: { 'deepseek-flash': { input: 2, output: 8 }, 'deepseek-v4-pro': { input: 9, output: 27 } },
 };
-export const LIMITS = { cny: 9, calls: 3, outputTokens: 128, inputBytes: 16000, safetyMultiplier: 10 };
+export const LIMITS = { cny: 9, calls: null, outputTokens: 128, inputBytes: 16000, safetyMultiplier: 10 };
 
 export class RemoteBudget {
   constructor(db, { pricing = PRICING, limits = LIMITS, now = () => Date.now() } = {}) {
@@ -31,7 +31,7 @@ export class RemoteBudget {
     this.db.exec('BEGIN IMMEDIATE');
     try {
       const status = this.status();
-      if (status.usedCalls >= this.limits.calls || status.reservedCny + reserved > this.limits.cny) throw new Error('本轮调用数或费用预算已用尽。');
+      if (status.reservedCny + reserved > this.limits.cny) throw new Error('累计费用预算预留已用尽。');
       const id = randomUUID();
       this.db.prepare(`INSERT INTO remote_usage (id,model,reserved_cny,input_bound,output_limit,status,created_at)
         VALUES (?,?,?,?,?,'reserved',?)`).run(id, model, reserved, inputBound, outputTokens, new Date(this.now()).toISOString());

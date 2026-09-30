@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url';
 import { MemoryStore, validText } from './memory.js';
 import { PROVIDERS, messagesFor, offlineReply, complete } from './providers.js';
 import { RemoteBudget } from './budget.js';
+import { RemoteTests, remoteTestManifest } from './remote-tests.js';
 import { WindowsSpeech } from './speech.js';
 import { SPEECH_BACKENDS, validateSpeechOptions } from './tts-contract.js';
 import { LocalTts, loadTtsConfig } from './local-tts.js';
@@ -41,6 +42,7 @@ async function serveFile(res, root, relative) {
 export async function createApp({ projectRoot = PROJECT, dataDir = join(PROJECT, 'data'), dev = false, fetchImpl = fetch, localTtsImpl } = {}) {
   const store = new MemoryStore(join(dataDir, 'exo.sqlite'));
   const budget = new RemoteBudget(store.db);
+  const remoteTests = new RemoteTests(budget, { fetchImpl });
   const speech = new WindowsSpeech(projectRoot, dataDir);
   let ttsConfig = null, ttsConfigError = null;
   try { ttsConfig = await loadTtsConfig(dataDir); } catch { ttsConfigError = '本地 TTS 登记无效，请检查参考来源、许可与文件。'; }
@@ -63,6 +65,20 @@ export async function createApp({ projectRoot = PROJECT, dataDir = join(PROJECT,
       if (req.headers['sec-fetch-site'] === 'cross-site') return json(res, 403, { error: '跨站请求被拒绝。' });
       const url = new URL(req.url, `http://${host}`);
       const pathname = decodeURIComponent(url.pathname);
+      if (pathname === '/api/remote-tests' && req.method === 'GET') return json(res, 200, { scenarios: remoteTestManifest() });
+      if (pathname === '/api/remote-tests' && req.method === 'POST') return json(res, 201, remoteTests.start(await body(req)));
+      const testStep = pathname.match(/^\/api\/remote-tests\/([a-z0-9-]{36})\/(step|cancel)$/i);
+      if (testStep && req.method === 'POST') {
+        if (testStep[2] === 'cancel') return json(res, 200, remoteTests.cancel(testStep[1]));
+        const input = await body(req), disconnect = new AbortController();
+        const onClose = () => { if (!res.writableEnded) disconnect.abort(); };
+        res.on('close', onClose);
+        try {
+          const result = await remoteTests.step(testStep[1], input, disconnect.signal);
+          if (!res.destroyed) return json(res, 200, result);
+          return;
+        } finally { res.off('close', onClose); }
+      }
       if (pathname === '/api/health' && req.method === 'GET') return json(res, 200, { service: 'project-exo', pid: process.pid, rootId: createHash('sha256').update(resolve(projectRoot).toLowerCase()).digest('hex'), ready: true });
       if (pathname === '/api/status' && req.method === 'GET') return json(res, 200, { service: 'project-exo', pid: process.pid, mode: 'offline', providers: PROVIDERS, characterOptions: CHARACTER_OPTIONS, speechBackends: SPEECH_BACKENDS, localTts: ttsConfigError ? { ready: false, error: ttsConfigError, voices: [] } : await localTts.status(),
         models: modelNames.map(name => ({ name, available: existsSync(join(assetRoot, name)), url: `/character-assets/${encodeURIComponent(name)}` })), budget: budget.status() });
@@ -187,7 +203,7 @@ export async function createApp({ projectRoot = PROJECT, dataDir = join(PROJECT,
       return await serveFile(res, join(projectRoot, 'dist'), pathname === '/' ? 'index.html' : pathname.slice(1));
     } catch (error) { if (!res.headersSent) json(res, error.status || 400, { error: error.message.includes('SQL') ? '本地数据操作失败。' : error.message }); }
   });
-  return { app, store, budget, async close() { if (app.listening) await new Promise(r => app.close(r)); referenceImports.close(); await vite?.close(); store.close(); } };
+  return { app, store, budget, async close() { remoteTests.close(); if (app.listening) await new Promise(r => app.close(r)); referenceImports.close(); await vite?.close(); store.close(); } };
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {

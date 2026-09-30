@@ -2,10 +2,13 @@ import * as THREE from 'three';
 import { MMDLoader } from 'three/addons/loaders/MMDLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { MMDAnimationHelper } from 'three/addons/animation/MMDAnimationHelper.js';
+import { motionFrame } from './motion.js';
 
 export class CharacterStage {
   constructor(element, onState) {
     this.element = element; this.onState = onState; this.mouth = 0; this.action = null; this.expression = 'neutral';
+    this.mode = 'idle'; this.lastVoiceAt = -Infinity; this.smoothed = new Map();
+    this.offset = new THREE.Quaternion(); this.euler = new THREE.Euler();
     this.scene = new THREE.Scene();
     this.camera = new THREE.PerspectiveCamera(30, 1, 0.1, 1000);
     this.renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true, powerPreference: 'high-performance' });
@@ -48,6 +51,7 @@ export class CharacterStage {
       mesh.frustumCulled = false;
       this.bones = Object.fromEntries(mesh.skeleton.bones.map(b => [b.name, b]));
       this.base = new Map(mesh.skeleton.bones.map(b => [b, b.quaternion.clone()]));
+      this.smoothed.clear(); this.action = null;
       // PMX deformation bones can inherit rotation through grants rather than
       // hierarchy. Controllers alone move while the mesh stays in T-pose unless
       // those grants are applied. Use Three's PMX solver, without physics/Ammo.
@@ -64,36 +68,39 @@ export class CharacterStage {
     if (base) bone.quaternion.copy(base);
     bone.quaternion.multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(x, y, z)));
   }
-  trigger(action) { this.action = { name: action, start: performance.now() }; }
+  trigger(action) {
+    if (!['greet', 'nod'].includes(action) || this.action) return false;
+    this.action = { name: action, start: performance.now() }; return true;
+  }
+  setMode(value) { this.mode = ['idle', 'listening', 'speaking'].includes(value) ? value : 'idle'; }
   setExpression(value) { this.expression = ['neutral', 'calm', 'happy', 'sad', 'angry', 'surprised'].includes(value) ? value : 'neutral'; }
   morph(names, value) { for (const name of names) { const index = this.mesh?.morphTargetDictionary?.[name]; if (index !== undefined) this.mesh.morphTargetInfluences[index] = value; } }
-  tick() {
-    const t = (performance.now() - this.start) / 1000;
+  tick(now = performance.now()) {
+    const t = (now - this.start) / 1000;
+    const dt = Math.min(.05, Math.max(0, (now - (this.lastTick ?? now - 16.667)) / 1000)); this.lastTick = now;
     if (this.mesh) {
       for (const [bone, quaternion] of this.base) bone.quaternion.copy(quaternion);
-      this.pose('上半身', Math.sin(t * 1.4) * .012, Math.sin(t * .45) * .02, 0);
-      this.pose('頭', Math.sin(t * .7) * .02, Math.sin(t * .33) * .03, 0);
-      this.pose('右腕', 0, 0, 1.05); this.pose('右ひじ', 0, .1, .12); this.pose('左腕', 0, 0, -1.05);
-      const blinkPhase = t % 4.8;
-      const blink = blinkPhase < .2 ? Math.sin(blinkPhase / .2 * Math.PI) : 0;
-      this.morph(['まばたき'], blink);
-      this.morph(['あ'], this.mouth * .65);
-      this.morph(['い'], this.mouth * .12);
-      this.morph(['う'], this.mouth * .1);
-      this.morph(['にこり'], this.expression === 'happy' ? .35 : this.expression === 'calm' ? .12 : 0);
-      this.morph(['悲しむ', '困る'], this.expression === 'sad' ? .25 : 0);
-      this.morph(['怒り目', '怒り'], this.expression === 'angry' ? .28 : 0);
-      this.morph(['びっくり'], this.expression === 'surprised' ? .3 : 0);
-      if (this.action) {
-        const elapsed = (performance.now() - this.action.start) / 1000;
-        const envelope = Math.min(1, elapsed * 3) * Math.max(0, Math.min(1, (2.5 - elapsed) * 3));
-        if (this.action.name === 'greet') {
-          this.pose('右腕', -.2 * envelope, -.2 * envelope, 1.05 - 1.9 * envelope);
-          this.pose('右ひじ', 0, .6 * envelope, -.65 * envelope + Math.sin(elapsed * 9) * .2 * envelope);
-          this.morph(['笑い'], .25 * envelope);
-        } else this.pose('頭', Math.sin(elapsed * 5) * .13 * envelope, 0, 0);
-        if (elapsed > 2.5) { this.action = null; this.morph(['笑い'], 0); }
+      if (this.mouth > .025) this.lastVoiceAt = now;
+      const mode = now - this.lastVoiceAt < 450 ? 'speaking' : this.mode;
+      if (mode !== this.motionMode) { this.motionMode = mode; this.modeStartedAt = now; }
+      const elapsed = this.action ? (now - this.action.start) / 1000 : 0;
+      const direction = this.camera.position.clone().sub(this.controls.target);
+      const frame = motionFrame({ time: t, mode, modeElapsed: (now - this.modeStartedAt) / 1000, expression: this.expression, action: this.action?.name, elapsed, mouth: this.mouth,
+        gazeYaw: Math.atan2(direction.x, direction.z), gazePitch: -Math.atan2(direction.y, Math.hypot(direction.x, direction.z)) * .25 });
+      for (const [name, angles] of Object.entries(frame.bones)) {
+        const bone = this.bones[name]; if (!bone) continue;
+        const target = this.offset.setFromEuler(this.euler.set(...angles));
+        let current = this.smoothed.get(name);
+        if (!current) { current = target.clone(); this.smoothed.set(name, current); }
+        else current.slerp(target, 1 - Math.exp(-dt * (/腕|ひじ|手首/.test(name) ? 10 : 8)));
+        bone.quaternion.copy(this.base.get(bone)).multiply(current);
       }
+      for (const [name, target] of Object.entries(frame.morphs)) {
+        const index = this.mesh.morphTargetDictionary?.[name]; if (index === undefined) continue;
+        const rate = name === 'まばたき' ? 70 : ['あ', 'い', 'う'].includes(name) ? 24 : 6;
+        this.mesh.morphTargetInfluences[index] += (target - this.mesh.morphTargetInfluences[index]) * (1 - Math.exp(-dt * rate));
+      }
+      if (this.action && elapsed > (this.action.name === 'nod' ? 2 : 3.6)) this.action = null;
       this.grantSolver?.update();
       this.mesh.updateMatrixWorld(true);
     }

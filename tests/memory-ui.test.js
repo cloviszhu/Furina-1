@@ -21,7 +21,7 @@ function button(node, label) { return walk(node).find(n => n.tagName === 'button
 function deferred() { let resolve; const promise = new Promise(r => { resolve = r; }); return { promise, resolve }; }
 const event = { id: 'source-1', role: 'user', text: '我们在枫丹吃了蛋糕', provider: 'offline' };
 const memory = { id: 'memory-1', text: event.text, sourceText: event.text, revision: 1, createdAt: '2026-09-30' };
-const budget = { limits: { cny: 9, calls: 3, outputTokens: 128 }, usedCalls: 0, reservedCny: 0, pricingCurrent: false };
+const budget = { limits: { cny: 9, calls: null, outputTokens: 128, inputBytes: 16000 }, usedCalls: 0, reservedCny: 0, remainingCny: 9, pricingCurrent: false };
 
 async function ui() {
   const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
@@ -33,6 +33,7 @@ async function ui() {
   const context = vm.createContext({
     document, console, confirm: () => true, addEventListener() {},
     initReferences() {},
+    mountRemoteTests() {},
     CharacterStage: class { trigger() {} resetCamera() {} },
     SpeechController: class { stop() { ++stops; } async listVoices() { return []; } async speak(text) { spoken.push(text); } },
     fetch: async (path, options = {}) => {

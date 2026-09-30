@@ -2,6 +2,7 @@ import './style.css';
 import { CharacterStage } from './stage.js';
 import { SpeechController } from './speech.js';
 import { initReferences } from './reference-import.js';
+import { mountRemoteTests } from './remote-tests.js';
 
 const $ = id => document.getElementById(id);
 const element = (tag, className, text) => { const node = document.createElement(tag); if (className) node.className = className; if (text !== undefined) node.textContent = text; return node; };
@@ -9,7 +10,7 @@ let stage;
 try { stage = new CharacterStage($('viewport'), text => { $('model-state').textContent = text; }); }
 catch { $('model-state').textContent = '三维渲染不可用，请检查浏览器 WebGL。'; }
 const speech = new SpeechController({ onState: text => { $('speech-state').textContent = text; }, onMouth: value => { if (stage) stage.mouth = value; }, onExpression: value => stage?.setExpression?.(value), onStop: preservePreview => { if (!preservePreview) $('reference-preview')?.pause(); } });
-let status, memorySourceId, providers = [], busy = false;
+let status, memorySourceId, providers = [], busy = false, batchRunner;
 let contextGeneration = 0;
 function resetMemorySource(clearText = false) {
   memorySourceId = null;
@@ -93,12 +94,13 @@ async function refreshHistory() {
   if (!rows.length) $('messages').append(element('div', 'empty', '今天的故事还没有开始。她会听见你的声音，也会记住你选择留下的片段。'));
 }
 function updateBudget(budget) {
-  $('budget-state').textContent = `人民币 ${budget.limits.cny} 元上限 · 已用 ${budget.usedCalls}/${budget.limits.calls} 次 · 保守预留 ¥${budget.reservedCny.toFixed(4)}。每次最多 ${budget.limits.outputTokens} 输出 token。${budget.pricingCurrent ? '' : '价格核实已过期，远程调用禁用。'}`;
+  $('budget-state').textContent = `累计 ${budget.limits.cny} 元硬上限 · 已调用 ${budget.usedCalls} 次（无固定次数限制） · 保守预留 ¥${budget.reservedCny.toFixed(4)} · 剩余预留预算 ¥${budget.remainingCny.toFixed(4)}。每次最多 ${budget.limits.outputTokens} 输出 token / ${budget.limits.inputBytes} 输入字节；失败预留不退。${budget.pricingCurrent ? '' : '价格核实已过期，远程调用禁用。'}`;
 }
 async function send(text, remoteTest = false) {
-  if (busy || !text.trim()) return;
+  if (busy || (remoteTest && batchRunner?.running) || !text.trim()) return;
   busy = true; $('send').disabled = true; $('remote-test').disabled = true; $('app-error').textContent = '';
   speech.stop();
+  stage?.setMode?.('listening');
   const generation = contextGeneration;
   try {
     const chosen = config();
@@ -116,12 +118,12 @@ async function send(text, remoteTest = false) {
     if (result.error) fail(result.error);
     updateBudget(result.budget);
     const options = replySpeechOptions(result);
-    stage?.trigger(result.recalled.length ? 'nod' : 'greet');
+    stage?.trigger('nod');
     stage?.setExpression?.(options.emotion);
     if ($('auto-speak').checked) await speech.speak(result.assistant.text, $('voice-select').value, options);
     showTab('chat');
   } catch (error) { if (generation === contextGeneration) fail(error); }
-  finally { busy = false; $('send').disabled = false; $('remote-test').disabled = false; }
+  finally { stage?.setMode?.('idle'); busy = false; $('send').disabled = false; $('remote-test').disabled = Boolean(batchRunner?.running); }
 }
 $('chat-form').onsubmit = event => { event.preventDefault(); void send($('chat-input').value); };
 $('chat-input').onkeydown = event => { if (event.key === 'Enter' && !event.shiftKey && !event.isComposing) { event.preventDefault(); void send($('chat-input').value); } };
@@ -251,3 +253,4 @@ async function boot() {
 }
 void boot().catch(fail);
 initReferences({ api, speech, voices });
+batchRunner = mountRemoteTests({ api, config, character, updateBudget, isBusy: () => busy });

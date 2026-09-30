@@ -106,10 +106,13 @@ test('input/context and persisted budget reject before any provider dispatch, in
     context.store.save('记忆'.repeat(1000)); context.store.save('记忆'.repeat(1000)); context.store.save('记忆'.repeat(1000));
     assert.equal((await post({ text: '回忆', config: remote, remoteTest: true })).status, 400); assert.equal(calls, 0);
     const budget = new RemoteBudget(context.store.db, { now: () => Date.parse(PRICING.verifiedAt) + 1000 });
-    for (let i = 0; i < 3; i++) budget.finish(budget.reserve('deepseek-flash', messagesFor('小测试', [])), null, false);
+    for (let i = 0; i < 2000; i++) {
+      try { budget.finish(budget.reserve('deepseek-flash', messagesFor('小测试', [])), null, false); } catch { break; }
+    }
+    const reservedCount = budget.status().usedCalls;
     await context.close(); context = await createApp({ dataDir: directory, fetchImpl: async () => { calls++; throw new Error(); } }); base = await start();
     assert.equal((await post({ text: '问候', config: remote, remoteTest: true })).status, 400);
-    assert.equal(context.budget.status().usedCalls, 3); assert.equal(calls, 0);
+    assert.equal(context.budget.status().usedCalls, reservedCount); assert.equal(calls, 0);
   } finally { await context.close(); rmSync(directory, { recursive: true, force: true }); }
 });
 

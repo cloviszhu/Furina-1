@@ -61,6 +61,11 @@ test('budget reserves before dispatch, retains failed calls and stops on cap/exp
     budget.finish(id, null, false);
     assert.equal(budget.status().usedCalls, 1); assert(budget.status().reservedCny > 0);
     budget.reserve('deepseek-flash', messages); budget.reserve('deepseek-flash', messages);
+    budget.reserve('deepseek-flash', messages); // Fourth call is permitted; no fixed count cap.
+    assert.equal(budget.status().usedCalls, 4);
+    for (let i = 0; i < 2000; i++) {
+      try { budget.reserve('deepseek-flash', messages); } catch { break; }
+    }
     assert.throws(() => budget.reserve('deepseek-flash', messages), /预算/);
     assert.throws(() => budget.reserve('unverified-model', messages), /价格/);
     assert.throws(() => budget.reserve('deepseek-flash', messages, 1000), /token/);

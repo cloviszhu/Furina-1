@@ -24,7 +24,7 @@ test('actual PMX stage, memory interaction, empty credentials and mobile layout'
     for(let index=0;index<mesh.geometry.attributes.position.count;index+=300){mesh.getVertexPosition(index,vector);samples.push(...vector.toArray());}
     return samples;
   });
-  await page.waitForTimeout(2600);
+  await expect.poll(() => page.evaluate(() => window.__exoStage.action === null)).toBe(true);
   const idle = await page.evaluate(() => window.__exoStage.bones['右腕'].quaternion.toArray());
   expect(greeting).not.toEqual(idle);
   const idleVertices = await page.evaluate(() => {

@@ -89,11 +89,11 @@ export function requestFor(config, messages, maxTokens = 128) {
   return { provider, endpoint, headers, body };
 }
 
-export async function complete(config, messages, { fetchImpl = fetch, maxTokens = 128, timeoutMs = 20000 } = {}) {
+export async function complete(config, messages, { fetchImpl = fetch, maxTokens = 128, timeoutMs = 20000, signal } = {}) {
   const request = requestFor(config, messages, maxTokens);
   const response = await fetchImpl(request.endpoint, {
     method: 'POST', headers: request.headers, body: JSON.stringify(request.body),
-    signal: AbortSignal.timeout(timeoutMs), redirect: 'error',
+    signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(timeoutMs)]) : AbortSignal.timeout(timeoutMs), redirect: 'error',
   });
   // Do not surface provider error bodies; they can echo input or credentials.
   if (!response.ok) throw new Error(`模型服务返回 HTTP ${response.status}，没有自动重试。`);
