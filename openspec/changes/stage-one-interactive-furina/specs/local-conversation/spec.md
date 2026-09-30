@@ -41,3 +41,15 @@
 #### Scenario: Switch a provider
 - **WHEN** 用户切换 Claude 或兼容提供商并明确配置模型
 - **THEN** 后续请求使用对应协议，页面显示实际回复来源；失败不声称该模型已成功回应
+
+### Requirement: Bounded authorized remote tests
+
+系统 SHALL 在用户亲自输入凭证后才允许其显式触发已授权的 DeepSeek 少量测试，本轮累计费用上限为人民币 9 元，不自动充值或重试。系统 SHALL 在调用前按已核实的官方价格保守预留费用，并限制调用数、输入大小和输出 token，保存不含秘密的用量记录；无法核实价格或保证预算时 SHALL 拒绝调用。其他远程服务 SHALL 保持禁用。
+
+#### Scenario: No credential
+- **WHEN** 用户未输入密钥或未明确选择一次远程测试
+- **THEN** 不发送远程模型请求，继续支持本地演示
+
+#### Scenario: Budget exhausted
+- **WHEN** 调用数或费用预留已达到上限，或价格核实已过期
+- **THEN** 后续调用在网络请求前被拒绝，重启不清空累计用量

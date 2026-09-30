@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#071425"><title>Project Exo · 与芙宁娜的下一幕</title></head>
+<body>
+  <div id="app">
+    <header class="topbar"><div class="brand"><span class="brand-mark">✦</span><span>PROJECT EXO<small>与芙宁娜的下一幕</small></span></div><div class="top-state"><span class="dot"></span><span id="mode-status">本机 · 演示模式</span><button id="open-settings" class="quiet">设置</button></div></header>
+    <main>
+      <section class="stage" aria-label="芙宁娜三维舞台">
+        <div class="stage-glow"></div><div class="stage-caption"><span class="eyebrow">FONTAINE · A NEW CHAPTER</span><h1>故事之后，<br>还有我们的故事。</h1><p>每一次相遇，都可以成为下一幕的开场。</p></div>
+        <div id="viewport"></div><div id="model-state" class="model-state" role="status">正在准备舞台…</div>
+        <div class="stage-controls"><button id="greet">✧ 招呼</button><button id="nod">点头</button><button id="reset-camera">重置视角</button><select id="model-select" aria-label="模型形态"></select></div>
+        <div class="speech-caption"><span id="speech-state" role="status">系统语音 · 非角色原声</span><button id="stop-speech" class="quiet">停止发声</button></div>
+      </section>
+      <aside class="companion-panel">
+        <nav class="tabs" aria-label="互动面板"><button class="tab active" data-tab="chat">交谈</button><button class="tab" data-tab="memory">共同经历 <span id="memory-count">0</span></button></nav>
+        <section id="chat-panel" class="panel active">
+          <div class="conversation-heading"><span class="eyebrow">FURINA</span><h2>舞台已经为你留好。</h2><p id="provider-note">当前为有限规则演示，尚未接入大模型。</p></div>
+          <div id="messages" class="messages" role="log" aria-live="polite"></div>
+          <div class="quick-prompts"><button data-prompt="你好，芙宁娜。">打个招呼</button><button data-prompt="你还记得我们的共同经历吗？">聊聊回忆</button><button data-prompt="我今天有点累。">说说今天</button></div>
+          <form id="chat-form"><label class="sr-only" for="chat-input">对芙宁娜说的话</label><textarea id="chat-input" placeholder="告诉她，你今天的故事…" maxlength="1500" rows="2"></textarea><div class="composer-footer"><label><input id="auto-speak" type="checkbox" checked> 朗读回复</label><button id="send" type="submit" class="primary">开场 →</button></div></form>
+          <p id="app-error" class="error" role="alert"></p>
+        </section>
+        <section id="memory-panel" class="panel">
+          <div class="conversation-heading"><span class="eyebrow">OUR SHARED MOMENTS</span><h2>值得留下的片段。</h2><p>由你确认后保存，重启后仍可回忆。修改或删除会清空聊天上下文，避免旧说法被再次引用。</p></div>
+          <form id="memory-form"><label for="memory-text">保存一段共同经历</label><textarea id="memory-text" rows="3" maxlength="2000" placeholder="例如：今天我们一起讨论了歌剧，约定下次试试布丁。"></textarea><div class="composer-footer"><span id="memory-source">来源：你的手动记录</span><button class="primary" type="submit">记住这一刻</button></div></form>
+          <div id="memory-list" class="memory-list"></div>
+        </section>
+      </aside>
+    </main>
+    <footer class="app-footer"><span>本机保存共同经历 · 模型与声音可替换</span><span>第一阶段 · 真实模型 / 系统声音 / 对话演示</span></footer>
+  </div>
+  <dialog id="settings"><form method="dialog" class="dialog-heading"><div><span class="eyebrow">THE BACKSTAGE</span><h2>幕后设置</h2></div><button aria-label="关闭设置" class="close-button">×</button></form>
+    <div class="settings-body"><section><h3>模型与对话</h3><p>模型与密钥默认空。密钥只在此页面内存中使用，刷新即清除；不保存、不日志、不读取文件或其他应用。</p><label for="provider">提供商</label><select id="provider"></select><label for="model-name">模型名称</label><input id="model-name" autocomplete="off" placeholder="由你填写官方模型名"><label for="base-url">API 基地址</label><input id="base-url" type="url" autocomplete="off"><label for="api-key">API key · 由你本人输入</label><input id="api-key" type="password" autocomplete="off" spellcheck="false" placeholder="空 · 不自动读取任何凭证"><button id="clear-key" class="quiet">清除页面密钥</button><p id="provider-status">协议替身测试不等于真实服务验证。</p>
+    <div class="budget-card"><strong>一次短测试</strong><p id="budget-state">本轮人民币 9 元上限；最多 3 次，128 输出 token/次。正常聊天不会自动调用远程 API。</p><button id="remote-test">用当前输入执行一次 DeepSeek 测试</button><small>用户醒来并亲自输入密钥后再使用。不自动重试、不充值，其他远程服务当前禁用。</small></div></section>
+    <section><h3>真实发声</h3><p>系统声音不是芙宁娜原声。Windows 语音可生成音频；浏览器语音口型为近似节奏。</p><label for="voice-select">本机可用声音</label><select id="voice-select"></select><div class="setting-actions"><button id="voice-test">试听一句</button><button id="refresh-voices">刷新声音</button></div><p id="voice-details"></p></section></div>
+  </dialog>
+  <script type="module" src="/src/main.js"></script>
+</body></html>

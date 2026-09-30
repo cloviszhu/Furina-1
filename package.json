@@ -1,0 +1,16 @@
+{
+  "name": "project-exo-furina",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=24" },
+  "scripts": {
+    "build": "vite build",
+    "start": "node server/index.js",
+    "dev": "node server/index.js --dev",
+    "test": "node --test tests/*.test.js",
+    "test:browser": "playwright test"
+  },
+  "dependencies": { "three": "0.160.1" },
+  "devDependencies": { "vite": "8.3.1", "@playwright/test": "1.63.0" }
+}
