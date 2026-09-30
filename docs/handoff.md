@@ -2,6 +2,8 @@
 
 2026-09-30，最终独立验收。用户授权到14:30 UTC / 多伦多10:30。新上下文已独立复核并完成必要缺陷修正；可进入最后用户接入阶段，不需为填满时间扩展功能。
 
+13:18本人接入更新：13:17一次真实deepseek-flash短测试completed，输入354／输出41token，usage估计¥0.001036、保守预留¥0.06508、累计1/3次、剩余预留预算¥8.93492。这是只读status核验，验收者未读取key／代点／追加调用；普通聊天仍demo，听感和真实persona稳定性尚未通过。以下13:10零用量是此前快照。
+
 最简入口：[START](../START.md)，当前直接打开 http://127.0.0.1:3000。若已停止，在本目录普通 PowerShell 运行 npm.cmd run local:start，再 local:status 等 app/TTS 均 ready=true；停止用 local:stop，先停止播放并等队列释放。无安装、下载、管理员权限或执行策略改动。
 
 最终服务：app PID77724 / 3000，TTS 实际监听 PID67988 / 9880，13:10 UTC均ready，active=false/pending=0。13:06仅重启app载入删除入口，TTS未重启；13:10后本人接入，不再刷新其页面或重启服务。PID会变化，下一次必须重新status，不盲用旧PID。
