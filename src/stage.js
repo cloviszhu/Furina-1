@@ -2,7 +2,31 @@ import * as THREE from 'three';
 import { MMDLoader } from 'three/addons/loaders/MMDLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { MMDAnimationHelper } from 'three/addons/animation/MMDAnimationHelper.js';
-import { motionFrame } from './motion.js';
+import { motionFrame, gestureWeight } from './motion.js';
+
+// Small secondary movement in the stage's PMX control space. Keep the root and
+// legs planted: this stage applies grants, but does not solve leg IK/physics.
+export function softenStageFrame(frame, { time, expression, mode, action, elapsed = 0 }) {
+  const quiet = expression === 'sad' ? .45 : expression === 'calm' ? .75 : 1;
+  const breath = Math.sin(time * 1.28), settle = Math.sin(time * .39 + .8);
+  const rest = quiet * (mode === 'listening' ? .75 : 1);
+  const freeArm = rest * (1 - (action === 'greet' ? gestureWeight(elapsed) : 0));
+  const add = (name, x = 0, y = 0, z = 0) => {
+    const angles = frame.bones[name];
+    if (angles) { angles[0] += x; angles[1] += y; angles[2] += z; }
+  };
+  // Open the resting left arm a little and bring the hand forward, without
+  // changing the greeting's existing right-arm choreography.
+  add('左腕', -.04, 0, .055);
+  add('上半身', .006 * breath * rest, 0, .009 * settle * rest);
+  add('上半身2', -.003 * breath * rest, 0, -.005 * settle * rest);
+  add('首', 0, 0, -.004 * settle * rest);
+  add('右ひじ', .012 * Math.sin(time * 1.28 - .35) * freeArm, .022 * breath * freeArm, 0);
+  add('左ひじ', .012 * Math.sin(time * 1.28 + .45) * rest, -.022 * Math.sin(time * 1.28 + .25) * rest, 0);
+  add('右手首', .018 * Math.sin(time * 1.28 - .7) * freeArm, .012 * settle * freeArm, 0);
+  add('左手首', .018 * Math.sin(time * 1.28 + .9) * rest, -.012 * Math.sin(time * .39 + 1.4) * rest, 0);
+  return frame;
+}
 
 export class CharacterStage {
   constructor(element, onState) {
@@ -87,6 +111,7 @@ export class CharacterStage {
       const direction = this.camera.position.clone().sub(this.controls.target);
       const frame = motionFrame({ time: t, mode, modeElapsed: (now - this.modeStartedAt) / 1000, expression: this.expression, action: this.action?.name, elapsed, mouth: this.mouth,
         gazeYaw: Math.atan2(direction.x, direction.z), gazePitch: -Math.atan2(direction.y, Math.hypot(direction.x, direction.z)) * .25 });
+      softenStageFrame(frame, { time: t, mode, expression: this.expression, action: this.action?.name, elapsed });
       for (const [name, angles] of Object.entries(frame.bones)) {
         const bone = this.bones[name]; if (!bone) continue;
         const target = this.offset.setFromEuler(this.euler.set(...angles));
