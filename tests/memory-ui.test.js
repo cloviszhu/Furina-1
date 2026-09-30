@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import vm from 'node:vm';
 import { loadSettings, saveSettings } from '../src/settings.js';
+import { resolveVoicePreference } from '../src/voice-preference.js';
 
 // Execute the real main.js event handlers with a tiny DOM and stubbed rendering,
 // speech and HTTP. No WebGL, character assets, browser or external service needed.
@@ -34,7 +35,7 @@ async function ui() {
   const pending = deferred();
   const document = { getElementById: id => nodes[id], createElement: tag => new Element(tag), querySelectorAll: () => [] };
   const context = vm.createContext({
-    loadSettings, saveSettings, AbortController,
+    loadSettings, saveSettings, resolveVoicePreference, AbortController,
     document, console, confirm: () => true, addEventListener() {},
     initReferences() {},
     mountRemoteTests() {},
@@ -43,6 +44,7 @@ async function ui() {
     fetch: async (path, options = {}) => {
       let data;
       if (path === '/api/status') data = { providers: [], models: [], budget };
+      else if (path === '/api/reference-deletions') data = { deletions: [] };
       else if (path === '/api/history') data = history.map(e => ({ ...e }));
       else if (path.startsWith('/api/sources/')) data = { valid: history.some(e => path.includes(e.id)) };
       else if (path === '/api/memories' && options.method === 'POST') { posts.push(JSON.parse(options.body)); data = memories; }
@@ -61,6 +63,7 @@ async function ui() {
     .replace('void boot().catch(fail);', 'globalThis.bootPromise = boot().catch(fail);');
   vm.runInContext(source, context, { filename: 'src/main.js' });
   await context.bootPromise;
+  assert.equal(nodes['app-error'].textContent, '', 'fixture boot must complete without hidden errors');
   nodes.provider.value = 'offline'; nodes['auto-speak'].checked = true;
   return { nodes, context, posts, spoken, pending, stops: () => stops, clearHistory: () => { history = []; } };
 }

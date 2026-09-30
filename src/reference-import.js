@@ -59,7 +59,8 @@ export function initReferences({ api, speech, voices }) {
       const result = operation === 'restore'
         ? await api(`/api/reference-deletions/${deletionId}/restore`, { method: 'POST', body: JSON.stringify({ confirmed: true }) })
         : await api(`/api/reference-profiles/${profileId}`, { method: 'DELETE', body: JSON.stringify({ confirmed: true, ...(operation === 'expression' ? { emotion } : {}) }) });
-      await discard(); await refresh(); $('reference-profile').dispatchEvent(new Event('change')); await voices(); $('voice-emotion').dispatchEvent(new Event('change'));
+      await voices({ deletedProfileId: operation === 'profile' ? result.profileId : undefined, deletedExpression: operation === 'expression' ? result : undefined });
+      await discard(); await refresh(); $('reference-profile').dispatchEvent(new Event('change'));
       channel?.postMessage({ type: 'references-mutated', operation, profileId: result.profileId, emotion: result.emotion });
       managementNote(`${operation === 'restore' ? '已恢复' : '已删除并解绑，可从删除记录恢复'}。${selectionNote()}${result.warning || ''}`);
     } catch (error) { managementNote(`操作未完成：${error.message} ${selectionNote()}`); }
@@ -115,8 +116,8 @@ export function initReferences({ api, speech, voices }) {
     void (async () => {
       const affectedDraft = e.data.operation && $('reference-profile').value === e.data.profileId;
       if (affectedDraft) await discard();
-      await refresh(); if (affectedDraft) $('reference-profile').dispatchEvent(new Event('change')); await voices();
-      if (e.data.operation) $('voice-emotion').dispatchEvent(new Event('change'));
+      await voices({ deletedProfileId: e.data.operation === 'profile' ? e.data.profileId : undefined, deletedExpression: e.data.operation === 'expression' ? e.data : undefined });
+      await refresh(); if (affectedDraft) $('reference-profile').dispatchEvent(new Event('change'));
       if (e.data.operation) managementNote(`另一标签页已更新登记。${selectionNote()}`);
     })().catch(error => note(error.message));
   } }; } catch { /* Refresh voices remains available. */ }

@@ -1,5 +1,7 @@
 # 当前交接
 
+声线首选可靠性修复已实现，**仅供复审、尚未部署**；临时缺失保留首选，恢复重新选用，明确删除/主动改选尊重用户，入口只作轻提示。详见 [修复交接](docs/voice-preference-reliability-handoff.md)。生产版本仍如下。
+
 正式聊天已 app-only 部署；最新官方价格时间维护运行时代码 `c75bf8006b71bc6e8ca27524235c15517aec6f65`、app PID90048，TTS PID67988 保留。核价时间 2026-09-30 21:53:53 UTC，24h 保护截止次日同一时刻；台账仍 44 completed/reserve 4.27920 元。108/108 单元测试通过。详见 [日常 UX 调查与价格维护](docs/daily-ux-pricing-maintenance-20260930.md)、[正式聊天部署核验](docs/app-chat-deployment-20260930.md) 和 [正式聊天交接](docs/explicit-chat-mode-handoff.md)。默认演示，真实模式必须本人在主聊天启用；逐次发送收费，刷新回演示。新模式和音频取消验证仅 mock，未重跑真实召回。UX 调查未改行为；下方旧版本/PID/核价记录保留作历史。
 
 [2026-09-30 persistent memory save app-only deployed: app PID69452, TTS PID67988 retained; shortest real validation steps](docs/persistent-memory-deployment-2026-09-30.md)

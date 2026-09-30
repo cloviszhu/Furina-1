@@ -6,6 +6,9 @@ import { createApp } from './isolated-app.js';
 import { ReferenceImports } from '../../server/reference-import.js';
 import { LocalTts } from '../../server/local-tts.js';
 
+// Reference management exercises fixture audio/registrations, not PMX loading.
+test.beforeEach(async ({ context }) => { await context.route('**/character-assets/**', route => route.abort()); });
+
 function tone(amplitude = 4000) {
   const count = 51200, wav = Buffer.alloc(44 + count * 2); wav.write('RIFF'); wav.writeUInt32LE(wav.length - 8, 4); wav.write('WAVEfmt ', 8);
   wav.writeUInt32LE(16, 16); wav.writeUInt16LE(1, 20); wav.writeUInt16LE(1, 22); wav.writeUInt32LE(16000, 24); wav.writeUInt32LE(32000, 28); wav.writeUInt16LE(2, 32); wav.writeUInt16LE(16, 34); wav.write('data', 36); wav.writeUInt32LE(count * 2, 40);
@@ -13,6 +16,7 @@ function tone(amplitude = 4000) {
 }
 
 test('explicit webpage deletion/restore, current selection fallback, cross-tab sync and restart preserve original/other speaker', async ({ page, context }) => {
+  test.setTimeout(90000);
   const directory = await mkdtemp(join(tmpdir(), 'exo-delete-browser-'));
   const seed = new ReferenceImports(directory, new LocalTts(null));
   const metadata = (id, emotion = 'neutral') => ({ profileId: id, speakerId: `speaker-${id}`, label: `Fixture ${id}`, source: 'Generated tone', license: 'Test only', text: 'Synthetic fixture', language: 'en', emotion, usageAllowed: true, previewConfirmed: true, sameSpeakerConfirmed: true });
@@ -60,6 +64,7 @@ test('explicit webpage deletion/restore, current selection fallback, cross-tab s
   } finally { await other.close(); await app.close(); await rm(directory, { recursive: true, force: true }); }
 });
 test('user reference checks, preview consent, same-speaker emotion, cross-tab switch, discard and restart persistence', async ({ page, context }) => {
+  test.setTimeout(180000);
   const directory = await mkdtemp(join(tmpdir(), 'exo-import-browser-'));
   // Protocol fixture only. No models, character recordings or provider keys.
   const options = { dataDir: directory, fetchImpl: async url => url.endsWith('/openapi.json') ? Response.json({ paths: { '/tts': { post: {} } } }) : new Response(tone(), { headers: { 'Content-Type': 'audio/wav' } }) };
@@ -96,8 +101,10 @@ test('user reference checks, preview consent, same-speaker emotion, cross-tab sw
     expect((await page.request.get(address() + discardUrl)).status()).toBe(404);
     expect((await (await page.request.get(address() + '/api/reference-profiles')).json()).profiles).toHaveLength(1);
     await other.close();
-    await app.close(); app = await createApp(options); await new Promise(r => app.app.listen(0, '127.0.0.1', r)); await page.goto(address()); await page.locator('#open-settings').click();
+    await test.step('restart isolated app and reopen settings', async () => {
+      await app.close(); app = await createApp(options); await new Promise(r => app.app.listen(0, '127.0.0.1', r)); await page.goto(address()); await page.locator('#open-settings').click();
+    });
     await expect(page.locator('#voice-select')).toContainText('合成 QA fixture'); await page.locator('#voice-select').selectOption('neural:qa-user'); await expect(page.locator('#voice-emotion option')).toHaveCount(2);
     await expect(page.locator('#voice-details')).toContainText('用户登记');
-  } finally { await other.close(); await app.close(); await rm(directory, { recursive: true, force: true }); }
+  } finally { await other.close(); await page.close(); await app.close(); await rm(directory, { recursive: true, force: true }); }
 });

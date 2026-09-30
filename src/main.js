@@ -4,15 +4,18 @@ import { SpeechController } from './speech.js';
 import { initReferences } from './reference-import.js';
 import { mountRemoteTests } from './remote-tests.js';
 import { loadSettings, saveSettings } from './settings.js';
+import { resolveVoicePreference } from './voice-preference.js';
 
 const $ = id => document.getElementById(id);
 let savedSettings;
 try { savedSettings = loadSettings(globalThis.localStorage); } catch { savedSettings = loadSettings({ getItem() {} }); }
 let settingsReady = false;
+let preferredVoice = savedSettings.voice, preferredEmotion = savedSettings.emotion;
+let voiceRefreshGeneration = 0;
 function persistSettings() {
   if (!settingsReady) return;
-  const value = { provider: $('provider').value, credentialSource: $('credential-source').value, model: $('model-name').value.trim(), baseUrl: $('base-url').value.trim(), voice: $('voice-select').value,
-    emotion: $('voice-emotion').value, speed: Number($('voice-speed').value), timeline: $('character-timeline').value, style: $('character-style').value, expressionMode: $('expression-mode').value };
+  const value = { provider: $('provider').value, credentialSource: $('credential-source').value, model: $('model-name').value.trim(), baseUrl: $('base-url').value.trim(), voice: preferredVoice,
+    emotion: preferredEmotion, speed: Number($('voice-speed').value), timeline: $('character-timeline').value, style: $('character-style').value, expressionMode: $('expression-mode').value };
   let saved = false;
   try { saved = saveSettings(globalThis.localStorage, value, $('api-key').value); } catch { /* no plaintext fallback */ }
   $('settings-state').textContent = saved ? '普通配置已自动保存在此浏览器；不会自动启动收费测试。' : '浏览器存储不可用，普通配置本次未保存。';
@@ -233,21 +236,38 @@ $('remote-test').onclick = () => {
   if ($('credential-source').value !== 'saved' && !$('api-key').value.trim()) { $('provider-status').textContent = '请由你本人输入密钥或选择已保存密钥；未发起请求。'; return; }
   $('settings').close(); void send(text, true);
 };
-async function voices() {
-  const previous = $('voice-select').value || savedSettings.voice;
-  const list = await speech.listVoices(); $('voice-select').replaceChildren();
-  for (const voice of list) { const option = element('option', '', voice.label); option.value = voice.value; option.disabled = !voice.localService; $('voice-select').append(option); }
-  const preferred = list.find(v => v.value === previous && v.localService) || list.find(v => v.engine === 'gpt-sovits');
-  if (preferred) $('voice-select').value = preferred.value;
+async function voices({ deletedProfileId, deletedExpression } = {}) {
+  const generation = ++voiceRefreshGeneration;
+  const [list, removed] = await Promise.all([speech.listVoices(), api('/api/reference-deletions').catch(() => ({ deletions: null }))]);
+  if (generation !== voiceRefreshGeneration) return;
+  const deleted = (removed.deletions || []).filter(d => !d.emotion && d.canRestore).map(d => `neural:${d.profileId}`);
+  if (!removed.deletions && deletedProfileId) deleted.push(`neural:${deletedProfileId}`);
+  const deletedExpressions = (removed.deletions || []).filter(d => d.emotion && d.canRestore);
+  if (!removed.deletions && deletedExpression) deletedExpressions.push(deletedExpression);
+  if (deletedExpressions.some(d => preferredVoice === `neural:${d.profileId}` && preferredEmotion === d.emotion)) preferredEmotion = 'neutral';
+  const selection = resolveVoicePreference(preferredVoice, list, deleted);
+  if (selection.reason === 'deleted') preferredEmotion = 'neutral';
+  preferredVoice = selection.preferred;
+  $('voice-select').replaceChildren();
+  for (const voice of list.filter(v => !deleted.includes(v.value))) { const option = element('option', '', voice.label); option.value = voice.value; option.disabled = !voice.localService; $('voice-select').append(option); }
+  if (selection.effective) $('voice-select').value = selection.effective;
   else {
     const placeholder = element('option', '', list.some(v => v.localService) ? '本地 TTS 不可用 · 请显式选择系统备用声' : '未发现本机声音 · 请启动 TTS 后刷新');
     placeholder.value = ''; $('voice-select').append(placeholder); $('voice-select').value = '';
   }
   voiceDetails();
+  voicePreferenceNote(selection.reason);
   if (settingsReady) persistSettings();
 }
+function voicePreferenceNote(reason = 'ready') {
+  const label = $('voice-select').selectedOptions?.[0]?.textContent;
+  $('voice-preference').textContent = reason === 'temporary'
+    ? `首选声线暂不可用；${$('voice-select').value ? `当前临时使用 ${label}` : '当前没有可用声线'}。首选和表情已保留；恢复可用后刷新声音会重新选用。`
+    : reason === 'deleted' ? '首选声线已明确删除，已取消该首选；恢复登记不会自动撤销你后来的选择。'
+    : $('voice-select').value ? '当前声线按你的首选使用；临时不可用不会覆盖首选。' : '当前没有可用声线；请选择或刷新声音。';
+}
 function voiceDetails() {
-  const previous = $('voice-emotion').value;
+  const previous = preferredEmotion;
   const voice = speech.voices.find(v => v.value === $('voice-select').value);
   const labels = { neutral: '参考原表达', happy: '开心', sad: '难过', angry: '生气', calm: '平静', surprised: '惊讶' };
   $('voice-emotion').replaceChildren();
@@ -260,8 +280,8 @@ function voiceDetails() {
     ? `本地${voice.managed ? '用户登记' : '测试'}参考：${reference.source} · ${reference.license}。角色相似度待验收，人工听感未验证；表达来自登记录音。`
     : `${speech.localStatus?.error || '成熟 TTS 可在声音列表选择。'} ${voice ? '当前为系统临时备用声。' : '尚未选择可用声音；系统备用声需要你显式选择。'}`;
 }
-$('voice-select').onchange = () => { speech.stop(); voiceDetails(); };
-$('voice-emotion').onchange = () => { speech.stop(); stage?.setExpression?.($('voice-emotion').value); voiceDetails(); };
+$('voice-select').onchange = () => { speech.stop(); preferredVoice = $('voice-select').value; voiceDetails(); preferredEmotion = $('voice-emotion').value; voicePreferenceNote(); };
+$('voice-emotion').onchange = () => { speech.stop(); preferredEmotion = $('voice-emotion').value; stage?.setExpression?.(preferredEmotion); voiceDetails(); };
 $('voice-speed').onchange = () => speech.stop();
 $('expression-mode').onchange = () => { speech.stop(); $('expression-state').textContent = $('expression-mode').value === 'reply' ? '下一条回复使用经验证的表达字段；演示/纯文本为 neutral。' : '下一条回复使用手动选择的参考表达。'; };
 $('voice-test').onclick = () => void speech.speak('你终于来了。下一幕，就由我们一起写吧。', $('voice-select').value, speechOptions());

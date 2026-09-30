@@ -6,12 +6,16 @@ export class SpeechController {
     globalThis.speechSynthesis?.addEventListener('voiceschanged', () => this.onVoicesChanged?.());
   }
   async listVoices() {
+    const generation = this.voiceListGeneration = (this.voiceListGeneration || 0) + 1;
     let windows = [];
-    try { const response = await fetch('/api/voices'); if (!response.ok) throw new Error(); const result = await response.json(); this.localStatus = result.localTts; windows = result.voices.map(v => ({ ...v, value: `${v.engine === 'gpt-sovits' ? 'neural' : 'windows'}:${v.id}`, label: `${v.name} · ${v.engine === 'gpt-sovits' ? '本地 TTS' : 'Windows 临时备用'}` })); } catch { this.localStatus = { error: '项目声音服务无法连接；请运行 npm.cmd start 后刷新声音。' }; }
+    let localStatus;
+    try { const response = await fetch('/api/voices'); if (!response.ok) throw new Error(); const result = await response.json(); localStatus = result.localTts; windows = result.voices.map(v => ({ ...v, value: `${v.engine === 'gpt-sovits' ? 'neural' : 'windows'}:${v.id}`, label: `${v.name} · ${v.engine === 'gpt-sovits' ? '本地 TTS' : 'Windows 临时备用'}` })); } catch { localStatus = { error: '项目声音服务无法连接；请运行 npm.cmd start 后刷新声音。' }; }
     const browser = (globalThis.speechSynthesis?.getVoices() || []).map((v, index) => ({
       value: `browser:${index}`, name: v.name, label: `${v.name} · ${v.localService ? '浏览器本机' : '网络声音（禁用）'}`,
       language: v.lang, localService: v.localService, engine: 'browser', voice: v,
     }));
+    if (generation !== this.voiceListGeneration) return this.voices;
+    this.localStatus = localStatus;
     this.voices = [...windows, ...browser]; return this.voices;
   }
   stop({ preservePreview = false } = {}) {
