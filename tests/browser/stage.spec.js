@@ -1,7 +1,16 @@
 import { test, expect } from '@playwright/test';
+import { mkdtemp, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { createApp } from '../../server/index.js';
 test('actual PMX stage, memory interaction, empty credentials and mobile layout', async ({ page }) => {
+  // Memory corrections invalidate chat context. Never run that journey on data/.
+  const dataDir = await mkdtemp(join(tmpdir(), 'exo-stage-browser-'));
+  const app = await createApp({ dataDir });
+  await new Promise(r => app.app.listen(0, '127.0.0.1', r));
+  try {
   const errors = []; page.on('pageerror', error => errors.push(error.message));
-  await page.goto('/');
+  await page.goto(`http://127.0.0.1:${app.app.address().port}`);
   await expect(page.locator('#model-state')).toContainText('模型已就绪', { timeout: 30000 });
   const initial = await page.evaluate(() => ({ bones: window.__exoStage.mesh.skeleton.bones.length,
     dictionary: Object.keys(window.__exoStage.mesh.morphTargetDictionary), vertices: window.__exoStage.mesh.geometry.attributes.position.count }));
@@ -49,4 +58,5 @@ test('actual PMX stage, memory interaction, empty credentials and mobile layout'
   await page.screenshot({ path: 'artifacts/stage-mobile.png', fullPage: true });
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   expect(errors).toEqual([]);
+  } finally { await app.close(); await rm(dataDir, { recursive: true, force: true }); }
 });

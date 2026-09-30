@@ -6,6 +6,11 @@ import runpy
 import shutil
 import sys
 import hashlib
+import asyncio
+import json
+from importlib import import_module
+
+boundary = import_module("tts-boundary")
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 
@@ -54,6 +59,7 @@ def main():
     app = api["APP"]
     from fastapi.responses import JSONResponse
     import uvicorn
+    synthesis_lock = asyncio.Lock()
 
     @app.middleware("http")
     async def local_boundary(request, call_next):
@@ -64,7 +70,24 @@ def main():
         allowed |= request.url.path == "/tts" and request.method == "POST" and request.headers.get("content-type", "").startswith("application/json")
         if not allowed:
             return JSONResponse({"error": "This local service exposes only JSON synthesis"}, status_code=403)
-        return await call_next(request)
+        if request.url.path != "/tts":
+            return await call_next(request)
+        try:
+            chunks, length = [], 0
+            async for chunk in request.stream():
+                length += len(chunk)
+                if length > boundary.MAX_BODY:
+                    return JSONResponse({"error": "Synthesis body exceeds limit"}, status_code=413)
+                chunks.append(chunk)
+            raw = b"".join(chunks)
+            boundary.validate_payload(json.loads(raw), ROOT / "data")
+        except Exception:
+            return JSONResponse({"error": "Invalid or unregistered synthesis input"}, status_code=400)
+        if synthesis_lock.locked():
+            return JSONResponse({"error": "Synthesis is busy"}, status_code=429)
+        async with synthesis_lock:
+            request._body = raw
+            return await call_next(request)
 
     # Upstream control and arbitrary weight switching routes are unreachable.
     @app.get("/health")

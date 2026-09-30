@@ -35,3 +35,5 @@ test-results/
 *.log
 # Isolated local TTS runtimes and downloaded third-party dependencies.
 /.runtime/
+__pycache__/
+*.pyc

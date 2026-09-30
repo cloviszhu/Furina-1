@@ -9,12 +9,13 @@ function tone(amplitude = 4000) {
   wav.writeUInt32LE(16, 16); wav.writeUInt16LE(1, 20); wav.writeUInt16LE(1, 22); wav.writeUInt32LE(16000, 24); wav.writeUInt32LE(32000, 28); wav.writeUInt16LE(2, 32); wav.writeUInt16LE(16, 34); wav.write('data', 36); wav.writeUInt32LE(count * 2, 40);
   for (let i = 0; i < count; i++) wav.writeInt16LE(Math.round(Math.sin(i / 16000 * 440 * 2 * Math.PI) * amplitude), 44 + i * 2); return wav;
 }
-test('user reference checks, preview consent, same-speaker emotion, switch and restart persistence', async ({ page }) => {
+test('user reference checks, preview consent, same-speaker emotion, cross-tab switch, discard and restart persistence', async ({ page, context }) => {
   const directory = await mkdtemp(join(tmpdir(), 'exo-import-browser-'));
   // Protocol fixture only. No models, character recordings or provider keys.
   const options = { dataDir: directory, fetchImpl: async url => url.endsWith('/openapi.json') ? Response.json({ paths: { '/tts': { post: {} } } }) : new Response(tone(), { headers: { 'Content-Type': 'audio/wav' } }) };
   let app = await createApp(options); await new Promise(r => app.app.listen(0, '127.0.0.1', r));
   const address = () => `http://127.0.0.1:${app.app.address().port}`;
+  const other = await context.newPage();
   const upload = async amplitude => { await page.locator('#reference-file').setInputFiles({ name: '../../fixture.wav', mimeType: 'audio/wav', buffer: tone(amplitude) }); await page.locator('#reference-check').click(); };
   try {
     await page.goto(address()); await page.locator('#open-references').click();
@@ -29,11 +30,24 @@ test('user reference checks, preview consent, same-speaker emotion, switch and r
     for (const id of ['reference-rights', 'reference-same-speaker', 'reference-listened']) await page.locator('#' + id).check();
     await page.locator('#reference-confirm').click(); await expect(page.locator('#reference-state')).toContainText('已登记 qa-user'); await expect(page.locator('#voice-select')).toHaveValue('neural:qa-user');
     expect((await page.request.get(address() + previewUrl)).status()).toBe(404);
+    await other.goto(address()); await other.locator('#open-settings').click();
+    await expect(other.locator('#voice-emotion option')).toHaveCount(1);
     await upload(4000); await page.locator('#reference-profile').selectOption('qa-user'); await expect(page.locator('#reference-speaker')).toHaveValue('qa-speaker'); await expect(page.locator('#reference-speaker')).toHaveAttribute('readonly', '');
     await page.locator('#reference-emotion').selectOption('happy'); for (const id of ['reference-rights', 'reference-same-speaker', 'reference-listened']) await page.locator('#' + id).check();
     await page.locator('#reference-confirm').click(); await expect(page.locator('#reference-state')).toContainText('qa-user / happy'); await expect(page.locator('#voice-emotion')).toHaveValue('happy');
+    await expect(other.locator('#voice-emotion option')).toHaveCount(2);
+    await expect(other.locator('#speech-state')).toContainText('已停止');
+    await upload(4000);
+    await expect(page.locator('#reference-preview')).toHaveAttribute('src', /^\/api\/reference-imports\//);
+    const discardUrl = await page.locator('#reference-preview').getAttribute('src');
+    expect((await page.request.get(address() + discardUrl)).status()).toBe(200);
+    await page.locator('#reference-discard').click();
+    await expect(page.locator('#reference-confirmation')).toBeHidden();
+    expect((await page.request.get(address() + discardUrl)).status()).toBe(404);
+    expect((await (await page.request.get(address() + '/api/reference-profiles')).json()).profiles).toHaveLength(1);
+    await other.close();
     await app.close(); app = await createApp(options); await new Promise(r => app.app.listen(0, '127.0.0.1', r)); await page.goto(address()); await page.locator('#open-settings').click();
     await expect(page.locator('#voice-select')).toContainText('合成 QA fixture'); await page.locator('#voice-select').selectOption('neural:qa-user'); await expect(page.locator('#voice-emotion option')).toHaveCount(2);
     await expect(page.locator('#voice-details')).toContainText('用户登记');
-  } finally { await app.close(); await rm(directory, { recursive: true, force: true }); }
+  } finally { await other.close(); await app.close(); await rm(directory, { recursive: true, force: true }); }
 });

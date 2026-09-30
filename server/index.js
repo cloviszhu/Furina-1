@@ -114,8 +114,9 @@ export async function createApp({ projectRoot = PROJECT, dataDir = join(PROJECT,
           try {
             result = await complete(config, messages, { fetchImpl }); provider = config.provider;
             if (reservation) budget.finish(reservation, result.usage, true);
-          } catch {
+          } catch (failure) {
             if (reservation) budget.finish(reservation, null, false);
+            if (failure.code === 'UNSAFE_PROVIDER_REPLY') throw Object.assign(new Error('模型响应安全检查失败；本轮未保存或朗读。'), { status: 502 });
             error = '模型服务未成功回应，当前为本地演示回复；没有自动重试。';
           }
         }

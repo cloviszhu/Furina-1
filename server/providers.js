@@ -103,9 +103,9 @@ export async function complete(config, messages, { fetchImpl = fetch, maxTokens 
     : request.provider.protocol === 'ollama' ? result.message?.content : result.choices?.[0]?.message?.content;
   // Provider bodies/usage can echo request credentials. Reject echoed keys and
   // whitelist numeric usage before returning or persisting anything.
-  if (config.apiKey && typeof content === 'string' && content.includes(config.apiKey)) throw new Error('模型响应安全检查失败。');
+  if (config.apiKey && typeof content === 'string' && content.includes(config.apiKey)) throw Object.assign(new Error('模型响应安全检查失败。'), { code: 'UNSAFE_PROVIDER_REPLY' });
   const reply = parseReply(content);
   // JSON decoding can turn unicode escapes into an echoed credential.
-  if (config.apiKey && reply.text.includes(config.apiKey)) throw new Error('模型响应安全检查失败。');
+  if (config.apiKey && reply.text.includes(config.apiKey)) throw Object.assign(new Error('模型响应安全检查失败。'), { code: 'UNSAFE_PROVIDER_REPLY' });
   return { text: reply.text, emotion: reply.emotion, expressionSource: reply.expressionSource, usage: safeUsage(result) };
 }

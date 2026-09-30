@@ -53,6 +53,8 @@ Windows `jieba_fast` 需要 C++ 工具链，本部署以 `jieba` 同 API 兼容�
 
 ## 边界与取消
 
+最终独立验收补齐了 9880 直接 POST 的保护：32,000 字节请求、300 字正文、登记目录内的参考及精确转写/语言、3–10 秒 PCM16 与元数据权利/同 speaker 约束；固定单任务非并行、非流式 WAV 参数，拒绝额外资源参数。不能绕过 Node 通过上游接口提供任意路径或大 batch。详见 [最终验收](final-acceptance.md)。
+
 Node 单任务串行、最多 3 个等待任务，生成 WAV 上限 16 MiB/60 秒，120 秒生成超时后隔离队列，需重启本地 TTS 和项目服务。后端根地址只接受数字 loopback HTTP，不跟随重定向。包装后的上游仅开放 `/openapi.json`、本机 `/health` 与 JSON POST `/tts`；控制、权重切换及 GET 合成接口均拒绝，Host/Origin/跨站请求校验生效。普通权限 `npm.cmd run local:start / local:stop / local:status` 管理现有资源，不执行安装/下载。网页参考登记期间暂停派发 TTS，已有 GPU 计算未完成时拒绝变更。
 
 “停止”立即停止播放、复位口型、取消投递并丢弃迟到结果；上游 GPU 工作不做硬中断，必须等它释放后才运行下一句。第一版返回完整 WAV，**尚未接入流式首音**。不可将官方支持 streaming 当作本项目已实现。

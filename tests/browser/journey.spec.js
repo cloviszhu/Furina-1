@@ -145,24 +145,35 @@ test('early visible message remains a valid memory source after ten conversation
     }
     const history = await (await page.request.get(app.url + '/api/history')).json(); expect(history).toHaveLength(16); expect(history.some(e => e.text.includes('第一轮'))).toBe(false);
     await page.locator('.message.user button').first().click();
-    await page.locator('#memory-text').fill('我确认的第一轮记录'); await page.locator('#memory-form button[type=submit]').click();
+    await page.locator('#memory-text').fill('我确认的第一轮记录');
+    await page.route('**/api/sources/**', route => route.abort());
+    await page.locator('#memory-form button[type=submit]').click();
+    await expect(page.locator('#app-error')).not.toBeEmpty();
+    await expect(page.locator('#memory-text')).toHaveValue('我确认的第一轮记录');
+    await expect(page.locator('.memory-card')).toHaveCount(0);
+    await page.unroute('**/api/sources/**');
+    await page.locator('#memory-form button[type=submit]').click();
     await expect(page.locator('.memory-card')).toContainText('我确认的第一轮记录'); await page.locator('.memory-card summary').click(); await expect(page.locator('.memory-card details')).toContainText('第一轮值得保留的来源');
   } finally { await app.close(); }
 });
 
-test('unicode-escaped fake key never reaches browser reply, SQLite history or speech', async ({ page }) => {
+for (const fenced of [false, true]) test(`unicode-escaped ${fenced ? 'fenced' : 'plain'} JSON fake key leaves no browser reply, SQLite events or speech`, async ({ page }) => {
   const fakeKey = 'fake-qa-key-only'; let speeches = [];
-  const content = '```json\n{"text":"fake-qa-key-\\u006fnly","emotion":"neutral"}\n```';
+  const encoded = '{"text":"fake-qa-key-\\u006fnly","emotion":"neutral"}';
+  const content = fenced ? '```json\n' + encoded + '\n```' : encoded;
   const app = await isolated({
     fetchImpl: async () => Response.json({ message: { content }, usage: { prompt_tokens: 1, completion_tokens: 1, secret: fakeKey } }),
     localTtsImpl: { status: async () => ({ ready: true, voices: [{ id: 'fixture', name: 'Synthetic QA only', engine: 'gpt-sovits', localService: true, emotions: ['neutral'] }] }), synthesize: async input => { speeches.push(input.text); throw Error('fixture no audio'); } },
   });
   try {
     await ready(page, app.url); await page.locator('#open-settings').click(); await page.locator('#provider').selectOption('ollama'); await page.locator('#model-name').fill('fixture'); await page.locator('#api-key').fill(fakeKey); await page.locator('.close-button').click();
-    await page.locator('#chat-input').fill('安全测试'); await page.locator('#send').click(); await expect(page.locator('.message.assistant')).toHaveCount(1); await expect(page.locator('#app-error')).toContainText('未成功回应');
-    await expect(page.locator('.message.assistant')).not.toContainText(fakeKey);
+    await page.locator('#chat-input').fill('安全测试'); await page.locator('#send').click(); await expect(page.locator('#app-error')).toContainText('安全检查失败');
+    await expect(page.locator('.message')).toHaveCount(0);
+    await expect(page.locator('#chat-input')).toHaveValue('安全测试');
     expect(JSON.stringify(app.context.store.history(100))).not.toContain(fakeKey);
     expect(JSON.stringify(app.context.store.db.prepare('SELECT text FROM events').all())).not.toContain(fakeKey);
-    expect(JSON.stringify(speeches)).not.toContain(fakeKey); expect(speeches.length).toBe(1);
+    expect(app.context.store.history(100)).toEqual([]);
+    expect(app.context.store.db.prepare('SELECT count(*) AS n FROM events').get().n).toBe(0);
+    expect(speeches).toEqual([]);
   } finally { await app.close(); }
 });

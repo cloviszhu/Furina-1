@@ -1,30 +1,21 @@
-# Project Exo · 第四阶段交接
+# Project Exo — 最终独立验收交接
 
-2026-09-30。本阶段已完成可交接的产品入口，停止继续加功能。用户总授权截止 **14:30 UTC / 多伦多 10:30**；本交接不延长时限。当前唯一主工作树 writer 已收口，无子代理。
+2026-09-30，最终独立验收。用户授权到14:30 UTC / 多伦多10:30。新上下文已独立复核并完成必要缺陷修正；可进入最后用户接入阶段，不需为填满时间扩展功能。
 
-## 当前结果
+最简入口：[START](../START.md)，当前直接打开 http://127.0.0.1:3000。若已停止，在本目录普通 PowerShell 运行 npm.cmd run local:start，再 local:status 等 app/TTS 均 ready=true；停止用 local:stop，先停止播放并等队列释放。无安装、下载、管理员权限或执行策略改动。
 
-- 普通权限 `npm.cmd run local:start / local:status / local:stop`，不下载、不提权、不改执行策略；核对端口、绝对入口路径、executable、PID/创建时间和健康标识。无关占用拒绝，冷启动收据避免重复实例。Windows venv 的 launcher PID 与实际监听 PID 不同，状态以监听 PID 为准。
-- 本机两步 PCM16 WAV 导入：4 MiB、3–10 秒、格式/静音/削波检查、单声道 32 kHz 安全规范化、十分钟预览，填写权利/转写/语言/profile/speaker/emotion 后确认。同一 profile 的表达必须同 speaker；测试声线不可被入口覆盖。原子校验登记、TTS 忙时拒绝、无需重启切换、跨 tab 更新通知。
-- 修复 review P1：JSON/fenced JSON 解码后再次拒绝当前 key，白名单输出/usage；假 unicode key 从回复、SQLite 和朗读回归通过。修复 P2：按 eventId+context 检查早期来源，十轮后保存正常，检查失败保留草稿。旧阶段修复保持。
-- **52 unit / 13 Edge browser / build / 四个 OpenSpec strict**；真实 PMX、GPT-SoVITS 和 Windows SAPI 验证。目录 junction 越界读写回归通过。详细证据见 [第四阶段验证](stage-four-validation.md)。
+最终服务：app PID73372 / 3000，TTS 实际监听 PID67988 / 9880，12:14 UTC均ready，active=false/pending=0。PID会变化，下一次必须重新 status，不盲用旧PID。
 
-## 启动与服务
+独立结果与完整证据见 [最终验收](final-acceptance.md)。52 Node unit、14 Edge browser、6 Python boundary、build、四项OpenSpec strict通过，实际PMX/GPT-SoVITS/SAPI零skip。真实六表达中文WAV、串行队列、实际后端断开及重启恢复通过；两PMX桌面/手机全身及表情近景已实际查看像素。
 
-用户入口：[START](../START.md)。应用 http://127.0.0.1:3000，TTS http://127.0.0.1:9880。当前 app PID **64356**、TTS 监听 PID **64412**；需接手时再次查 status，不盲信 PID。服务已由绝对入口工具干净重启，最后仅重载 app 使配置重定向防护生效；日志 `.runtime/services/`，无需托管 exec session。
+本轮修正：9880直接接口的登记路径/转写/请求及资源边界；JSON/fenced unicode key echo安全失败整轮无DB/history/speech；手机标题与桌面控件遮挡；PMX记忆测试改为临时库。十轮后早期来源direct eventId/context检查和故障保留草稿已加浏览器复核。
 
-旧 relative-path 手工服务无法证明工作目录，工具拒绝管理；用户需在其自有终端停止后迁移。当前实例已经迁移，重复 start 只复用。健康查询/进程操作若在 agent 沙箱被拒绝，普通本机终端运行即可；本阶段仅在沙箱外以普通用户测试，未提升 Windows 权限。
+未通过/未测必须保留：已登记声线没有网页删除入口，只有未登记预览放弃；真实LLM、persona稳定性、角色相似度、人声身份识别与人工听感均未验收。自定义导入UI用明确的合成tone fixture，不能当真人声音或真实角色参考验证。真人播放设备可听与质量需本人试听；自动浏览器静音只验证播放/口型管线。
 
-## 保留边界与下一步
+用户最后两类动作：A 本人填写模型/API key，未来获准的DeepSeek短测试先复核官方模型价格，仍受人民币9元/3次/128输出token限制，本阶段零真实LLM/付费调用；B 提供有权使用的同说话人PCM16 WAV，确认转写/来源许可/完整试听，再人工验收音色、自然度、表达、响度。当前RAVDESS24是CC BY-NC-SA4.0非商业测试声，不是芙宁娜；没有已授权角色reference、没有训练或新大模型下载。
 
-当前聊天仍是有限规则演示；自然对话、真实模型 persona 一致性和持续成长未验收。没有自动模型事实写入，后续若设计提取只能生成待用户确认建议。
+本机截图/真实WAV及机器证据在忽略目录 artifacts/final-acceptance/；参考入口新截图在 artifacts/stage-four/。不上传公网。最终显存约4310MiB/8188MiB，TTS RSS约3512MiB，RAM可用约3611MiB；runtime逻辑大小约14.76GiB，非本轮下载量。预算usedCalls=0/reservedCny=0，正式history/memories最终各0。首次原版PMX测试的隔离问题与基线限制已在最终验收中准确记录。
 
-RAVDESS Actor24 仍为 CC BY-NC-SA 4.0 非商业测试声，**不是芙宁娜**。入口验证只用了合成 tones/既有许可测试音频；未代替用户导入角色录音，未获取网络角色音频，未训练。用户回来可自行选择有权使用的同说话人录音；真实角色相似度、听感、自然度、情绪稳定性留待人工验收。首版仅 PCM16 WAV；其他格式明确提示本机转换。preview 确认是用户声明，机器不能证明完整试听、授权或声纹身份。
+无读取真实凭证/.env/桌面key，无私人消息、充值、提权安装或全局设置改动。PMX、音频、权重、参考素材、secret、runtime、截图不进入Git。只提交代码、测试和文字记录，main / cloviszhu/Furina-1，不force、不改可见性；最新提交用git log -1与远端main核对。
 
-密钥必须最后由用户本人填写；没有读取桌面 key、`.env` 或其他凭证。实际付费调用 **0**、预算 usedCalls/reservedCny **0**。DeepSeek 总 9 元、最多 3 次/128 输出 token；价格核实 2026-09-30 10:15 UTC，24 小时过期 fail closed，真实调用前应重核；其他远程 provider 仍禁用。没有新增大模型下载；RTX4060 Laptop 8GB / RAM16GB 继续复用既有资源。
-
-模型/纹理/音频/权重/运行数据/secret/截图均忽略不入 Git。没有复制/fork D_sakiko，没有对私人账户发消息、充值、新凭证、接受待确认协议或改变安全设置。
-
-Git：实现提交 **`3dbd071315ece6e9f081becb0812d0aa800d912a`** 已正常 push，`git ls-remote origin refs/heads/main` 精确核对一致。随后仅提交本交接与任务完成记录，无新实现；最终文档 checkpoint 见 `git log -1`。main，origin `https://github.com/cloviszhu/Furina-1.git`，禁止 force push。本阶段结束，交给新会话独立验收。
-
-历史：[第三阶段及更早交接](history/stage-three-handoff.md)、[第三阶段验收](stage-three-validation.md)、[角色契约](character-contract.md)、[本地 TTS](local-tts.md)。旧历史的 PID/状态不再是当前值。
+历史：[第四阶段验证](stage-four-validation.md)、[角色契约](character-contract.md)、[本地TTS](local-tts.md)。历史PID/计数不作为当前状态。

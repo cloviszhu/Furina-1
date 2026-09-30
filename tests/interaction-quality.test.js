@@ -74,8 +74,11 @@ test('HTTP malformed endpoints/key echoes/usage do not leak fixture credentials 
     const malformed = await post({ text: '你好', config: { provider: 'ollama', baseUrl: key, apiKey: key, model: 'fixture' } });
     assert.equal(malformed.status, 400); assert(!(await malformed.text()).includes(key)); assert.equal(calls, 0);
     const config = { provider: 'ollama', model: 'fixture', apiKey: key };
-    const failed = await (await post({ text: '你好', config })).json();
-    assert.equal(failed.provider, 'offline'); assert(failed.error); assert(!JSON.stringify(failed).includes(key));
+    const denied = await post({ text: '你好', config });
+    assert.equal(denied.status, 502); const failed = await denied.json();
+    assert(failed.error); assert(!JSON.stringify(failed).includes(key));
+    assert.deepEqual(context.store.history(), []);
+    assert.equal(context.store.db.prepare('SELECT count(*) AS n FROM events').get().n, 0);
     echo = false;
     const safe = await (await post({ text: '新的问候', config, character: { timeline: 'performer', style: 'quiet' } })).json();
     assert.equal(safe.provider, 'ollama'); assert.equal(safe.emotion, 'calm'); assert(!JSON.stringify(safe).includes(key));
