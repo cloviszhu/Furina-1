@@ -107,3 +107,20 @@ test('explicit UUID cancellation/disconnect retain reserve and lock until late p
     assert.equal(calls, 2); assert.equal(context.budget.status().usedCalls, 2); assert.deepEqual(context.store.list(), []);
   } });
 });
+
+test('manual expression is explicit, bounded and cannot change segment text', async () => {
+  const emotions = [];
+  await fixture({ options: { localTtsImpl: { voices: () => [{ id: 'fixture', emotions: ['neutral', 'happy'] }], synthesize: async input => { emotions.push(input.emotion); return Buffer.from('fixture wav'); } } }, body: async (_context, post) => {
+    const result = await (await post('/api/chat', { turnId: randomUUID(), text: 'offline expression' })).json();
+    const input = { backend: 'gpt-sovits', turnId: result.turnId, ...result.segments[0], referenceId: 'fixture', emotion: 'happy' };
+    assert.equal((await post('/api/speech', input)).status, 400);
+    const manual = { ...input, emotion: result.segments[0].emotion, expressionMode: 'manual', referenceEmotion: 'happy' };
+    const audio = await post('/api/speech', manual); assert.equal(audio.status, 200); assert.equal(audio.headers.get('X-Exo-Emotion'), 'happy');
+    assert.deepEqual(emotions, ['happy']);
+    assert.equal((await post('/api/speech', { ...manual, text: 'wrong text' })).status, 400);
+    assert.equal((await post('/api/speech', { ...manual, emotion: 'fake' })).status, 400);
+    const unsupported = await post('/api/speech', { ...manual, referenceEmotion: 'angry' }); assert.equal(unsupported.status, 400); assert.equal((await unsupported.json()).code, 'UNSUPPORTED_REFERENCE_EMOTION');
+    assert.equal((await post('/api/speech', { ...input, expressionMode: 'fake', emotion: 'neutral' })).status, 400);
+    assert.equal(emotions.length, 1);
+  } });
+});

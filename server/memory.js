@@ -84,7 +84,7 @@ export class MemoryStore {
     } catch (error) { this.db.exec('ROLLBACK'); throw error; }
   }
 
-  edit(id, text) {
+  edit(id, text, { beforeCommit } = {}) {
     text = validText(text);
     const memory = this.db.prepare('SELECT * FROM memories WHERE id=?').get(id);
     if (!memory) throw Object.assign(new Error('记忆不存在。'), { status: 404 });
@@ -95,6 +95,7 @@ export class MemoryStore {
       const source = this.event('user', text, { kind: 'memory' });
       this.db.prepare('UPDATE memories SET text=?, source_id=?, updated_at=?, revision=revision+1 WHERE id=?')
         .run(text, source.id, new Date().toISOString(), id);
+      beforeCommit?.();
       this.db.exec('COMMIT');
       ++this.contextGeneration;
       return this.list();
@@ -117,7 +118,7 @@ export class MemoryStore {
     this.db.prepare("DELETE FROM events WHERE kind='conversation'").run();
   }
 
-  delete(id) {
+  delete(id, { beforeCommit } = {}) {
     const memory = this.db.prepare('SELECT * FROM memories WHERE id=?').get(id);
     if (!memory) throw Object.assign(new Error('记忆不存在。'), { status: 404 });
     this.db.exec('BEGIN IMMEDIATE');
@@ -129,6 +130,7 @@ export class MemoryStore {
         const newSource = this.event('user', row.text, { kind: 'memory' });
         this.db.prepare('UPDATE memories SET source_id=? WHERE id=?').run(newSource.id, row.id);
       }
+      beforeCommit?.();
       this.db.exec('COMMIT');
       ++this.contextGeneration;
       return this.list();

@@ -42,7 +42,7 @@ function terms(text) {
   return [...found].filter(t => t.length <= 80).slice(0, MAX_TERMS);
 }
 
-function domain(text) {
+export function domain(text) {
   if (/测试(?:数据|用例|夹具|回合)|这是(?:一个)?测试|[【\[]测试[】\]]|^(?:测试|test|mock|fixture)\s*[：:]|test fixture|mock data/i.test(text)) return 'test';
   if (/虚构|编个故事|写个故事|角色扮演|故事里|小说里|假装|^fiction\s*[：:]/i.test(text)) return 'fiction';
   if (/假如|假设|如果|要是|^hypothetical\s*[：:]/i.test(text)) return 'hypothetical';
@@ -96,11 +96,12 @@ function excerpt(text, queryTerms, max) {
 }
 
 export class InteractionMemoryStore {
-  constructor(file, { confirmedMemoryStore = null, maxEpisodes = 20000 } = {}) {
+  constructor(file, { confirmedMemoryStore = null, maxEpisodes = 20000, database = null } = {}) {
     this.maxEpisodes = integer(maxEpisodes, 20000, 1, 100000);
     this.confirmedMemoryStore = confirmedMemoryStore;
-    if (file !== ':memory:') mkdirSync(dirname(file), { recursive: true });
-    this.db = new DatabaseSync(file);
+    this.ownsDatabase = !database;
+    if (!database && file !== ':memory:') mkdirSync(dirname(file), { recursive: true });
+    this.db = database || new DatabaseSync(file);
     try {
       this.db.exec(`PRAGMA foreign_keys=ON; PRAGMA busy_timeout=3000;`);
       this.transaction(() => {
@@ -111,6 +112,8 @@ export class InteractionMemoryStore {
             text TEXT NOT NULL, context_key TEXT NOT NULL, created_at TEXT NOT NULL,
             updated_at TEXT NOT NULL, revision INTEGER NOT NULL, domain TEXT NOT NULL);
           CREATE INDEX IF NOT EXISTS im_episode_context ON im_episodes(context_key,created_at);
+          CREATE TABLE IF NOT EXISTS im_source_aliases (
+            source_id TEXT PRIMARY KEY, event_id TEXT NOT NULL REFERENCES im_episodes(event_id) ON DELETE CASCADE);
           CREATE TABLE IF NOT EXISTS im_claims (
             id TEXT PRIMARY KEY, episode_id TEXT NOT NULL REFERENCES im_episodes(id) ON DELETE CASCADE,
             type TEXT NOT NULL, predicate TEXT NOT NULL, value TEXT NOT NULL, polarity INTEGER NOT NULL,
@@ -122,13 +125,15 @@ export class InteractionMemoryStore {
             PRIMARY KEY(term,episode_id));`);
         if (this.db.prepare("SELECT value FROM im_meta WHERE key='schema_version'").get().value !== 1) throw error('Unsupported interaction memory schema', 409);
       });
-    } catch (e) { this.db.close(); throw e; }
+    } catch (e) { if (this.ownsDatabase) this.db.close(); throw e; }
   }
 
   transaction(fn) {
-    this.db.exec('BEGIN IMMEDIATE');
-    try { const result = fn(); this.db.exec('COMMIT'); return result; }
-    catch (e) { this.db.exec('ROLLBACK'); throw e; }
+    // SAVEPOINT permits atomic event + episode commits on an explicitly shared
+    // connection while remaining a complete transaction for standalone callers.
+    this.db.exec('SAVEPOINT interaction_memory');
+    try { const result = fn(); this.db.exec('RELEASE interaction_memory'); return result; }
+    catch (e) { this.db.exec('ROLLBACK TO interaction_memory'); this.db.exec('RELEASE interaction_memory'); throw e; }
   }
   get generation() { return this.db.prepare("SELECT value FROM im_meta WHERE key='generation'").get().value; }
   bump() { this.db.prepare("UPDATE im_meta SET value=value+1 WHERE key='generation'").run(); }
@@ -206,7 +211,7 @@ export class InteractionMemoryStore {
 
   confirmed(queryTerms, generic, now) {
     if (!this.confirmedMemoryStore) return [];
-    return this.confirmedMemoryStore.list().filter(m => m.sourceRole === 'user' && !containsPrivateMaterial(m.text) && !containsPrivateMaterial(m.sourceText || '') && m.createdAt <= now && m.updatedAt <= now)
+    return this.confirmedMemoryStore.list().filter(m => m.sourceRole === 'user' && !containsPrivateMaterial(m.text) && !containsPrivateMaterial(m.sourceText || '') && ['reality', 'uncertain'].includes(domain(m.text)) && ['reality', 'uncertain'].includes(domain(m.sourceText || m.text)) && m.createdAt <= now && m.updatedAt <= now)
       .map(m => ({ ...m, score: generic ? 1 : queryTerms.filter(t => normalized(`${m.text} ${m.sourceText}`).includes(t)).length }))
       .filter(m => m.score > 0).sort((a, b) => b.score - a.score || b.updatedAt.localeCompare(a.updatedAt));
   }
@@ -255,5 +260,16 @@ export class InteractionMemoryStore {
       limitations: 'Lexical evidence retrieval; user reports are not verified truth. Plans are not completed events. Token bound covers serialized items in UTF-8 bytes.' };
   }
 
-  close() { this.db.close(); }
+  list({ contextKey, limit = 50, offset = 0 } = {}) {
+    contextKey = string(contextKey, 'contextKey', 100);
+    limit = integer(limit, 50, 1, 100); offset = integer(offset, 0, 0, 100000);
+    const keys = contextKeys(contextKey);
+    const rows = this.db.prepare(`SELECT id,event_id AS eventId,turn_id AS turnId,text,context_key AS contextKey,
+      created_at AS createdAt,updated_at AS updatedAt,revision,domain FROM im_episodes
+      WHERE context_key IN (${keys.map(() => '?').join(',')}) ORDER BY updated_at DESC,rowid DESC LIMIT ? OFFSET ?`).all(...keys, limit + 1, offset);
+    return { items: rows.slice(0, limit), generation: this.generation, hasMore: rows.length > limit };
+  }
+
+  sourceEventId(sourceId) { return this.db.prepare('SELECT event_id FROM im_source_aliases WHERE source_id=?').get(sourceId)?.event_id || sourceId; }
+  close() { if (this.ownsDatabase) this.db.close(); }
 }
