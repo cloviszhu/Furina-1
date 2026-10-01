@@ -15,6 +15,9 @@ import { LocalTts, loadTtsConfig } from './local-tts.js';
 import { CHARACTER_OPTIONS, characterConfig } from './persona.js';
 import { ReferenceImports, MAX_REFERENCE_BYTES } from './reference-import.js';
 import { WindowsCredentials } from './credentials.js';
+import { Turns } from './turns.js';
+import { InteractionMemoryStore, containsPrivateMaterial, domain } from './interaction-memory.js';
+import { mutateInteractionSource, syncConfirmedLineage } from './interaction-memory-integration.js';
 
 const PROJECT = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.bmp': 'image/bmp', '.pmx': 'application/octet-stream', '.svg': 'image/svg+xml' };
@@ -43,6 +46,7 @@ async function serveFile(res, root, relative) {
 
 export async function createApp({ projectRoot = PROJECT, dataDir = join(PROJECT, 'data'), dev = false, fetchImpl = fetch, localTtsImpl, windowsSpeechImpl, credentials = new WindowsCredentials() } = {}) {
   const store = new MemoryStore(join(dataDir, 'exo.sqlite'));
+  const interaction = new InteractionMemoryStore(null, { database: store.db, confirmedMemoryStore: store });
   const budget = new RemoteBudget(store.db);
   const testReports = new TestReports(join(dataDir, 'test-reports'));
   const remoteTests = new RemoteTests(budget, { fetchImpl, reports: testReports });
@@ -54,6 +58,7 @@ export async function createApp({ projectRoot = PROJECT, dataDir = join(PROJECT,
   const assetRoot = join(projectRoot, 'assets/characters/furina/source/mmd');
   const modelNames = ['【芙宁娜】.pmx', '【芙宁娜_荒】.pmx'];
   let chatBusy = false;
+  const turns = new Turns();
   let vite;
   if (dev) { const { createServer } = await import('vite'); vite = await createServer({ root: projectRoot, server: { middlewareMode: true, hmr: false }, appType: 'spa' }); }
   const app = http.createServer(async (req, res) => {
@@ -137,30 +142,55 @@ export async function createApp({ projectRoot = PROJECT, dataDir = join(PROJECT,
         if (req.method === 'GET') return json(res, 200, store.list());
         if (req.method === 'POST') { const input = await body(req); return json(res, 201, store.save(input.text, input.sourceId)); }
       }
+      if (pathname === '/api/interaction-memories' && req.method === 'GET') {
+        const character = characterConfig({ timeline: url.searchParams.get('timeline') ?? undefined, style: url.searchParams.get('style') ?? undefined });
+        return json(res, 200, interaction.list({ contextKey: character.contextKey,
+          limit: url.searchParams.has('limit') ? Number(url.searchParams.get('limit')) : undefined,
+          offset: url.searchParams.has('offset') ? Number(url.searchParams.get('offset')) : undefined }));
+      }
+      const interactionSource = /^\/api\/interaction-memories\/([a-f0-9-]{36})$/i.exec(pathname);
+      if (interactionSource && ['PATCH', 'DELETE'].includes(req.method)) {
+        const text = req.method === 'PATCH' ? validText((await body(req)).text, 1500) : undefined;
+        const result = mutateInteractionSource(store, interaction, interactionSource[1], text);
+        if (result.deleted || result.retained !== undefined) turns.invalidate();
+        return json(res, 200, result);
+      }
       if (pathname.startsWith('/api/memories/')) {
         const id = pathname.slice('/api/memories/'.length);
-        if (req.method === 'PATCH') return json(res, 200, store.edit(id, (await body(req)).text));
-        if (req.method === 'DELETE') return json(res, 200, store.delete(id));
+        if (req.method === 'PATCH') { const before = store.list(), sourceId = before.find(m => m.id === id)?.sourceId; const result = store.edit(id, (await body(req)).text, { beforeCommit: () => { if (sourceId) interaction.delete(interaction.sourceEventId(sourceId)); syncConfirmedLineage(store, interaction, before); } }); turns.invalidate(); return json(res, 200, result); }
+        if (req.method === 'DELETE') { const before = store.list(), sourceId = before.find(m => m.id === id)?.sourceId; const result = store.delete(id, { beforeCommit: () => { if (sourceId) interaction.delete(interaction.sourceEventId(sourceId)); syncConfirmedLineage(store, interaction, before); } }); turns.invalidate(); return json(res, 200, result); }
       }
+      const cancelTurn = /^\/api\/turns\/([^/]+)\/cancel$/.exec(pathname);
+      if (cancelTurn && req.method === 'POST') return json(res, 200, turns.cancel(cancelTurn[1]));
       if (pathname === '/api/chat' && req.method === 'POST') {
         const input = await body(req), text = validText(input.text, 1500);
         if (input.remoteChat === true && (input.confirmed !== true || input.remoteTest === true || input.config?.provider !== 'deepseek')) return json(res, 403, { error: '真实聊天需要本人明确启用后逐次发送，仅授权官方 DeepSeek。' });
         const ownsChatLock = input.remoteChat === true || input.remoteTest === true;
         if (ownsChatLock && chatBusy) return json(res, 409, { error: '上一条聊天仍在处理，请等待或取消；没有启动重复调用。', budget: budget.status() });
+        const turn = input.turnId === undefined ? null : turns.create(input.turnId);
         if (ownsChatLock) chatBusy = true;
         const disconnect = new AbortController();
-        const onClose = () => { if (!res.writableEnded) disconnect.abort(); };
+        const onClose = () => { if (!res.writableEnded) { disconnect.abort(); if (turn) turns.cancel(turn.id); } };
+        const onCancel = () => disconnect.abort();
+        turn?.controller.signal.addEventListener('abort', onCancel, { once: true });
+        const cancelled = () => {
+          if (res.destroyed) return true;
+          if (disconnect.signal.aborted) { json(res, 409, { turnId: turn?.id, generationState: 'cancelled', code: 'TURN_CANCELLED', error: '本轮已取消。', budget: budget.status() }); return true; }
+          return false;
+        };
         res.on('close', onClose);
         try {
           if (req.aborted || res.destroyed) return;
           const character = characterConfig(input.character);
-          const memories = store.recall(text);
+          const memories = store.recall(text).filter(m => !containsPrivateMaterial(m.text) && !containsPrivateMaterial(m.sourceText || '') && ['reality', 'uncertain'].includes(domain(m.text)) && ['reality', 'uncertain'].includes(domain(m.sourceText || m.text)));
+          const evidence = interaction.retrieve({ query: text.slice(0, 512), contextKey: character.contextKey, budget: { tokens: 2400, limit: 6, excerptChars: 300 } });
+          const memoryGeneration = interaction.generation;
           const contextGeneration = store.contextGeneration;
-          const messages = messagesFor(text, memories, store.history(16, character.contextKey), character);
+          const messages = messagesFor(text, memories, store.history(16, character.contextKey).filter(e => !containsPrivateMaterial(e.text)), character, { interactionEvidence: evidence.items });
           let config = input.config || { provider: 'offline' };
           if (typeof config !== 'object' || Array.isArray(config) || ['provider', 'model', 'baseUrl', 'apiKey'].some(k => config[k] !== undefined && (typeof config[k] !== 'string' || config[k].length > (k === 'apiKey' ? 4096 : 500)))) throw Object.assign(new Error('模型配置字段无效或过长。'), { status: 400 });
           config = await resolveCredential(config, input.remoteTest === true || (input.remoteChat === true && input.confirmed === true));
-          if (disconnect.signal.aborted || req.aborted || res.destroyed) return;
+          if (cancelled() || req.aborted) return;
           if (config.apiKey && text.includes(config.apiKey)) throw Object.assign(new Error('聊天正文不能包含当前密钥。'), { status: 400 });
           let result = { text: offlineReply(text, memories, character), emotion: 'neutral', expressionSource: 'limited-rule' }, provider = 'offline', error = null;
           let reservation;
@@ -185,24 +215,41 @@ export async function createApp({ projectRoot = PROJECT, dataDir = join(PROJECT,
               if (reservation) budget.finish(reservation, result.usage, true);
             } catch (failure) {
               if (reservation) budget.finish(reservation, failure.usage || null, false);
-              if (disconnect.signal.aborted || res.destroyed) return;
+              if (cancelled()) return;
+              if (turn) throw Object.assign(new Error('模型未成功返回有效回复，请检查配置后手动重新发送。'), { status: 502, code: 'TURN_PROVIDER_FAILED' });
               if (input.remoteChat === true) return json(res, 502, { error: 'DeepSeek 未成功返回有效安全回复；没有写入演示回复，没有自动重试。已预留费用保留，请核对配置后手动发送。', budget: budget.status() });
               if (failure.code === 'UNSAFE_PROVIDER_REPLY') throw Object.assign(new Error('模型响应安全检查失败；本轮未保存或朗读。'), { status: 502 });
               if (failure.code === 'INVALID_EXPRESSION_CONTRACT') throw Object.assign(new Error('模型未提供有效的 JSON 表达契约；本轮未保存或朗读，没有自动重试。'), { status: 502 });
               error = '模型服务未成功回应，当前为本地演示回复；没有自动重试。';
             }
           }
-          if (disconnect.signal.aborted || res.destroyed) return;
+          if (cancelled()) return;
           // Corrections/deletions clear history too. Discard completions and
           // fallbacks based on superseded context before persistence or delivery.
-          if (contextGeneration !== store.contextGeneration) return json(res, 409, {
+          if (contextGeneration !== store.contextGeneration || memoryGeneration !== interaction.generation) {
+            if (turn) turns.cancel(turn.id);
+            return json(res, 409, {
+            ...(turn && { turnId: turn.id, generationState: 'cancelled' }),
             code: 'CONTEXT_CHANGED', error: '记忆已修改或删除，本次回复已取消。请重新发送。',
-          });
-          const user = store.event('user', text, { provider, contextKey: character.contextKey });
-          const assistant = store.event('assistant', result.text, { turnId: user.turnId, provider, contextKey: character.contextKey,
-            emotion: result.expressionSource === 'model-contract' ? result.emotion : null });
-          return json(res, 200, { user, assistant, provider, error, character, emotion: result.emotion, expressionSource: result.expressionSource, recalled: memories.map(m => ({ id: m.id, text: m.text })), usage: result.usage || null, budget: budget.status() });
-        } finally { if (ownsChatLock) chatBusy = false; res.off('close', onClose); }
+            });
+          }
+          const delivery = turn ? turns.complete(turn, result) : {};
+          let user, assistant, memoryCapture;
+          store.db.exec('BEGIN');
+          try {
+            user = store.event('user', text, { ...(turn && { turnId: turn.id }), provider, contextKey: character.contextKey, remoteTest: input.remoteTest === true });
+            assistant = store.event('assistant', result.text, { turnId: user.turnId, provider, contextKey: character.contextKey, remoteTest: input.remoteTest === true,
+              emotion: result.expressionSource === 'model-contract' ? result.emotion : null });
+            memoryCapture = input.remoteTest === true ? { retained: false, reason: 'test-source' } : error ? { retained: false, reason: 'failed-generation' } : interaction.ingestUserTurn({ turnId: user.turnId, eventId: user.id, text, contextKey: character.contextKey, createdAt: user.createdAt });
+            store.db.exec('COMMIT');
+          } catch (failure) { store.db.exec('ROLLBACK'); throw failure; }
+          return json(res, 200, { ...delivery, user, assistant, provider, error, character, emotion: result.emotion, expressionSource: result.expressionSource, memoryCapture, memoryEvidence: evidence, recalled: memories.map(m => ({ id: m.id, text: m.text })), usage: result.usage || null, budget: budget.status() });
+        } catch (failure) {
+          if (turn && turn.state !== 'cancelled') turn.state = 'error';
+          if (cancelled()) return;
+          if (turn && !res.headersSent) return json(res, failure.status || 400, { turnId: turn.id, generationState: 'error', code: failure.code || 'TURN_FAILED', error: failure.message.includes('SQL') ? '本地数据操作失败。' : failure.message, budget: budget.status() });
+          throw failure;
+        } finally { if (turn) { turn.busy = false; turn.updatedAt = turns.now(); turn.controller.signal.removeEventListener('abort', onCancel); } if (ownsChatLock) chatBusy = false; res.off('close', onClose); }
       }
       if (pathname === '/api/voices' && req.method === 'GET') {
         const neural = ttsConfigError ? { ready: false, error: ttsConfigError, voices: [] } : await localTts.status();
@@ -239,30 +286,51 @@ export async function createApp({ projectRoot = PROJECT, dataDir = join(PROJECT,
       }
       if (pathname === '/api/speech' && req.method === 'POST') {
         const input = await body(req);
+        if ((input.turnId === undefined) !== (input.segmentId === undefined)) throw Object.assign(new Error('turnId 与 segmentId 必须同时提供。'), { status: 400, code: 'INVALID_SEGMENT' });
+        const turn = input.turnId === undefined ? null : turns.speech(input);
+        if (input.expressionMode !== undefined && !['manual', 'reply'].includes(input.expressionMode)) throw Object.assign(new Error('表达模式无效。'), { status: 400, code: 'INVALID_SEGMENT' });
+        if (input.emotion !== undefined && !['neutral', 'calm', 'happy', 'sad', 'angry', 'surprised'].includes(input.emotion)) throw Object.assign(new Error('表达情绪无效。'), { status: 400, code: 'INVALID_SEGMENT' });
+        const manualExpression = input.referenceEmotion !== undefined;
+        if (manualExpression && (input.expressionMode !== 'manual' || !['neutral', 'calm', 'happy', 'sad', 'angry', 'surprised'].includes(input.referenceEmotion))) throw Object.assign(new Error('手动参考表达无效。'), { status: 400, code: 'INVALID_REFERENCE_EMOTION' });
         const backend = input.backend || 'windows-sapi';
         if (backend === 'gpt-sovits' && referenceImports.committing) throw Object.assign(new Error('参考登记正在更新，请稍后试听。'), { status: 409 });
         if (!['windows-sapi', 'gpt-sovits'].includes(backend)) throw Object.assign(new Error('该声音后端不使用服务器合成接口。'), { status: 400 });
         validateSpeechOptions(input, backend);
+        const releaseSpeech = turn ? turns.acquireSpeech(input) : () => {};
         const controller = new AbortController();
+        const onTurnCancel = () => controller.abort();
+        turn?.controller.signal.addEventListener('abort', onTurnCancel, { once: true });
         const cancelled = () => { if (!res.writableEnded) controller.abort(); };
         res.on('close', cancelled);
         let wav;
+        const actualEmotion = manualExpression ? input.referenceEmotion : input.emotion || 'neutral';
         try {
+          if (manualExpression) {
+            const registered = localTts.voices ? localTts.voices() : (await localTts.status()).voices;
+            if (backend !== 'gpt-sovits' || !registered?.find(v => v.id === input.referenceId)?.emotions?.includes(actualEmotion)) throw Object.assign(new Error('所选声线未登记该手动参考表达。'), { status: 400, code: 'UNSUPPORTED_REFERENCE_EMOTION' });
+          }
+          if (controller.signal.aborted) throw controller.signal.reason;
           wav = backend === 'gpt-sovits'
-            ? await localTts.synthesize({ text: validText(input.text, 300), referenceId: input.referenceId, emotion: input.emotion, speed: input.speed, signal: controller.signal })
-            : await speech.synthesize(validText(input.text, 1000), input.voice);
-        } finally { res.off('close', cancelled); }
-        if (res.destroyed || controller.signal.aborted) return;
-        res.writeHead(200, { 'Content-Type': 'audio/wav', 'Cache-Control': 'no-store' }); res.end(wav); return;
+            ? await localTts.synthesize({ text: validText(input.text, 300), referenceId: input.referenceId, emotion: actualEmotion, speed: input.speed, signal: controller.signal })
+            : await speech.synthesize(validText(input.text, 1000), input.voice, { signal: controller.signal });
+        } catch (failure) {
+          if (res.destroyed) return;
+          if (controller.signal.aborted) return json(res, 409, { code: 'TURN_CANCELLED', turnId: turn?.id, error: '本轮语音已取消。' });
+          if (failure.code === 'UNSUPPORTED_REFERENCE_EMOTION') return json(res, 400, { code: failure.code, turnId: turn?.id, segmentId: input.segmentId, error: failure.message });
+          return json(res, 502, { code: 'TTS_FAILED', turnId: turn?.id, segmentId: input.segmentId, error: '语音合成失败，可重播或重新发送。' });
+        } finally { releaseSpeech(); res.off('close', cancelled); turn?.controller.signal.removeEventListener('abort', onTurnCancel); }
+        if (res.destroyed) return;
+        if (controller.signal.aborted) return json(res, 409, { code: 'TURN_CANCELLED', turnId: turn?.id, error: '本轮语音已取消。' });
+        res.writeHead(200, { 'Content-Type': 'audio/wav', 'Cache-Control': 'no-store', 'X-Exo-Emotion': backend === 'gpt-sovits' ? actualEmotion : 'neutral', 'X-Exo-Expression-Mode': manualExpression ? 'manual' : 'reply' }); res.end(wav); return;
       }
       if (pathname.startsWith('/api/')) return json(res, 404, { error: '接口不存在。' });
       if (req.method !== 'GET' && req.method !== 'HEAD') return json(res, 405, { error: '方法不支持。' });
       if (pathname.startsWith('/character-assets/')) return await serveFile(res, assetRoot, pathname.slice(18));
       if (vite) return vite.middlewares(req, res, () => json(res, 404, { error: '页面不存在。' }));
       return await serveFile(res, join(projectRoot, 'dist'), pathname === '/' ? 'index.html' : pathname.slice(1));
-    } catch (error) { if (!res.headersSent) json(res, error.status || 400, { ...(req.url === '/api/chat' ? { budget: budget.status() } : {}), error: error.message.includes('SQL') ? '本地数据操作失败。' : error.message }); }
+    } catch (error) { if (!res.headersSent) json(res, error.status || 400, { ...(error.code && { code: error.code }), ...(req.url === '/api/chat' ? { budget: budget.status() } : {}), error: error.message.includes('SQL') ? '本地数据操作失败。' : error.message }); }
   });
-  return { app, store, budget, async close() { remoteTests.close(); if (app.listening) await new Promise(r => app.close(r)); referenceImports.close(); await vite?.close(); store.close(); } };
+  return { app, store, interaction, budget, async close() { turns.close(); remoteTests.close(); if (app.listening) await new Promise(r => app.close(r)); referenceImports.close(); await vite?.close(); interaction.close(); store.close(); } };
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {

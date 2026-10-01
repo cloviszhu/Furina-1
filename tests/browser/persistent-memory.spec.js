@@ -45,7 +45,7 @@ test('confirmed browser source survives DB reopen and reaches mock request; canc
     await page.locator('#memory-manual').click(); await page.locator('#memory-text').fill('');
     await page.locator('[data-tab=chat]').click(); expect(app.store.list()).toEqual([]); // abandon draft
     await page.locator('.message.user button').click(); await page.locator('#memory-save').click();
-    await expect(page.locator('.memory-card')).toHaveCount(1);
+    await expect(page.locator('#memory-list .memory-card')).toHaveCount(1);
     expect(app.store.list()[0]).toMatchObject({ sourceId, sourceRole: 'user', text: fact, sourceText: fact });
     const id = app.store.list()[0].id;
     for (let i = 0; i < 9; i++) {
@@ -58,18 +58,18 @@ test('confirmed browser source survives DB reopen and reaches mock request; canc
     expect(evidence(body)).toEqual([{ text: fact, source: 'user-statement' }]);
     expect(app.store.list()[0].id).toBe(id);
     await reopened.locator('[data-tab=memory]').click(); reopened.once('dialog', d => d.dismiss());
-    await reopened.locator('.memory-card').getByRole('button', { name: '删除', exact: true }).click();
+    await reopened.locator('#memory-list .memory-card').getByRole('button', { name: '删除', exact: true }).click();
     expect(app.store.list()).toHaveLength(1); // cancelled confirmation leaves SQLite intact
-    await reopened.locator('.memory-card').getByRole('button', { name: '修改', exact: true }).click();
+    await reopened.locator('#memory-list .memory-card').getByRole('button', { name: '修改', exact: true }).click();
     const changed = '我第一次舞台演出扮演园丁，散场时朋友送我一束白玫瑰。';
     await reopened.locator('.memory-card textarea').fill(changed);
-    await reopened.locator('.memory-card').getByRole('button', { name: '保存修改', exact: true }).click();
-    await expect(reopened.locator('.memory-card')).toContainText('第 2 版');
+    await reopened.locator('#memory-list .memory-card').getByRole('button', { name: '保存修改', exact: true }).click();
+    await expect(reopened.locator('#memory-list .memory-card')).toContainText('第 2 版');
     body = await ask(reopened); expect(evidence(body)).toEqual([{ text: changed, source: 'user-statement' }]);
     expect(JSON.stringify(body)).not.toContain('邮差'); expect(JSON.stringify(body)).not.toContain('向日葵');
     await reopened.locator('[data-tab=memory]').click(); reopened.once('dialog', d => d.accept());
-    await reopened.locator('.memory-card').getByRole('button', { name: '删除', exact: true }).click();
-    await expect(reopened.locator('.memory-card')).toHaveCount(0);
+    await reopened.locator('#memory-list .memory-card').getByRole('button', { name: '删除', exact: true }).click();
+    await expect(reopened.locator('#memory-list .memory-card')).toHaveCount(0);
     body = await ask(reopened); expect(evidence(body)).toEqual([]);
     for (const word of ['邮差', '向日葵', '园丁', '白玫瑰']) expect(JSON.stringify(body)).not.toContain(word);
     expect(app.budget.status().usedCalls).toBe(3);
