@@ -6,7 +6,7 @@ const KINDS = ['canonicalfact', 'characterinterpretation'];
 const STATUSES = ['primary-verified', 'reference-transcript-checked', 'primary-promotion-checked',
   'official_hosted_game_text', 'secondary_game_dialogue_transcription', 'secondary-only', 'pending'];
 const USABLE = new Set(STATUSES.slice(0, 5));
-const HEADER = '来源资料：canonicalfact 为事实，characterinterpretation 为理解。reported 是转述，不能自称亲眼；unspecified 不推导亲历。缺少资料不代表事件未发生。\n';
+const HEADER = '来源资料：canonicalfact 为来源化剧情陈述，核实等级见 sourceStatus，不表示已核实为原始游戏事实；characterinterpretation 为理解或解释。reported 是转述，不能自称亲眼；unspecified 不推导亲历。缺少资料不代表事件未发生。\n';
 export const CHARACTER_CONTEXT_LIMITS = Object.freeze({ maxRecords: 12, maxChars: 6000, maxBytes: 4096 });
 const DEFAULT_BUDGET = Object.freeze({ maxRecords: 8, maxChars: 4000, maxBytes: 2048 });
 const INTERACTION_HEADER = '互动资料：用户报告、未完成计划与角色推测，均不覆写 canon。\n';

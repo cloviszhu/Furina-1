@@ -19,3 +19,7 @@ canonicalfact是资料分区、不是direct-game核实等级；prompt明确来�
 `node --test tests/character-context.test.js tests/character-context-integration.test.js tests/persona-natural-recap.test.js tests/persona-recall-grounding.test.js tests/providers.test.js`：50/50通过（0.345秒）。新增6项覆盖三组timeline成对过滤、reported与eyewitness、无关query/旧甜点不注入、用户事实与canon分区、靠近16000bytes上限完整保留原数据、实际HTTP消息/隔离自动记忆/完整请求费用预留。fake remote reservation证明input_bound精确等于完整messages字节+1024，不是实际消费。
 
 OpenSpec sourced-character-context strict与语法/diff检查通过。未跑build/browser/相同全量tests：未改UI，实际HTTP与provider边界已覆盖当前变化，且父要求不额外重负载。工程检查不证明模型真的遵守时间线、真实剧情全覆盖或角色感知质量。需独立review后由父决定是否汇合；当前不得部署或推main。
+
+## HEADER 措辞复审
+
+按父线程的nonblocker审查补充，将模块HEADER的“canonicalfact 为事实”改为“来源化剧情陈述，核实等级见 sourceStatus，不表示已核实为原始游戏事实”；characterinterpretation明确为理解或解释。分类名不再暗示核实资格。既有模块和HTTP adapter相关检查30/30、语法/diff检查通过，含更长HEADER的字节临界和整条舍弃边界。修改仅留开发分支；此次main合并/本机发布的自动审批因授权不够明确而拒绝，暂停发布等待用户范围回复，没有换工具绕过。
