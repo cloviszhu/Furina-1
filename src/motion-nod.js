@@ -1,16 +1,19 @@
 import {Matrix4,Quaternion,Vector3} from 'three';
 import {ease} from './motion.js';
+export const NOD_SOURCE_PATH='/character-assets/animations/overte-headnod.json';
 
 export function validNodSource(source){
   const vector=(v,n)=>Array.isArray(v)&&v.length===n&&v.every(Number.isFinite);
   return source?.duration===1.8&&Array.isArray(source.samples)&&source.samples.length===55&&
     ['Spine2','Neck','Head','LeftArm','RightArm'].every(n=>vector(source.reference?.[n]?.p,3)&&vector(source.reference?.[n]?.q,4)&&Math.abs(Math.hypot(...source.reference[n].q)-1)<.001)&&
-    source.samples.every((s,i)=>Math.abs(s.time-i/30)<1e-6&&['Spine2','Neck','Head'].every(n=>vector(s.rotations?.[n],4)&&Math.abs(Math.hypot(...s.rotations[n])-1)<.001));
+    source.samples.every((s,i)=>Math.abs(s?.time-i/30)<1e-6&&['Spine2','Neck','Head'].every(n=>vector(s.rotations?.[n],4)&&Math.abs(Math.hypot(...s.rotations[n])-1)<.001))&&
+    Boolean(basis(...['LeftArm','RightArm','Neck','Head'].map(n=>new Vector3(...source.reference[n].p))));
 }
-export async function loadNodSource(url){
+export async function loadNodSource(url=NOD_SOURCE_PATH){
+  if(url!==NOD_SOURCE_PATH)return null;
   const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),2000);
   try{
-    const response=await fetch(url,{signal:controller.signal,credentials:'omit'});
+    const response=await fetch(url,{signal:controller.signal,credentials:'omit',redirect:'error'});
     if(!response.ok)return null;
     const reader=response.body.getReader(),chunks=[];let length=0;
     while(true){const{value,done}=await reader.read();if(done)break;length+=value.length;if(length>32768){await reader.cancel();return null;}chunks.push(value);}
@@ -23,8 +26,12 @@ const controls={'上半身2':'Spine2','首':'Neck','頭':'Head'};
 const depth=bone=>{let n=0;while(bone.parent){n++;bone=bone.parent;}return n;};
 const position=bone=>bone.getWorldPosition(new Vector3());
 function basis(left,right,neck,head){
-  const y=head.clone().sub(neck).normalize(),x=left.clone().sub(right).normalize();
-  const z=new Vector3().crossVectors(x,y).normalize();x.crossVectors(y,z).normalize();
+  const y=head.clone().sub(neck),x=left.clone().sub(right);
+  if(![x.length(),y.length()].every(n=>Number.isFinite(n)&&n>1e-8))return null;
+  x.normalize();y.normalize();
+  const z=new Vector3().crossVectors(x,y);
+  if(z.length()<1e-8)return null;
+  z.normalize();x.crossVectors(y,z).normalize();
   return new Quaternion().setFromRotationMatrix(new Matrix4().makeBasis(x,y,z));
 }
 
@@ -42,6 +49,7 @@ export class MotionNod {
     const worldRest=new Map(bones.map(b=>[b,b.getWorldQuaternion(new Quaternion())]));
     const ref=nodSource.reference,srcBasis=basis(...['LeftArm','RightArm','Neck','Head'].map(n=>new Vector3(...ref[n].p)));
     const targetBasis=basis(...['左腕','右腕','首','頭'].map(n=>position(byName[n])));
+    if(!targetBasis)return;
     const alignment=targetBasis.multiply(srcBasis.invert());
     const grants=new Map(grantSolver.grants.map(g=>[bones[g.index],g]));
     const ordered=[...bones].sort((a,b)=>depth(a)-depth(b));

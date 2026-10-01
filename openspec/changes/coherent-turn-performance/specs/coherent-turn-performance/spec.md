@@ -50,6 +50,9 @@ stage SHALL 用明确许可的本地待机动作源适配实际 PMX reference po
 
 ### Requirement: Traceable nod reference-pose adaptation
 stage SHALL 仅在来源/许可明确且所需骨链存在时用本地动作源替换nod的原正弦通道。source world rotations MUST 经源/目标身体参考轴、目标父级与grant关系转换，不能只替换骨名。派生源数据 SHALL 附完整许可、版权与变更说明，不包含目标PMX数据。
+#### Scenario: Bounded local resource and invalid reference axes
+- **WHEN** 可选资源使用其他路径/URL、尝试重定向，或源/目标参考轴重合、平行、非有限
+- **THEN** 加载器只允许固定本地路径且拒绝重定向；无效参考不得进入适配，回退旧nod，不改写目标骨姿态；有效资源仍受32KiB与2秒上限约束
 #### Scenario: Nod interrupt and fallback
 - **WHEN** nod演出中取消、重复触发、停止说话或更换模型
 - **THEN** 既有2秒生命周期、重入拒绝及局部旋转速率边界保持，根/腿/口型/表情不归nod clip负责；缺必要骨链时回退原点头

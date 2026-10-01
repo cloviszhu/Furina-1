@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Bone,BufferGeometry,Quaternion,Skeleton,SkinnedMesh,Vector3} from 'three';
-import {MotionNod,loadNodSource,validNodSource} from '../src/motion-nod.js';
+import {MotionNod,loadNodSource,validNodSource,NOD_SOURCE_PATH} from '../src/motion-nod.js';
 // Original synthetic channels; no downloaded source motion or PMX data in tests.
 const nodSource={duration:1.8,reference:Object.fromEntries(Object.entries({Spine2:[0,10,0],Neck:[0,15,0],Head:[0,16,0],LeftArm:[4,14,0],RightArm:[-4,14,0]}).map(([n,p])=>[n,{p,q:[0,0,0,1]}])),samples:Array.from({length:55},(_,i)=>({time:i/30,rotations:Object.fromEntries(Object.entries({Spine2:.03,Neck:.06,Head:.25}).map(([n,gain])=>[n,new Quaternion().setFromAxisAngle(new Vector3(1,0,0),gain*Math.sin(i/54*Math.PI*3)).toArray()]))}))};
 function rig(yaw=.5){
@@ -32,7 +32,34 @@ test('missing neck chain preserves the existing procedural nod fallback',()=>{
 test('optional local source rejects missing, malformed and oversized data without credentials',async()=>{
  const original=globalThis.fetch;let credentials;
  try{
-  globalThis.fetch=async(_url,options)=>{credentials=options.credentials;return new Response(JSON.stringify(nodSource));};assert(validNodSource(await loadNodSource('/local')));assert.equal(credentials,'omit');
-  for(const response of [new Response('',{status:404}),new Response('{'),new Response(' '.repeat(32769)),new Response(JSON.stringify({...nodSource,duration:Infinity}))]){globalThis.fetch=async()=>response;assert.equal(await loadNodSource('/local'),null);}
+  globalThis.fetch=async(url,options)=>{assert.equal(url,NOD_SOURCE_PATH);assert.equal(options.redirect,'error');credentials=options.credentials;return new Response(JSON.stringify(nodSource));};assert(validNodSource(await loadNodSource()));assert.equal(credentials,'omit');
+  for(const response of [new Response('',{status:404}),new Response('{'),new Response(' '.repeat(32769)),new Response(JSON.stringify({...nodSource,duration:Infinity}))]){globalThis.fetch=async()=>response;assert.equal(await loadNodSource(),null);}
  }finally{globalThis.fetch=original;}
+});
+
+test('only the fixed local resource path can cause a fetch',async()=>{
+ const original=globalThis.fetch;let calls=0;
+ try{globalThis.fetch=async()=>{calls++;throw Error('Must not fetch');};
+ for(const url of ['https://example.com/nod.json','//example.com/nod.json','/other','/character-assets/animations/../nod.json',NOD_SOURCE_PATH+'?source=other'])assert.equal(await loadNodSource(url),null);
+ assert.equal(calls,0);
+ }finally{globalThis.fetch=original;}
+});
+
+test('degenerate source and target reference axes fall back without changing bones',()=>{
+ const invalid=structuredClone(nodSource);invalid.samples[0]=null;assert.equal(validNodSource(invalid),false);
+ for(const positions of [[0,0,0],[0,1e308,0]]){
+  const source=structuredClone(nodSource);source.reference.Head.p=positions;source.reference.Neck.p=positions;
+  assert.equal(validNodSource(source),false);
+ }
+ const source=structuredClone(nodSource);source.reference.LeftArm.p=[0,20,0];source.reference.RightArm.p=[0,10,0];assert.equal(validNodSource(source),false);
+ const{mesh,bones}=rig();bones['頭'].position.set(0,0,0);mesh.updateMatrixWorld(true);const before=Object.values(bones).map(b=>b.quaternion.toArray());
+ const c=new MotionNod(mesh,{grants:[],updateOne(){}},nodSource);assert.equal(c.available,false);assert.equal(c.sample(1),null);assert.deepEqual(Object.values(bones).map(b=>b.quaternion.toArray()),before);
+});
+
+test('an unresponsive optional source aborts after the two-second deadline',async t=>{
+ const original=globalThis.fetch;let signal;
+ t.mock.timers.enable({apis:['setTimeout']});
+ try{globalThis.fetch=(_url,options)=>new Promise((_,reject)=>{signal=options.signal;signal.addEventListener('abort',()=>reject(Error('aborted')),{once:true});});
+ const pending=loadNodSource();t.mock.timers.tick(1999);assert.equal(signal.aborted,false);t.mock.timers.tick(1);assert.equal(await pending,null);assert.equal(signal.aborted,true);
+ }finally{globalThis.fetch=original;t.mock.timers.reset();}
 });
