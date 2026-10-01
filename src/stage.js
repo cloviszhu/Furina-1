@@ -3,9 +3,10 @@ import { MMDLoader } from 'three/addons/loaders/MMDLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { MMDAnimationHelper } from 'three/addons/animation/MMDAnimationHelper.js';
 import { motionFrame, gestureWeight, ease } from './motion.js';
+import { MotionIdle } from './motion-idle.js';
 
 // Deliberate, held upper-body poses, with gaze leading the body. Both PMX rigs
-// have these controls; root/legs remain planted because this stage has no IK.
+// have these controls; the sourced idle layer additionally solves planted legs.
 export function composeStagePose(frame, { time, mode, action, elapsed = 0, variant = 'auto' }) {
   const add = (name, x = 0, y = 0, z = 0) => {
     const angles = frame.bones[name];
@@ -106,6 +107,7 @@ export class CharacterStage {
     this.element = element; this.onState = onState; this.mouth = 0; this.action = null; this.expression = 'neutral';
     this.mode = 'idle'; this.lastVoiceAt = -Infinity; this.smoothed = new Map();
     this.idleVariant = 'auto';
+    this.idleSourceEnabled = true; // Dual-PMX visual/interrupt gate; explicit variants keep their original poses.
     this.offset = new THREE.Quaternion(); this.euler = new THREE.Euler();
     this.scene = new THREE.Scene();
     this.camera = new THREE.PerspectiveCamera(30, 1, 0.1, 1000);
@@ -141,7 +143,7 @@ export class CharacterStage {
     try {
       const mesh = await loader.loadAsync(url);
       if (sequence !== this.loadSequence) { this.disposeMesh(mesh); return; }
-      if (this.mesh) { this.scene.remove(this.mesh); this.disposeMesh(this.mesh); }
+      if (this.mesh) { this.motionIdle?.dispose(); this.scene.remove(this.mesh); this.disposeMesh(this.mesh); }
       this.mesh = mesh;
       const box = new THREE.Box3().setFromObject(mesh);
       this.height = box.max.y - box.min.y;
@@ -154,6 +156,7 @@ export class CharacterStage {
       // hierarchy. Controllers alone move while the mesh stays in T-pose unless
       // those grants are applied. Use Three's PMX solver, without physics/Ammo.
       this.grantSolver = new MMDAnimationHelper().createGrantSolver(mesh);
+      this.motionIdle = new MotionIdle(mesh, this.grantSolver);
       this.scene.add(mesh); this.resetCamera();
       this.onState(`模型已就绪 · ${mesh.skeleton.bones.length} 骨骼${missingTexture ? ' · 贴图异常' : ''}`);
       window.__exoStage = this; // Local inspection/test hook, contains no credentials.
@@ -171,6 +174,7 @@ export class CharacterStage {
     this.action = { name: action, start: performance.now() }; return true;
   }
   cancelAction() { const active = Boolean(this.action); this.action = null; return active; }
+  setIdleSourceEnabled(value) { this.idleSourceEnabled = Boolean(value); }
   setIdleVariant(value) { this.idleVariant = ['auto', 'settled', 'glance', 'attentive'].includes(value) ? value : 'auto'; }
   setMode(value) { this.mode = ['idle', 'thinking', 'preparing', 'speaking', 'error'].includes(value) ? value : 'idle'; }
   setExpression(value) { this.expression = ['neutral', 'calm', 'happy', 'sad', 'angry', 'surprised'].includes(value) ? value : 'neutral'; }
@@ -187,13 +191,36 @@ export class CharacterStage {
       const frame = motionFrame({ time: t, mode, modeElapsed: (now - this.modeStartedAt) / 1000, expression: this.expression, action: this.action?.name, elapsed, mouth: this.mouth,
         gazeYaw: Math.atan2(direction.x, direction.z), gazePitch: -Math.atan2(direction.y, Math.hypot(direction.x, direction.z)) * .25 });
       softenStageFrame(frame, { time: t, mode, expression: this.expression, action: this.action?.name, elapsed });
-      composeStagePose(frame, { time: t, mode, action: this.action?.name, elapsed, variant: this.idleVariant });
+      const poseVariant=this.idleSourceEnabled&&this.motionIdle?.available&&this.idleVariant==='auto'?'source':this.idleVariant;
+      composeStagePose(frame, { time: t, mode, action: this.action?.name, elapsed, variant: poseVariant });
+      const idleWeight = this.motionIdle?.update(dt, {enabled:this.idleSourceEnabled,time:t,mode,action:this.action,variant:this.idleVariant,expression:this.expression}) || 0;
+      let headWorld;
+      if(idleWeight > 1e-6) {
+        // Preserve the existing gaze/expression target in world space while the
+        // sourced torso settles underneath it. Source clips never own morphs.
+        for(const [name,angles] of Object.entries(frame.bones))this.pose(name,...angles);
+        this.mesh.updateMatrixWorld(true);headWorld=this.bones['頭']?.getWorldQuaternion(new THREE.Quaternion());
+        for(const [bone,quaternion] of this.base)bone.quaternion.copy(quaternion);
+        this.motionIdle.center.position.addScaledVector(this.motionIdle.centerOffset,idleWeight);
+      }
+      if(this.motionIdle?.available)for(const name of this.motionIdle.targets.keys())frame.bones[name] ||= [0,0,0];
       for (const [name, angles] of Object.entries(frame.bones)) {
         const bone = this.bones[name]; if (!bone) continue;
+        if(headWorld && name === '頭')continue;
         const target = this.offset.setFromEuler(this.euler.set(...angles));
+        const sourced=this.motionIdle?.targets.get(name);
+        if(sourced && idleWeight > 0)target.slerp(this.base.get(bone).clone().invert().multiply(sourced),idleWeight*this.motionIdle.mask(name));
         let current = this.smoothed.get(name);
         if (!current) { current = target.clone(); this.smoothed.set(name, current); }
         else settlePoseOffset(current, target, dt, /腕|ひじ|手首/.test(name));
+        bone.quaternion.copy(this.base.get(bone)).multiply(current);
+      }
+      if(headWorld) {
+        this.mesh.updateMatrixWorld(true);
+        const bone=this.bones['頭'];
+        const target=this.base.get(bone).clone().invert().multiply(bone.parent.getWorldQuaternion(new THREE.Quaternion()).invert().multiply(headWorld));
+        let current=this.smoothed.get('頭');
+        if(!current){current=target.clone();this.smoothed.set('頭',current);}else settlePoseOffset(current,target,dt);
         bone.quaternion.copy(this.base.get(bone)).multiply(current);
       }
       for (const [name, target] of Object.entries(frame.morphs)) {
@@ -202,6 +229,7 @@ export class CharacterStage {
         this.mesh.morphTargetInfluences[index] += (target - this.mesh.morphTargetInfluences[index]) * (1 - Math.exp(-dt * rate));
       }
       if (this.action && elapsed > (this.action.name === 'nod' ? 2 : 3.6)) this.action = null;
+      if(this.motionIdle?.available && (this.idleSourceEnabled || idleWeight > 1e-6))this.motionIdle.plant();
       this.grantSolver?.update();
       this.mesh.updateMatrixWorld(true);
     }

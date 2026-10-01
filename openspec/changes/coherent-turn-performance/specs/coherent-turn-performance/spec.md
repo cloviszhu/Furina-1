@@ -35,3 +35,15 @@
 #### Scenario: Engineering checks complete
 - **WHEN** 服务端确定性检查通过
 - **THEN** 只报告对应工程证据，真实角色、声线和活人感不宣称已验收，不要求用户逐补丁API测试。
+
+### Requirement: Licensed resting motion with planted feet
+stage SHALL 用明确许可的本地待机动作源适配实际 PMX reference pose、肢段方向与腿长，并保持脚踝位置及脚底世界朝向稳定。源采样 MUST 与真实骨架每帧重置隔离，避免 mixer 常量轨道缓存丢失。分发数据 SHALL 只包含合法源 rig 数据，不包含用户 PMX、纹理或目标骨架坐标。
+#### Scenario: Idle, greeting and cancellation
+- **WHEN** 从 idle 进入既有 greet，途中取消并回到 idle
+- **THEN** 源 idle 渐出及渐入，保留动作重入拒绝与旋转速率边界，口型/眨眼/表情仍由原 stage 负责，不触发聊天、语音或模型调用
+#### Scenario: Unavailable rig or explicit resting pose
+- **WHEN** 模型缺少适配所需的骨链，或用户选择既有明确 idleVariant
+- **THEN** 保留既有程序化姿态与动作 API，不因待机适配失败阻断模型加载
+#### Scenario: Visual acceptance
+- **WHEN** 两形态完成至少30秒idle及至少10秒idle→greet→cancel→idle隔离序列
+- **THEN** 分别检查倒置、脚漂/脚底朝向、膝过伸、手/衣摆穿模及过渡；数值与测试只作对应工程证据，不宣布自然度或角色活人感完成
