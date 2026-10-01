@@ -70,12 +70,12 @@ export function createAsrHandler({
   ffmpegPath = join(runtimeRoot, 'tools/ffmpeg/ffmpeg.exe'),
   whisperPath = join(runtimeRoot, 'asr/whisper-cpp/bin/whisper-cli.exe'),
   modelPath = join(runtimeRoot, 'asr/whisper-cpp/ggml-base.bin'),
-  tempRoot = tmpdir(), runProcess = runAsrProcess, timeoutMs = ASR_LIMITS.timeoutMs,
+  tempRoot = tmpdir(), runProcess = runAsrProcess, timeoutMs = ASR_LIMITS.timeoutMs, now = () => Date.now(),
 } = {}) {
   let active = null;
   const cancelled = new Map();
-  const prune = () => { const now = Date.now(); for (const [id, time] of cancelled) if (time <= now) cancelled.delete(id); };
-  const remember = id => { prune(); cancelled.delete(id); cancelled.set(id, Date.now() + 60000); while (cancelled.size > 128) cancelled.delete(cancelled.keys().next().value); };
+  const prune = () => { const current = now(); for (const [id, time] of cancelled) if (time <= current) cancelled.delete(id); };
+  const remember = id => { prune(); if (!cancelled.has(id) && cancelled.size >= 128) throw fail(429, 'cancel_capacity'); cancelled.set(id, now() + 60000); };
   const available = async () => {
     try { await Promise.all([ffmpegPath, whisperPath, modelPath, ...['ggml-base.dll', 'ggml-cpu.dll', 'ggml.dll', 'whisper.dll'].map(name => join(resolve(whisperPath, '..'), name))].map(path => access(path))); return true; } catch { return false; }
   };

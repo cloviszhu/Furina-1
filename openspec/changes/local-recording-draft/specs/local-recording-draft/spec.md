@@ -17,3 +17,11 @@
 #### Scenario: 编辑或取消后迟到
 - **WHEN** 用户编辑草稿或取消后 permission/transcription 才返回
 - **THEN** 草稿保留、tracks 关闭、无模型调用。空音频、拒绝授权、缺设备及格式错误明确反馈且可恢复。
+### Requirement: Application integration preserves draft isolation
+系统 MUST 在既有来源校验后处理ASR路由，录音转写成功仅返回草稿，不自动请求聊天或写入历史/记忆/费用；应用关闭 MUST 停止接收连接并等待ASR取消、子进程close及临时目录清理。
+#### Scenario: Completed local draft
+- **WHEN** 用户显式停止录音且本地转写成功
+- **THEN** 草稿可编辑，音频目录已清空，用户需显式发送才进入聊天，原有记忆与预算不变。
+#### Scenario: Full pre-cancel registry
+- **WHEN** TTL内已有128个不同预取消ID，又请求登记新的取消ID
+- **THEN** 明确429而不丢旧取消，已登记ID仍可更新；60秒到期才释放容量。

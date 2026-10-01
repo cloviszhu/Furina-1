@@ -101,10 +101,19 @@ for (const phase of ['decoder', 'recognizer']) test(`HTTP cancellation kills own
   await fetch(`${f.base}/api/asr/transcriptions/${id}/cancel`, { method: 'POST' });
   assert.equal((await running).status, 499); assert.equal(closed, true); assert.deepEqual(await readdir(f.temporary), []);
 });
-test('late cancel IDs stay capped at 128 entries', async t => {
+test('pre-cancel TTL expires only at its explicit 60 second boundary', async t => {
+  let now = 1000; const f = await fixture(t, { now: () => now }); const id = randomUUID();
+  assert.equal((await fetch(`${f.base}/api/asr/transcriptions/${id}/cancel`, { method: 'POST' })).status, 200);
+  now += 59999; assert.equal((await f.post(id)).status, 409);
+  ++now; assert.equal((await f.post(id)).status, 200);
+});
+
+test('cancel ID capacity refuses new entries without dropping earlier cancellation', async t => {
   const f = await fixture(t), first = randomUUID();
   await fetch(`${f.base}/api/asr/transcriptions/${first}/cancel`, { method: 'POST' });
   let last;
-  for (let i = 0; i < 128; i++) { last = randomUUID(); await fetch(`${f.base}/api/asr/transcriptions/${last}/cancel`, { method: 'POST' }); }
-  assert.equal((await f.post(last)).status, 409); assert.equal((await f.post(first)).status, 200);
+  for (let i = 0; i < 127; i++) { last = randomUUID(); assert.equal((await fetch(`${f.base}/api/asr/transcriptions/${last}/cancel`, { method: 'POST' })).status, 200); }
+  assert.equal((await fetch(`${f.base}/api/asr/transcriptions/${randomUUID()}/cancel`, { method: 'POST' })).status, 429);
+  assert.equal((await fetch(`${f.base}/api/asr/transcriptions/${first}/cancel`, { method: 'POST' })).status, 200);
+  assert.equal((await f.post(last)).status, 409); assert.equal((await f.post(first)).status, 409);
 });
