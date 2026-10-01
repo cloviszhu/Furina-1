@@ -1,5 +1,7 @@
 # 当前交接
 
+2026-10-01最新：审判窄数据增量已按持续授权main/app-only发布，运行代码 `1fff412d5bf213dd46abeca6d51006a988d5eaec`，app PID100408/ready，TTS PID67988保持，ASR仍base/offline/available/idle。数据、预算与dist/声线配置守恒，未开麦克风或付费调用；只补5条有来源记录，其余缺证保留禁用，不称完整审判/五幕。详见[发布核验与回滚](docs/trial-evidence-deployment.md)。等待small对比再决定后续ASR变化，以下为历史记录。
+
 2026-10-01最新：已审ASR草稿与来源化剧情扩包已main/app-only发布，运行代码 `5b882e395749b88517ee56e3696fd04541a1424c`，app PID71312/ready，TTS PID67988保持。只读ASRstatus available/offline=true、busy=false；数据计数、50次/reserve5.10934元与声线配置保守恒，未开麦克风或收费请求，未操作用户页面。见[发布核验与本机回滚](docs/asr-story-deployment.md)。剧情只五幕关键场景，Act V审判仍核心来源缺口；真实设备、模型知识边界、听感和动作感知未验收。以下为历史阶段记录，不以旧PID作为当前状态。
 
 2026-10-01最新：经用户具体确认及自动审批认可，来源化角色知识最小adapter与HEADER资格修正已main/app-only发布。运行时代码 `fb74ffa7d65fccb02d7261bb0c3426a321fe0d53`，app PID63800/ready；TTS PID67988、dist、声线配置、用户数据与50次/reserve5.10934元保持。详见 [角色知识发布核验](docs/character-context-deployment.md)。ASR仍并行开发，未发布；真实角色/声线/动作感知仍未验收。下面连续交互里程碑为上一发布记录。
