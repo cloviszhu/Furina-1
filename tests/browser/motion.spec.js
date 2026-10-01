@@ -39,12 +39,17 @@ test('actual PMX gesture remains continuous, refuses interruption, returns to re
           }
         }
       }
-      const returnAngle = s.bones['右ひじ'].quaternion.angleTo(initial);
+      const returned = s.bones['右ひじ'].quaternion.clone();
+      const initialPoseDifference = returned.angleTo(initial);
+      // Automatic idle is now a moving clip. Compare against its target at
+      // this same time/clip phase, not the obsolete fixed starting posture.
+      s.smoothed.clear(); s.tick(origin + 4000);
+      const returnAngle = returned.angleTo(s.bones['右ひじ'].quaternion);
       s.setExpression('happy'); s.tick(origin + 4017);
       for (let i = 1; i < 60; i++) s.tick(origin + 4017 + i * 1000 / 60);
       const index = mesh.morphTargetDictionary['にこり'], smileBefore = mesh.morphTargetInfluences[index];
       s.setExpression('neutral'); s.tick(origin + 5017); const smileAfter = mesh.morphTargetInfluences[index];
-      return { maxAngleStep, maxWristStep, maxWristTravel, peakVertexDelta, returnAngle, refused,
+      return { maxAngleStep, maxWristStep, maxWristTravel, peakVertexDelta, returnAngle, initialPoseDifference, refused,
         finished: s.action === null, smileBefore, smileAfter, trajectory };
     });
     expect(evidence.refused).toBe(true); expect(evidence.finished).toBe(true);
