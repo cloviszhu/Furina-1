@@ -1,5 +1,7 @@
 # 当前交接
 
+2026-10-01最新：用户此次明确授权的已审idle适配已main/app-only发布，运行代码 `90b375535a923210754db1c7131bbd0c8cbc3af3`，app PID101180/ready，TTS PID67988保持。ASR仍base/offline/available/idle，数据计数、50次/reserve5.10934元、声线配置与PMX hash守恒；新dist线上hash一致，用户页面未刷新，未开麦克风/收费/下载small。见[发布记录与本机回滚](docs/motion-idle-deployment.md)。招呼点头仍旧实现，循环感及真实感知未验收；以下为历史记录。
+
 2026-10-01最新：审判窄数据增量已按持续授权main/app-only发布，运行代码 `1fff412d5bf213dd46abeca6d51006a988d5eaec`，app PID100408/ready，TTS PID67988保持，ASR仍base/offline/available/idle。数据、预算与dist/声线配置守恒，未开麦克风或付费调用；只补5条有来源记录，其余缺证保留禁用，不称完整审判/五幕。详见[发布核验与回滚](docs/trial-evidence-deployment.md)。等待small对比再决定后续ASR变化，以下为历史记录。
 
 2026-10-01最新：已审ASR草稿与来源化剧情扩包已main/app-only发布，运行代码 `5b882e395749b88517ee56e3696fd04541a1424c`，app PID71312/ready，TTS PID67988保持。只读ASRstatus available/offline=true、busy=false；数据计数、50次/reserve5.10934元与声线配置保守恒，未开麦克风或收费请求，未操作用户页面。见[发布核验与本机回滚](docs/asr-story-deployment.md)。剧情只五幕关键场景，Act V审判仍核心来源缺口；真实设备、模型知识边界、听感和动作感知未验收。以下为历史阶段记录，不以旧PID作为当前状态。
