@@ -10,6 +10,8 @@ close先停止接收连接，再await asr.dispose等待活跃子进程退出与�
 
 审查修复：原取消tombstone满128时挤掉最早记录，可能让TTL内的迟到上传重新开始。改为新未知取消在容量满时明确429 cancel_capacity，已登记ID可更新、旧取消不丢；60秒TTL正常过期再释放容量。通过注入测试时钟在59999ms/60000ms边界验证，无等待60秒。文档中的单任务、30秒、8MiB、CPU2threads和本机文件清理限制不变。
 
+独立复审P2进一步修复：未知预取消容量不能阻止唯一active任务取消。保留128未知预取消加1个active取消的有界例外，总保留最多129；例外占用时拒绝新的上传/未知取消，待TTL释放后恢复，不驱逐旧ID。新增实际自有Node子进程fixture在满128时取消active→499/child close/目录空，旧ID及active迟到重传409，TTL后可恢复。相关ASR17/17通过，已提交复审delta。
+
 ## 联合验证
 
 最新目标Node40/40通过（3.47秒）：ASR模块、实际app路由、录音控制器、说话队列、turn与canon接线。四项新增集成fixtures覆盖：
@@ -28,3 +30,9 @@ review build通过（789.23kB，仍有既有大包警告），只输出本worktr
 ## 复审与未完成项
 
 当前正式服务还没有ASR入口，这一批只推开发分支供独立review，不部署或推main。后续批准汇合后需随新frontend build一次更新。真人麦克风授权/设备/噪声、识别准确率、体验自然度尚未验收；已报告5样本CER14.13%并非真人质量或产品完成度。角色知识详细扩包由独立owner继续data/tests，当前不自行改其文件。
+
+## 实际MediaRecorder边界探针
+
+按复审要求用独立随机端口页面、真实Edge MediaRecorder、AudioContext振荡器流和实际FFmpeg检查30秒自动stop；没有调用getUserMedia麦克风，识别阶段用替身，不调用Whisper。第一次探针因等待参数位置错误在30秒超时，没有取得产品结果；修正等待设置后得到stopMs30003.3、decodedSeconds30、UI draft、micCalls0、chatCalls0、临时目录0。本样本没有复现decoded>30拒绝，故保留30000ms前端与30秒后端严格边界。其他设备、codec和高负载计时仍未验证，不能将单次通过扩大为通用保证。
+
+显式复现：`node tests/asr-recording-boundary.mjs <已授权runtime目录> 30000`。只在显式执行时启动合成流/FFmpeg，清理全部自有临时文件；不运行Whisper或触碰生产页面。最新剧情扩包与ASR联合证据见 [联合交接](asr-story-release-handoff.md)。

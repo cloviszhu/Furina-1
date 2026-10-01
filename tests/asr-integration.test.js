@@ -99,6 +99,36 @@ test('full app pre-cancel prevents processing and live cancellation drains befor
   assert.deepEqual(f.counts(), { events: 0, memories: 0, episodes: 0, usage: 0, modelCalls: 0 });
 });
 
+test('128 pre-cancels cannot block active process cancellation or evict old IDs', async t => {
+  let entered, closed = false, spawned = 0, now = 1000;
+  const began = new Promise(r => { entered = r; });
+  const f = await fixture(t, { now: () => now, runProcess: async (_command, args, { signal }) => {
+    if (closed) {
+      if (args.includes('-i')) await writeFile(args.at(-1), wav());
+      else await writeFile(args.at(-1) + '.json', JSON.stringify({ transcription: [{ text: '恢复草稿' }] }));
+      return;
+    }
+    ++spawned; const running = runAsrProcess(process.execPath, ['-e', 'setInterval(()=>{},1000)'], { signal }); entered();
+    try { await running; } finally { closed = true; }
+  } });
+  const activeId = randomUUID(), pending = f.post(activeId); await began;
+  let first;
+  for (let i = 0; i < 128; i++) {
+    const id = randomUUID(); first ??= id;
+    assert.equal((await f.request(`/api/asr/transcriptions/${id}/cancel`, { method: 'POST' })).status, 200);
+  }
+  now = 2000;
+  assert.equal((await f.request(`/api/asr/transcriptions/${activeId}/cancel`, { method: 'POST' })).status, 200);
+  assert.equal((await pending).status, 499); assert.equal(closed, true); assert.equal(spawned, 1);
+  assert.deepEqual(await readdir(f.temporary), []);
+  assert.equal((await f.post(activeId)).status, 409); assert.equal((await f.post(first)).status, 409);
+  assert.equal((await f.post()).status, 429); // Bounded extra active-cancel slot.
+  assert.equal((await f.request(`/api/asr/transcriptions/${randomUUID()}/cancel`, { method: 'POST' })).status, 429);
+  now = 61000; // The original 128 expire; active cancellation still retained.
+  assert.equal((await f.post(activeId)).status, 409); assert.equal((await f.post()).status, 200);
+  assert.deepEqual(f.counts(), { events: 0, memories: 0, episodes: 0, usage: 0, modelCalls: 0 });
+});
+
 test('app close aborts owned ASR child and waits for cleanup rather than a live request deadlock', async t => {
   let entered, closed = false; const began = new Promise(r => { entered = r; });
   const f = await fixture(t, { runProcess: async (_command, _args, { signal }) => {

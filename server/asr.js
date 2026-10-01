@@ -75,7 +75,10 @@ export function createAsrHandler({
   let active = null;
   const cancelled = new Map();
   const prune = () => { const current = now(); for (const [id, time] of cancelled) if (time <= current) cancelled.delete(id); };
-  const remember = id => { prune(); if (!cancelled.has(id) && cancelled.size >= 128) throw fail(429, 'cancel_capacity'); cancelled.set(id, now() + 60000); };
+  // One extra slot is reserved for cancelling the unique active job. New jobs
+  // wait while that slot is occupied, so old pre-cancels are never evicted and
+  // total retention remains bounded at 129 (128 unknown + one active cancel).
+  const remember = (id, isActive = false) => { prune(); if (!cancelled.has(id) && cancelled.size >= 128 && !isActive) throw fail(429, 'cancel_capacity'); cancelled.set(id, now() + 60000); };
   const available = async () => {
     try { await Promise.all([ffmpegPath, whisperPath, modelPath, ...['ggml-base.dll', 'ggml-cpu.dll', 'ggml.dll', 'whisper.dll'].map(name => join(resolve(whisperPath, '..'), name))].map(path => access(path))); return true; } catch { return false; }
   };
@@ -100,12 +103,13 @@ export function createAsrHandler({
       prune();
       if (route[2]) {
         if (req.headers['transfer-encoding'] || Number(req.headers['content-length'] || 0) !== 0) throw fail(400, 'cancel_body');
-        remember(id);
+        remember(id, active?.id === id);
         if (active?.id === id) active.controller.abort();
         json(res, 200, { captureId: id, cancelled: true }); return true;
       }
       if (cancelled.has(id)) throw fail(409, 'cancelled');
       if (active) throw fail(409, 'busy');
+      if (cancelled.size > 128) throw fail(429, 'cancel_capacity');
       const length = req.headers['content-length'];
       if (length && (!/^\d+$/.test(length) || Number(length) > ASR_LIMITS.maxBytes)) throw fail(413, 'audio_size');
       if (!/^audio\/(?:wav|x-wav|webm|ogg|mp4)(?:\s*;\s*codecs=[a-z0-9.," -]+)?$/i.test(req.headers['content-type'] || '')) throw fail(415, 'audio_format');

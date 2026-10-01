@@ -25,3 +25,6 @@
 #### Scenario: Full pre-cancel registry
 - **WHEN** TTL内已有128个不同预取消ID，又请求登记新的取消ID
 - **THEN** 明确429而不丢旧取消，已登记ID仍可更新；60秒到期才释放容量。
+#### Scenario: Active cancellation despite full registry
+- **WHEN** 128个未知预取消ID仍有效且唯一active任务请求取消
+- **THEN** active任务仍可取消并清理，保留1个有界active例外，总最多129；例外占用时拒绝新上传而不驱逐旧ID，TTL释放后恢复。
