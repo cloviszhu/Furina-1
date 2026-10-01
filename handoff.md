@@ -1,5 +1,7 @@
 # 当前交接
 
+2026-10-01最新：已审ASR草稿与来源化剧情扩包已main/app-only发布，运行代码 `5b882e395749b88517ee56e3696fd04541a1424c`，app PID71312/ready，TTS PID67988保持。只读ASRstatus available/offline=true、busy=false；数据计数、50次/reserve5.10934元与声线配置保守恒，未开麦克风或收费请求，未操作用户页面。见[发布核验与本机回滚](docs/asr-story-deployment.md)。剧情只五幕关键场景，Act V审判仍核心来源缺口；真实设备、模型知识边界、听感和动作感知未验收。以下为历史阶段记录，不以旧PID作为当前状态。
+
 2026-10-01最新：经用户具体确认及自动审批认可，来源化角色知识最小adapter与HEADER资格修正已main/app-only发布。运行时代码 `fb74ffa7d65fccb02d7261bb0c3426a321fe0d53`，app PID63800/ready；TTS PID67988、dist、声线配置、用户数据与50次/reserve5.10934元保持。详见 [角色知识发布核验](docs/character-context-deployment.md)。ASR仍并行开发，未发布；真实角色/声线/动作感知仍未验收。下面连续交互里程碑为上一发布记录。
 
 2026-10-01：连贯 turn/segment 说话与自然互动记忆里程碑已独立复审并 app-only 发布；运行时代码 `6bbed5e787847c79b192e905e58e42716db8b2ae`，app PID101352/ready，TTS PID67988 保留。Node169/169、浏览器9/9、构建、OpenSpec14/14为隔离工程证据；真实模型、声线和动作自然度仍待集中验收。预算50次/reserve5.10934元、25条事件与1条确认记忆保持，无新增收费调用、无用户页面操作。详见 [本机发布核验](docs/coherent-milestone-deployment.md) 与 [完整里程碑证据](docs/coherent-milestone-evidence.md)。以下为历史阶段，不以旧PID作为当前状态。
