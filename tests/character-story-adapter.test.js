@@ -8,8 +8,37 @@ import pack from '../server/data/furina-canon-4.2.v2.json' with { type: 'json' }
 import { createApp } from '../server/index.js';
 import { messagesFor } from '../server/providers.js';
 import { resolveCharacterContext } from '../server/character-context.js';
+import { addCharacterContext } from '../server/character-context-adapter.js';
 
 const rows = messages => messages[0].content.split('\n').filter(line => line.startsWith('{"kind":')).map(line => JSON.parse(line));
+
+test('trial queries retain courtroom claim and learned timing in actual provider HTTP requests', async t => {
+  const directory = mkdtempSync(join(tmpdir(), 'exo-trial-adapter-')); const requests = [];
+  const app = await createApp({ dataDir: directory, credentials: { resolve: async c => c }, fetchImpl: async (_url, options) => {
+    requests.push(JSON.parse(options.body));
+    return Response.json({ message: { content: '{"text":"隔离回复","emotion":"neutral"}' } });
+  } });
+  t.after(async () => { await app.close(); assert(resolve(directory).startsWith(resolve(tmpdir()) + sep)); rmSync(directory, { recursive: true, force: true }); });
+  await new Promise(r => app.app.listen(0, '127.0.0.1', r));
+  for (const timeline of ['aftermath', 'performer']) {
+    for (const [query, fragment] of [['审判舞台', '房间墙壁退去'], ['接受审判', '接受审判'],
+      ['审判水测试', '此为当庭说法'], ['测试水浓度', '事前未获知'], ['审判双重判决', '不因此预知执行机制']]) {
+      const response = await fetch(`http://127.0.0.1:${app.app.address().port}/api/chat`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ turnId: randomUUID(), text: query, character: { timeline, style: 'natural' }, config: { provider: 'ollama', model: 'fixture' } }) });
+      assert.equal(response.status, 200, JSON.stringify(await response.json()));
+      const messages = requests.at(-1).messages, selected = rows(messages);
+      assert(selected.length > 0 && selected.length <= 2);
+      assert(selected.some(r => r.text.includes(fragment)), query);
+      assert(selected.every(r => r.sourceStatus === 'secondary_game_dialogue_transcription'));
+      assert(messages[0].content.includes('未独立核对游戏原始资料'));
+      assert(Buffer.byteLength(JSON.stringify(messages)) <= 16000);
+      assert(!messages[0].content.includes('verificationTodo'));
+      if (query === '测试水浓度') assert(selected.some(r => r.knowledgeMode === 'reported'));
+      const base = [{ role: 'system', content: '' }, { role: 'user', content: 'x'.repeat(15930) }];
+      assert.deepEqual(addCharacterContext(base, { query, timeline }), base); // Canon cannot evict existing user bytes.
+    }
+  }
+  assert.equal(requests.length, 10); assert.equal(app.budget.status().usedCalls, 0);
+});
 
 test('expanded provider selection retains claimed foreknowledge qualification and reported hindsight', () => {
   const defense = rows(messagesFor('公开辩解', [], []));
