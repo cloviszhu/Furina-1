@@ -241,12 +241,14 @@ export class InteractionMemoryStore {
       items.push(item);
     };
     for (const m of this.confirmed(queryTerms, generic, now).slice(0, candidateLimit)) {
+      if (items.length >= limit) { hasMore = true; break; }
       push({ id: m.id, type: 'confirmed', epistemic: 'user_confirmed', sourceRole: 'user', sourceId: m.sourceId,
         createdAt: m.createdAt, updatedAt: m.updatedAt, revision: m.revision,
         ...excerpt(m.text, queryTerms, excerptChars), sourceQuote: excerpt(m.sourceText || m.text, queryTerms, excerptChars).text,
         conflictStatus: 'not-assessed', priority: 'confirmed', match: generic ? 'recent' : 'lexical-related' });
     }
     for (const e of episodes) {
+      if (items.length >= limit) { hasMore = true; break; }
       // Capsules are generated from live rows only; no stale summary/cache copies.
       const claims = this.claimsFor(e, keys, now);
       push({ id: e.id, type: 'episode', epistemic: 'user_reported', sourceRole: 'user', sourceId: e.event_id, turnId: e.turn_id,

@@ -17,7 +17,7 @@ import { ReferenceImports, MAX_REFERENCE_BYTES } from './reference-import.js';
 import { WindowsCredentials } from './credentials.js';
 import { Turns } from './turns.js';
 import { InteractionMemoryStore, containsPrivateMaterial, domain } from './interaction-memory.js';
-import { mutateInteractionSource } from './interaction-memory-integration.js';
+import { mutateInteractionSource, syncConfirmedLineage } from './interaction-memory-integration.js';
 
 const PROJECT = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.bmp': 'image/bmp', '.pmx': 'application/octet-stream', '.svg': 'image/svg+xml' };
@@ -157,8 +157,8 @@ export async function createApp({ projectRoot = PROJECT, dataDir = join(PROJECT,
       }
       if (pathname.startsWith('/api/memories/')) {
         const id = pathname.slice('/api/memories/'.length);
-        if (req.method === 'PATCH') { const sourceId = store.list().find(m => m.id === id)?.sourceId; const result = store.edit(id, (await body(req)).text, { beforeCommit: () => { if (sourceId) interaction.delete(interaction.sourceEventId(sourceId)); } }); turns.invalidate(); return json(res, 200, result); }
-        if (req.method === 'DELETE') { const sourceId = store.list().find(m => m.id === id)?.sourceId; const result = store.delete(id, { beforeCommit: () => { if (sourceId) interaction.delete(interaction.sourceEventId(sourceId)); } }); turns.invalidate(); return json(res, 200, result); }
+        if (req.method === 'PATCH') { const before = store.list(), sourceId = before.find(m => m.id === id)?.sourceId; const result = store.edit(id, (await body(req)).text, { beforeCommit: () => { if (sourceId) interaction.delete(interaction.sourceEventId(sourceId)); syncConfirmedLineage(store, interaction, before); } }); turns.invalidate(); return json(res, 200, result); }
+        if (req.method === 'DELETE') { const before = store.list(), sourceId = before.find(m => m.id === id)?.sourceId; const result = store.delete(id, { beforeCommit: () => { if (sourceId) interaction.delete(interaction.sourceEventId(sourceId)); syncConfirmedLineage(store, interaction, before); } }); turns.invalidate(); return json(res, 200, result); }
       }
       const cancelTurn = /^\/api\/turns\/([^/]+)\/cancel$/.exec(pathname);
       if (cancelTurn && req.method === 'POST') return json(res, 200, turns.cancel(cancelTurn[1]));

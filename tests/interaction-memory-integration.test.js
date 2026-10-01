@@ -116,3 +116,24 @@ test('integrated plan, fiction, negation and contradictions retain their evidenc
   assert(f.requests.at(-1).messages[0].content.includes('unresolved 冲突须自然询问'));
   assert(f.context.interaction.list({ contextKey: 'aftermath' }).items.some(e => e.domain === 'fiction'));
 }));
+
+test('retrieval stops deriving capsules after its result limit is filled', async () => fixture(async f => {
+  for (let i = 0; i < 20; i++) f.context.interaction.ingestUserTurn({ turnId: randomUUID(), eventId: randomUUID(), text: `我喜欢茶${i}。`, contextKey: 'aftermath', createdAt: '2026-01-01T00:00:00Z' });
+  let derivations = 0; const claimsFor = f.context.interaction.claimsFor.bind(f.context.interaction);
+  f.context.interaction.claimsFor = (...args) => { ++derivations; return claimsFor(...args); };
+  const recall = f.context.interaction.retrieve({ query: '喜欢茶', contextKey: 'aftermath', budget: { tokens: 16000, limit: 1 } });
+  assert.equal(recall.items.length, 1); assert.equal(derivations, 1); assert.equal(recall.hasMore, true);
+}));
+
+test('history cleanup preserves unrelated confirmation lineage and repeated corrections do not grow aliases', async () => fixture(async f => {
+  const a = await f.chat('我住在南京。'); const b = await f.chat('我喜欢绿茶。');
+  await f.request('/api/memories', 'POST', { text: '我住在南京。', sourceId: a.value.user.id });
+  const bConfirmed = await f.request('/api/memories', 'POST', { text: '我喜欢绿茶。', sourceId: b.value.user.id });
+  const bId = bConfirmed.value.find(m => m.sourceId === b.value.user.id).id;
+  for (const place of ['苏州', '杭州', '扬州']) { const result = await f.request(`/api/interaction-memories/${a.value.user.id}`, 'PATCH', { text: `我住在${place}。` }); assert.equal(result.status, 200, JSON.stringify(result.value)); }
+  assert.equal(f.context.store.list().length, 2);
+  assert.equal(f.context.interaction.db.prepare('SELECT COUNT(*) AS n FROM im_source_aliases').get().n, 2);
+  assert.equal((await f.request(`/api/memories/${bId}`, 'DELETE')).status, 200);
+  assert(!f.context.interaction.list({ contextKey: 'aftermath' }).items.some(e => e.eventId === b.value.user.id));
+  assert(f.context.interaction.list({ contextKey: 'aftermath' }).items.some(e => e.eventId === a.value.user.id));
+}));
