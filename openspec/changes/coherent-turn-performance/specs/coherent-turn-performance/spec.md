@@ -21,6 +21,15 @@
 - **WHEN** 模型或TTS失败
 - **THEN** 返回可恢复错误且不自动重试；失败生成不写历史，TTS失败保留已交付文本。
 
+### Requirement: Test provenance and bounded memory derivation
+系统 MUST 排除显式 remoteTest 回合的自动长期捕获，保留测试来源标记，不改写既有历史或手动确认记忆；每 episode typed claims SHALL 去重并最多12个，每次检索 SHALL 默认最多24次 capsule 导出（包括超预算跳过项），每 claim 最多核查128个 peers，截断时明确标注核查不完整。
+#### Scenario: Explicit test input resembles a factual statement
+- **WHEN** remoteTest 为 true 且输入普通第一人称事实
+- **THEN** 原短期历史保留、来源标记 test、memoryCapture 不保留，不生成自动 episode；正式成功聊天仍自动捕获。
+#### Scenario: Repeated clauses and oversized capsules
+- **WHEN** 多个 episode 含重复或大量不同 clauses 且 capsule 超出字节预算
+- **THEN** 原文保留，typed claims 和导出次数有界，达到工作预算返回 hasMore；未完成冲突核查不能声称没有冲突。
+
 ### Requirement: Product quality acceptance boundaries
 系统 MUST 将有序播放、生成和TTS取消、模式切换、迟到结果、故障恢复及历史记忆隔离纳入统一离线验收；自然idle、协调招呼、姿态过渡和自然长期记忆 SHALL 在后续集成验证中保留为核心验收项。
 #### Scenario: Engineering checks complete

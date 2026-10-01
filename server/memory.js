@@ -36,13 +36,15 @@ export class MemoryStore {
       );`);
     if (!this.db.prepare('PRAGMA table_info(events)').all().some(c => c.name === 'context_key')) this.db.exec("ALTER TABLE events ADD COLUMN context_key TEXT NOT NULL DEFAULT 'aftermath:natural'");
     if (!this.db.prepare('PRAGMA table_info(events)').all().some(c => c.name === 'emotion')) this.db.exec('ALTER TABLE events ADD COLUMN emotion TEXT');
+    if (!this.db.prepare('PRAGMA table_info(events)').all().some(c => c.name === 'remote_test')) this.db.exec('ALTER TABLE events ADD COLUMN remote_test INTEGER NOT NULL DEFAULT 0');
   }
 
-  event(role, text, { turnId = randomUUID(), kind = 'conversation', provider = 'offline', contextKey = 'aftermath:natural', emotion = null } = {}) {
+  event(role, text, { turnId = randomUUID(), kind = 'conversation', provider = 'offline', contextKey = 'aftermath:natural', emotion = null, remoteTest = false } = {}) {
     if (emotion !== null && (role !== 'assistant' || !['neutral', 'calm', 'happy', 'sad', 'angry', 'surprised'].includes(emotion))) throw new Error('历史表达字段无效。');
     const event = { id: randomUUID(), turnId, role, text: validText(text, 6000), kind, provider, createdAt: new Date().toISOString() };
-    this.db.prepare('INSERT INTO events (id,turn_id,role,text,kind,provider,created_at,context_key,emotion) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)').run(
-      event.id, turnId, role, event.text, kind, provider, event.createdAt, contextKey, emotion,
+    if (remoteTest) event.remoteTest = true;
+    this.db.prepare('INSERT INTO events (id,turn_id,role,text,kind,provider,created_at,context_key,emotion,remote_test) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)').run(
+      event.id, turnId, role, event.text, kind, provider, event.createdAt, contextKey, emotion, Number(remoteTest),
     );
     return event;
   }

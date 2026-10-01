@@ -33,6 +33,23 @@ async function fixture(body) {
   finally { release?.(); await context.close(); assert(resolve(directory).startsWith(resolve(tmpdir()) + sep)); rmSync(directory, { recursive: true, force: true }); }
 }
 
+test('explicit test sends preserve history/provenance without automatic facts or altering manual confirmations', async () => fixture(async f => {
+  const original = await f.chat('我喜欢桂花茶。');
+  await f.request('/api/memories', 'POST', { text: '我喜欢桂花茶。', sourceId: original.value.user.id });
+  const before = f.context.store.list();
+  const probe = await f.chat('我住在杭州。', { remoteTest: true });
+  assert.equal(probe.status, 200); assert.deepEqual(probe.value.memoryCapture, { retained: false, reason: 'test-source' });
+  assert.equal(probe.value.user.remoteTest, true);
+  assert.equal(f.context.store.db.prepare('SELECT remote_test FROM events WHERE id=?').get(probe.value.user.id).remote_test, 1);
+  assert(f.context.store.history().some(e => e.id === probe.value.user.id));
+  assert(!f.context.interaction.list({ contextKey: 'aftermath' }).items.some(e => e.eventId === probe.value.user.id));
+  assert.deepEqual(f.context.store.list(), before);
+  const chat = await f.chat('我住在苏州。'); assert.equal(chat.value.memoryCapture.retained, true);
+  await f.reopen();
+  assert(!f.context.interaction.retrieve({ query: '杭州', contextKey: 'aftermath' }).items.some(e => e.sourceId === probe.value.user.id));
+  assert.deepEqual(f.context.store.list(), before);
+}));
+
 test('automatic user evidence survives history/restart and preserves roles, fiction and privacy', async () => fixture(async f => {
   const first = await f.chat('我喜欢茉莉花茶。'); assert.equal(first.status, 200); assert(first.value.memoryCapture.retained);
   assert.deepEqual(f.context.store.list(), []); // automatic capture needs no manual confirmation

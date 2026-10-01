@@ -237,10 +237,10 @@ export async function createApp({ projectRoot = PROJECT, dataDir = join(PROJECT,
           let user, assistant, memoryCapture;
           store.db.exec('BEGIN');
           try {
-            user = store.event('user', text, { ...(turn && { turnId: turn.id }), provider, contextKey: character.contextKey });
-            assistant = store.event('assistant', result.text, { turnId: user.turnId, provider, contextKey: character.contextKey,
+            user = store.event('user', text, { ...(turn && { turnId: turn.id }), provider, contextKey: character.contextKey, remoteTest: input.remoteTest === true });
+            assistant = store.event('assistant', result.text, { turnId: user.turnId, provider, contextKey: character.contextKey, remoteTest: input.remoteTest === true,
               emotion: result.expressionSource === 'model-contract' ? result.emotion : null });
-            memoryCapture = error ? { retained: false, reason: 'failed-generation' } : interaction.ingestUserTurn({ turnId: user.turnId, eventId: user.id, text, contextKey: character.contextKey, createdAt: user.createdAt });
+            memoryCapture = input.remoteTest === true ? { retained: false, reason: 'test-source' } : error ? { retained: false, reason: 'failed-generation' } : interaction.ingestUserTurn({ turnId: user.turnId, eventId: user.id, text, contextKey: character.contextKey, createdAt: user.createdAt });
             store.db.exec('COMMIT');
           } catch (failure) { store.db.exec('ROLLBACK'); throw failure; }
           return json(res, 200, { ...delivery, user, assistant, provider, error, character, emotion: result.emotion, expressionSource: result.expressionSource, memoryCapture, memoryEvidence: evidence, recalled: memories.map(m => ({ id: m.id, text: m.text })), usage: result.usage || null, budget: budget.status() });

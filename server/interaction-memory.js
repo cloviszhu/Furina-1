@@ -55,11 +55,15 @@ export function domain(text) {
 function extract(text, episodeDomain) {
   if (episodeDomain !== 'reality') return [];
   const claims = [];
+  const seen = new Set();
   for (const clause of text.split(/[。！？!?；;\n，,]/).map(s => s.trim()).filter(Boolean)) {
     if (/[吗么呢吧]$/.test(clause) || /[？?]/.test(text)) continue;
     let match;
     const add = (type, predicate, value, { polarity = 1, subject = 'user', exclusive = false } = {}) => {
       if (!value || value.length > 120 || /可能|也许|好像|不确定|不是|没有|没去|不想|不喜欢|不要/.test(value)) return;
+      const key = JSON.stringify([type, predicate, normalized(value), polarity, subject]);
+      if (seen.has(key) || claims.length >= 12) return;
+      seen.add(key);
       claims.push({ type, predicate, value, polarity, subject, exclusive, sourceQuote: clause, extractConfidence: 'explicit-grammar', epistemic: 'user_reported' });
     };
     if ((match = clause.match(/^我的名字(?:是|叫)([^？?]+)$/))) add('fact', 'name', match[1], { exclusive: true });
@@ -196,16 +200,24 @@ export class InteractionMemoryStore {
   }
 
   claimsFor(episode, keys, now) {
-    const own = this.db.prepare('SELECT * FROM im_claims WHERE episode_id=?').all(episode.id);
+    // Limit legacy rows too; new derivations deduplicate and retain at most 12.
+    const own = this.db.prepare('SELECT * FROM im_claims WHERE episode_id=? LIMIT 12').all(episode.id);
     return own.map(c => {
-      const peers = this.db.prepare(`SELECT c.*, e.created_at FROM im_claims c JOIN im_episodes e ON e.id=c.episode_id
-        WHERE e.context_key IN (${keys.map(() => '?').join(',')}) AND e.created_at<=? AND e.updated_at<=? AND c.predicate=? AND c.subject=? AND c.id<>?`).all(...keys, now, now, c.predicate, c.subject, c.id);
+      // Bound indexed peers before joins and normalization, without a full sort.
+      const sampled = this.db.prepare(`WITH peers AS MATERIALIZED (
+        SELECT * FROM im_claims WHERE predicate=? AND subject=? AND id<>? LIMIT 129)
+        SELECT c.*, e.created_at, e.updated_at, e.context_key, e.domain
+        FROM peers c JOIN im_episodes e ON e.id=c.episode_id`).all(c.predicate, c.subject, c.id);
+      const incomplete = sampled.length === 129;
+      const peers = sampled.slice(0, 128).filter(p => keys.includes(p.context_key) && p.created_at <= now && p.updated_at <= now && ['reality', 'uncertain'].includes(p.domain));
       const conflicts = peers.filter(p => (c.exclusive_slot && normalized(p.value) !== normalized(c.value)) || (normalized(p.value) === normalized(c.value) && p.polarity !== c.polarity));
       const cancellations = c.type === 'plan' ? peers.filter(p => p.polarity === -1 && p.created_at >= episode.created_at && actionValue(p.value) === actionValue(c.value)) : [];
       const cancelled = cancellations.length > 0;
       return { type: c.type, subject: c.subject, predicate: c.predicate, value: c.value, polarity: c.polarity,
         epistemic: 'user_reported', extractConfidence: 'explicit-grammar', sourceQuote: c.quote,
-        conflictStatus: cancelled ? 'cancelled' : conflicts.length ? 'unresolved' : 'none', conflictSourceIds: [...new Set([...conflicts, ...cancellations].map(p => p.episode_id))].slice(0, 20) };
+        conflictStatus: cancelled ? 'cancelled' : conflicts.length ? 'unresolved' : incomplete ? 'unknown' : 'none',
+        conflictAssessment: incomplete ? 'bounded-incomplete' : 'complete',
+        conflictSourceIds: [...new Set([...conflicts, ...cancellations].map(p => p.episode_id))].slice(0, 20) };
     });
   }
 
@@ -223,6 +235,7 @@ export class InteractionMemoryStore {
     const tokenBudget = integer(budget.tokens, 2400, 0, 16000);
     const limit = integer(budget.limit, 6, 1, 20);
     const candidateLimit = integer(budget.candidates, 300, 1, 1000);
+    const workLimit = integer(budget.derivations, 24, 1, 48);
     const excerptChars = integer(budget.excerptChars, 600, 80, 2000);
     const keys = contextKeys(contextKey), generic = recallIntent(query), queryTerms = terms(query).slice(0, 200);
     const eligible = `e.context_key IN (${keys.map(() => '?').join(',')}) AND e.created_at<=? AND e.updated_at<=? AND e.domain IN (${includeFiction ? "'reality','uncertain','fiction','hypothetical'" : "'reality','uncertain'"})`;
@@ -247,17 +260,19 @@ export class InteractionMemoryStore {
         ...excerpt(m.text, queryTerms, excerptChars), sourceQuote: excerpt(m.sourceText || m.text, queryTerms, excerptChars).text,
         conflictStatus: 'not-assessed', priority: 'confirmed', match: generic ? 'recent' : 'lexical-related' });
     }
+    let derivations = 0;
     for (const e of episodes) {
-      if (items.length >= limit) { hasMore = true; break; }
+      if (items.length >= limit || derivations >= workLimit) { hasMore = true; break; }
+      ++derivations; // Rejected oversized capsules consume work too.
       // Capsules are generated from live rows only; no stale summary/cache copies.
       const claims = this.claimsFor(e, keys, now);
       push({ id: e.id, type: 'episode', epistemic: 'user_reported', sourceRole: 'user', sourceId: e.event_id, turnId: e.turn_id,
         contextKey: e.context_key, createdAt: e.created_at, updatedAt: e.updated_at, revision: e.revision, domain: e.domain,
         ...excerpt(e.text, queryTerms, excerptChars), claims,
-        conflictStatus: claims.some(c => c.conflictStatus === 'unresolved') ? 'unresolved' : claims.some(c => c.conflictStatus === 'cancelled') ? 'cancelled' : 'none',
+        conflictStatus: claims.some(c => c.conflictStatus === 'unresolved') ? 'unresolved' : claims.some(c => c.conflictStatus === 'cancelled') ? 'cancelled' : claims.some(c => c.conflictStatus === 'unknown') ? 'unknown' : 'none',
         priority: 'automatic', match: generic ? 'recent' : 'lexical-related' });
     }
-    return { items, tokenUpperBound: items.length ? Buffer.byteLength(JSON.stringify(items), 'utf8') : 0, tokenBudget,
+    return { items, tokenUpperBound: items.length ? Buffer.byteLength(JSON.stringify(items), 'utf8') : 0, tokenBudget, derivations, workLimit,
       generation: this.generation, hasMore: hasMore || episodes.length === candidateLimit,
       limitations: 'Lexical evidence retrieval; user reports are not verified truth. Plans are not completed events. Token bound covers serialized items in UTF-8 bytes.' };
   }

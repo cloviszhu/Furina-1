@@ -15,3 +15,7 @@
 `POST /api/speech` 的 turnId/segmentId/text/emotion 仍严格对应原模型段。手动表达额外传 `expressionMode:"manual", referenceEmotion:"happy"`。登记可用才采用，成功 WAV 的响应头为 `X-Exo-Emotion: happy`、`X-Exo-Expression-Mode: manual`；舞台使用实际返回值。未登记返回400 `UNSUPPORTED_REFERENCE_EMOTION`，字段无效400 `INVALID_REFERENCE_EMOTION`，不假装采用、不静默fallback。reply模式省略referenceEmotion；已标注的neutral fallback可省略emotion，响应头确认neutral。系统声实际响应始终neutral。
 
 chat 保留旧 recalled `{id,text}` 数组；新增 memoryCapture（成功来源捕获结果）和 memoryEvidence（有来源检索capsule、generation及有界预算信息）。只有成功用户内容捕获；assistant、失败、取消、secret不成为自动事实。一次LLM调用，追加检索预算仍受原DeepSeek输入/输出和费用限制。
+
+显式 `remoteTest:true` 不自动捕获，返回 `memoryCapture:{retained:false,reason:"test-source"}`，events 新增 remote_test 来源标记且响应 user/assistant 标记 remoteTest。原有短期历史和用户手动确认机制保留；不追溯改写旧历史或已有确认记忆。
+
+每 episode 最多12个去重 typed claims，原文保留。检索默认最多24次 capsule 导出（可设 budget.derivations 1–48），超字节预算而跳过的 capsule 同样计数，返回 derivations/workLimit/hasMore。每 claim 冲突核查最多128个 indexed predicate/subject peers，额外一条用于检测截断；先限行后连接/日期/上下文筛选。核查不完整时 conflictAssessment 为 bounded-incomplete；若未找到直接冲突或取消，conflictStatus 为 unknown，不能宣称存在或不存在冲突。候选索引检索仍有既有容量/候选上限；此边界不是全库语义检索。

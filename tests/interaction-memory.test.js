@@ -31,6 +31,33 @@ function fixture(t, options) {
 }
 const onlyClaim = result => result.items.find(i => i.type === 'episode')?.claims[0];
 
+test('repeated clauses deduplicate and distinct claims are capped per episode', t => {
+  const f = fixture(t);
+  const repeated = f.add('我喜欢红茶。'.repeat(200));
+  assert.equal(f.store.db.prepare('SELECT COUNT(*) AS n FROM im_claims WHERE episode_id=?').get(repeated.episodeId).n, 1);
+  const many = f.add(Array.from({ length: 80 }, (_, i) => `我喜欢红茶${i}。`).join(''));
+  assert.equal(f.store.db.prepare('SELECT COUNT(*) AS n FROM im_claims WHERE episode_id=?').get(many.episodeId).n, 12);
+  assert.equal(f.store.list({ contextKey: 'aftermath' }).items.find(e => e.id === many.episodeId).text.split('。').length, 81);
+});
+
+test('oversized capsules consume derivation budget and conflict lookups return bounded indexed peers', t => {
+  const f = fixture(t);
+  for (let i = 0; i < 300; i++) f.add(Array.from({ length: 12 }, (_, j) => `我喜欢红茶${i}_${j}。`).join(''));
+  const originalPrepare = f.store.db.prepare.bind(f.store.db);
+  let queries = 0, rows = 0, maxRows = 0;
+  f.store.db.prepare = sql => {
+    const statement = originalPrepare(sql);
+    if (!sql.includes('WITH peers AS MATERIALIZED')) return statement;
+    return { all(...args) { ++queries; const result = statement.all(...args); rows += result.length; maxRows = Math.max(maxRows, result.length); return result; } };
+  };
+  const result = f.recall('喜欢红茶', { budget: { tokens: 2400, candidates: 300 } });
+  assert.equal(result.items.length, 0); assert.equal(result.derivations, 24); assert.equal(result.hasMore, true);
+  assert.equal(queries, 24 * 12); assert(maxRows <= 129); assert(rows <= 24 * 12 * 129);
+  const incomplete = f.recall('喜欢红茶', { budget: { tokens: 16000, limit: 1 } });
+  assert(incomplete.items[0].claims.every(c => c.conflictStatus === 'unknown' && c.conflictAssessment === 'bounded-incomplete'));
+  assert.equal(incomplete.derivations, 1);
+});
+
 test('successful conversation automatically persists across restart, with provenance and idempotent source', t => {
   const f = fixture(t);
   const result = f.add('我去过玻璃花园。');

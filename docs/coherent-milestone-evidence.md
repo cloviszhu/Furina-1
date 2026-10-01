@@ -4,7 +4,7 @@
 
 独立分支 milestone/turn-segments，基于70b3c3e，已读并同步07aa的AGENTS。未部署、未推main、未重启生产app或TTS，未刷新用户页面、读真实凭据或运行真实付费请求。模型仍完整返回后分段；改善第一段TTS等待与后续预取，不称LLM streaming。
 
-前端f3bfee5和244cddd、自然记忆ca990c3已汇合；服务端接线edd8b5e。自然记忆控件的正式页面接线和manual参考表达增量仍由前端owner完成，完成前不声称整体验收通过。独立审查及部署安排由父线程负责。
+前端f3bfee5、244cddd和86f4848、自然记忆ca990c3已汇合；服务端接线edd8b5e。正式页面自然记忆控件和manual参考表达已接线并通过联合离线检查。独立审查及部署安排由父线程负责；真实模型、声线及长期动作自然度仍未验收。
 
 ## 可复现自动检查
 
@@ -15,7 +15,7 @@ node --test tests/turn-boundaries.test.js tests/turn-segments.test.js tests/inte
 node ../../../node_modules/@playwright/test/cli.js test tests/browser/coherent-turn.spec.js tests/browser/coherent-speech.spec.js tests/browser/explicit-chat-tts.spec.js --reporter=line
 ```
 
-实际node:sqlite文件库 + 随机loopback端口 + fake provider/音频/CredMan边界。三个集成演出浏览器检查通过（24.2秒），播放identity由AudioContext double记录，证明事件顺序与取消编排，不证明真实音质、声线或解码。后续前端增量汇合后需再运行新增页面管理与manual检查。
+实际node:sqlite文件库 + 随机loopback端口 + fake provider/音频/CredMan边界。播放identity由AudioContext double记录，证明事件顺序与取消编排，不证明真实音质、声线或解码。最新联合检查结果见文末，包含正式页面管理与manual检查。
 
 | 用户路径 | 工程证据 | 能证明与限制 |
 |---|---|---|
@@ -27,7 +27,7 @@ node ../../../node_modules/@playwright/test/cli.js test tests/browser/coherent-t
 | 错误恢复 | TTS失败进入error，显式新轮恢复；派生失败回滚事件+episode | 不伪造回复、不自动重试、不静默切换声音 |
 | 有序演出 | 三段预取/串行start，完整拼接原文，同一时间最多一个source播放 | text/段情绪/字幕按真实start推进，结束后回idle；fixture音频不是实际TTS质量 |
 | 异常容量 | 140并发cancel最多128轮，12并发相同UUID只生成一次 | TTL保护在途轮次；每轮2/全局4新合同合成，同段重复409；旧客户端兼容 |
-| 手动表达 | segment emotion严格校验，referenceEmotion独立注册校验与实际响应头 | 已登记才采用；不支持manual返回400；前端接线增量尚需统一验证 |
+| 手动表达 | segment emotion严格校验，referenceEmotion独立注册校验与实际响应头 | 已登记才采用；不支持manual返回400；正式页面联合检查验证采用happy及未登记失败 |
 
 ## 双模型动作证据
 
@@ -52,3 +52,13 @@ node ../../../node_modules/@playwright/test/cli.js test tests/browser/coherent-t
 修复后8b89ffd代码的最终复核：Node163/163通过（36.8秒，含真正SQLite及fake Windows凭据bridge）；五项Edge浏览器检查5/5通过（34.4秒，包括顺序演出、中断/模式/迟到、现有manual记忆DB reopen、adapter-only自动记忆控件）。日志在本worktree的artifacts/coherent-milestone/node-final.log和browser-final.log。Vite审阅构建输出到artifacts/coherent-milestone/build，未写生产dist；有既有774kB bundle警告。OpenSpec全部14项strict通过。自然记忆正式页面与referenceEmotion前端增量仍需汇合后检查，adapter-only控件检查不能替代正式页面集成。
 
 只读审查开发分支：`https://github.com/cloviszhu/Furina-1/tree/milestone/turn-segments`，推送已确认。与main07aa的AGENTS文件无差异，等价cherry-pick不需要重复覆盖文档。已检查推送文件清单和numstat，无模型/渲染PNG/音频/运行DB/秘密/工作树目录；未推main、未创建PR、未部署。
+
+## 最终前端汇合与独立审查修复
+
+86f4848 已汇合为 88fc252。正式页面接上自然片段列表分页、eventId 纠正/删除、跨页刷新、失败保留草稿、retained:false 刷新移除，以及 manual 参考表达采用响应头和未登记失败。最新联合 Node169/169（17.7秒）、六项演出/记忆页面浏览器6/6（29.9秒）、三项旧显式聊天与测试面板浏览器3/3（12.1秒）。Vite review build 通过（781.81kB，仍有既有大包提示），14项 OpenSpec strict 通过；日志分别为 node-merged.log、browser-merged.log、browser-compat.log、build-merged.log、openspec-merged.log，均在本 worktree artifacts/coherent-milestone 下。上文163/5是该次历史基线，不冒充最终结果。
+
+独立审查P2之一：显式 remoteTest:true 即使输入普通第一人称文本也不能自动形成长期事实。已在成功提交中排除自动 ingestion，返回 test-source，events remote_test 保存测试来源；既有短期历史和手动确认保持原行为，不追溯删除或改写旧用户数据。隔离HTTP测试验证普通测试文本不入自动记忆、重启仍不召回，正式聊天仍入、原手动确认未改变。
+
+独立审查P2之二是静态高量扫描风险，没有实测冻结证据。新提取每 episode claims 去重且最多12个，旧库读取也最多12个；冲突核查通过 MATERIALIZED 限制 indexed predicate/subject peers，最多129行（128核查+1截断检测），避免先全量连接或排序。检索默认24次导出、最多48次，超字节预算的拒绝项也消耗导出预算。300个含12个claims的episode、2400bytes预算检查确定性验证24次导出、288次有界peer查询、每次最多129行，200次重复clause只形成1条claim，80个不同clause最多12条。原文不截断保存。有界核查可能漏掉样本外的矛盾/取消，所以截断而无直接证据时标记 unknown/bounded-incomplete，并通过provider提示明确未知；它不是全库无冲突证明，容量增长后的更精确语义检索仍是质量改进空间。
+
+所有检查仍是隔离mock/local证据，未运行真实付费模型、读取真实凭据或修改生产状态；双模型动作证据沿用同一stage代码的本地结果。最终独立审查和集中真实/主观验收尚待父线程安排。
