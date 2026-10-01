@@ -6,7 +6,7 @@
 
 ## Delivered
 
-`server/data/furina-canon-4.2.v2.json`：54 条，51 enabled / 3 pending。启用条目资格为 5 `official_hosted_game_text`、38 `secondary_game_dialogue_transcription`、8 `reference-transcript-checked`。direct-game primary 为 **0**；官方托管不等于全部官方作者，镜像转写不算独立 primary。旧 v1 JSON 保留不变。
+`server/data/furina-canon-4.2.v2.json`：60 条，56 enabled / 4 pending。启用条目资格为 5 `official_hosted_game_text`、43 `secondary_game_dialogue_transcription`、8 `reference-transcript-checked`。direct-game primary 为 **0**；官方托管不等于全部官方作者，镜像转写不算独立 primary。旧 v1 JSON 保留不变。
 
 `server/data/furina-coverage-4.2.v2.json` 是覆盖、缺口、排除与冲突清单；`character-story-source-ledger.md` 列来源及每条 evidence 定位。默认 resolver 改为 v2 import，函数签名、确定性排序、相关性规则及预算逻辑沿用现有实现。
 
@@ -21,7 +21,7 @@
 | Act II | 娜维娅证言、瓦谢定罪 → 公子判决与谕示机矛盾 → 公开辩解 | 不拥有水下调查/泉水交谈的全部见闻；公开声称早有安排不等于真实预知 |
 | Act III | 初次外交茶会、要求那维莱特陪同、公子拘押与梅洛彼得堡自治 | 不自动知道监狱里旅行者的全部调查 |
 | Act IV | 再次茶会受到预言追问、本人遇袭 | 袭击发生早于叙述；阿蕾奇诺内部动机仅 author perspective |
-| Act V | 白淞伤亡争执、秘密调查、公众质问、镜中委托、调整神明姿态、水文监测、私下疲惫与倾诉边界 → 洪水存活与身份结束 | 芙宁娜审判具体对白 pending；人身/神性来源解释 author-only；完整计划通过 Finale 转述获知 |
+| Act V | 白淞伤亡争执、秘密调查、公众质问、镜中委托、调整神明姿态、水文监测、私下疲惫与倾诉边界 → 洪水存活与身份结束 | 审判舞台、接受审判、水测试、浓度披露、双重判决已补；控诉/否认指定段落 pending；人身/神性来源解释 author-only；完整计划通过 Finale 转述获知 |
 | SQ 开场 | 拒绝出演 → 参与剧团与艺术顾问 | aftermath 不召回后续任务记录；早期不愿表演另有语音依据 |
 | SQ 中段 | 返回白淞、娜维娅协助、面对压力、讨论坦诚关系 | 不概括为所有居民原谅，不关联当前用户恋爱 |
 | SQ 终段 | 剧团往事转述、阅读奥蕾丽笔记、仍拒出演 → 杜尔菲生病后选择终曲/Clio → 重返舞台、获得 Vision、表达自己 | reported past 不变亲历；Vision 给予者与机制未知；戏剧情感不是本人恋爱 |
@@ -36,10 +36,16 @@
 
 ## Validation and integration boundary
 
-`node --test tests/character-story-import.test.js tests/character-context.test.js tests/character-context-integration.test.js`：35/35 通过。旧小包测试明确使用 v1 factory；新默认扩包独立测试真实条目证据、覆盖清单、五幕与 SQ 多样检索、exact-query 未来门控、author-only、reported learning、pending 隐藏、稳定顺序、噪声零注入和 UTF-8 独立预算。现有 adapter/provider 测试使用隔离 mock HTTP，无真实模型、凭据或生产服务操作。
+`node --test tests/character-story-import.test.js tests/character-context.test.js tests/character-context-integration.test.js`：36/36 通过。旧小包测试明确使用 v1 factory；新默认扩包独立测试真实条目证据、覆盖清单、五幕与 SQ 多样检索、exact-query 未来门控、author-only、reported learning、pending 隐藏、稳定顺序、噪声零注入和 UTF-8 独立预算。现有 adapter/provider 测试使用隔离 mock HTTP，无真实模型、凭据或生产服务操作。
 
-全仓 `npm.cmd test`：204/204 通过。首次缺少 worktree 中既有 `three` 依赖导致两项模块无法启动；复用主工作目录已有的 `three` 到本 worktree 的 ignored node_modules 后重跑通过，无新增依赖或主目录修改。OpenSpec strict validation 与 Git diff whitespace 检查通过。未运行 browser/build：此改动没有页面或构建代码变化。
+首版全仓 `npm.cmd test`：204/204 通过；审判增量后全仓 205/205 通过。首次缺少 worktree 中既有 `three` 依赖导致两项模块无法启动；复用主工作目录已有的 `three` 到本 worktree 的 ignored node_modules 后重跑通过，无新增依赖或主目录修改。OpenSpec strict validation 与 Git diff whitespace 检查通过。未运行 browser/build：此改动没有页面或构建代码变化。
 
 既有 adapter 的 2 records / 1024 UTF-8 bytes 上限仍生效，用户记忆、历史与 interaction evidence 保留优先级。扩包不是每轮全量注入；只有显式当前 query/topic/entity 相关条目才可进入 prompt。能力边界仍是固定两条可对话时间线，不支持玩家任意主线进度。
 
 未做真实模型回复/角色感知 QA，提交不等于集成或部署。下一步是集成负责人审查来源资格、缺口与实际查询样本后选择是否采纳独立 commit；详细主线覆盖仍有审判具体证据空白，不能宣称剧情全集已完成。
+
+## Trial source correction increment
+
+在首版独立 commit `5be07e3` 之后追加审判增量：新增 6 条，5 enabled、1 pending。独立 source `aq5-trial-search` 使用 Fandom Apocalypse 的 **search_index_inspected** 正文，sourceStatus 仍为 `secondary_game_dialogue_transcription`，directPageVerified/audioVerified 都为 false。原 HoYoDex 错误路由与 `act5-trial-pending` 历史条目继续 disabled，不追溯为已核查。
+
+本轮取得的索引正文支持房间墙壁退去/舞台、接受审判、可拒绝水测试却伸手、当庭得知低浓度/检测结果、两个判决措辞。没有完整取得指定控诉与否认 assets，故另加 `act5-trial-charge-pending`；陷阱搭建说明与白淞道歉也仍属 coverage 空白，没有泛化进启用摘要。她以未溶解为由声称神明身份属于当庭说法，不是神性证明；样本安排属于当庭听闻，不是她事前策划；死刑判决不授予私密执行机制。所有审判命题在两个现有时间线可知，但后续 Vision/演出门控及 Finale 转述知识门控保持。

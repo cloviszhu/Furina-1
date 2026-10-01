@@ -255,3 +255,25 @@
 ## Interpretation and pending
 
 场景表现与已发生事件归 canonicalfact；动机、压力、关系解释归 characterinterpretation，并限制角色/作者知识拥有者。所列因果联系供审计，不能自动推导心理状态或所有同行者所知。Pending 文本、source notes、排除原因不会投影到 modelPrompt。覆盖缺口及当前验证范围见 character-story-import-handoff.md 与 furina-coverage-4.2.v2.json。
+
+## Trial alternative source increment
+
+原账本的 HoYoDex 路由冲突保留，以下新来源独立归属，未回填成旧来源验证成功。有效总数现为 60 records / 56 enabled / 4 pending，direct-game primary 仍为 0。
+
+- source：aq5-trial-search
+- URL / attribution：https://genshin-impact.fandom.com/wiki/Apocalypse
+- sourceStatus：secondary_game_dialogue_transcription；verificationMethod：search_index_inspected
+- checkedAt：2026-10-01；directPageVerified：false；audioVerified：false
+- 方法：普通 web 搜索返回真实任务正文及 Travel Log，直接页面 robots/restricted；不是页面或音频核查。精确 retrievalQueries 保存于 JSON。
+- 署名/许可：Genshin Impact Wiki contributors，CC BY-SA 4.0 摘要改写；原游戏素材权利不据此扩张。
+
+| record | enabled | section / actually inspected asset locators | 知情类型 |
+| --- | --- | --- | --- |
+| act5-trial-stage | true | cs2 Travel Log / scene 4 opening / vo_fdaq304_cs2_furina_01, vo_fdaq304_4_furina_01, vo_fdaq304_4_furina_02 | experienced |
+| act5-trial-acceptance | true | scene 4 duel option / acceptance / vo_fdaq304_4_neuvillette_01, vo_fdaq304_4_neuvillette_02, vo_fdaq304_4_furina_10, vo_fdaq304_4_furina_11, vo_fdaq304_4_furina_12 | experienced |
+| act5-trial-charge-pending | false | scene 5 charge / denial (parent locators, not inspected) / vo_fdaq304_5_hero_02, vo_fdaq304_5_heroine_02, vo_fdaq304_5_furina_05, vo_fdaq304_5_furina_06（父研究定位，本轮未取得完整正文） | experienced |
+| act5-trial-water-test | true | scene 8 water test / defendant claim / vo_fdaq304_8_neuvillette_02, vo_fdaq304_8_neuvillette_03, vo_fdaq304_8_furina_04, vo_fdaq304_8_furina_06, vo_fdaq304_8_furina_07 | experienced |
+| act5-trial-dilution-report | true | scene 8 examination paragraph / dilution disclosure / vo_fdaq304_8_neuvillette_06, vo_fdaq304_8_furina_09, vo_fdaq304_8_navia_12, vo_fdaq304_8_navia_13, vo_fdaq304_8_navia_14 | reported |
+| act5-trial-verdicts | true | scene 8 two verdicts / vo_fdaq304_8_neuvillette_08, vo_fdaq304_8_neuvillette_09, vo_fdaq304_8_neuvillette_13, vo_fdaq304_8_neuvillette_14, vo_fdaq304_8_neuvillette_15, vo_fdaq304_8_neuvillette_18, vo_fdaq304_8_neuvillette_19 | experienced |
+
+scene 4 trap explanation / apology 与 scene 5 指定 charge-denial 未完整返回；不将提供资产 ID 等同已核验文本。审判水测试文本是她的声称而非事实证明，低浓度是当庭被告知。索引里的检测段落能读到“与人类受同浓度影响相符”，但其 Sigewinne asset 编号未返回，因此不伪填已检查的 Sigewinne 03/04，定位采用该段正文及相邻 neuvillette_06/furina_09/navia_12–14。
