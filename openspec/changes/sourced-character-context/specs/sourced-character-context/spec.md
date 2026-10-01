@@ -60,3 +60,12 @@
 #### Scenario: 未知与未来剧透
 - **WHEN** 候选中有未来事件和不知情的私密事件
 - **THEN** 所有返回的模型文本均不包含这些事实、标题、原因或审计元数据。
+
+### Requirement: Provider adapter preserves interaction budget
+系统 MUST 在原persona、历史和用户记忆messages构建后追加当前query相关canon，固定furina视角和4.2版次，canon独立最多2条/1024UTF-8 bytes。来源资格提示及JSON转义 MUST 计入完整messages的既有总输入限制和费用预留；不能删减互动证据腾出canon空间。
+#### Scenario: Near total input capacity
+- **WHEN** 原messages已接近既有16000bytes限制
+- **THEN** 超限canon整条降为1条或零条，原消息保持，费用预留依据实际最终messages。
+#### Scenario: User facts and canon differ
+- **WHEN** 用户互动含自己的饮食偏好，当前query也命中角色背景
+- **THEN** 用户证据仍为user_reported，角色背景保留sourceStatus和knowledgeMode，用户输入不能变更视角或改写canon。
