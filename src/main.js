@@ -6,6 +6,7 @@ import { mountRemoteTests } from './remote-tests.js';
 import { loadSettings, saveSettings } from './settings.js';
 import { resolveVoicePreference } from './voice-preference.js';
 import { completedSegments } from './turn-lifecycle.js';
+import { NaturalMemoryControls, mountNaturalMemoryControls } from './natural-memory-controls.js';
 
 const $ = id => document.getElementById(id);
 let savedSettings;
@@ -30,7 +31,7 @@ const speech = new SpeechController({
   onMouth: value => { if (stage) stage.mouth = value; },
   onExpression: value => stage?.setExpression?.(value),
   onLifecycle: ({ phase }) => { stage?.setMode?.(phase); $('speech-state').dataset.phase = phase; },
-  onSegment: segment => { $('speech-subtitle').textContent = segment?.text || ''; if (segment?.index === 0) stage?.trigger('nod'); },
+  onSegment: segment => { $('speech-subtitle').textContent = segment?.text || ''; if (segment) $('expression-state').textContent = `实际发声表达：${segment.emotion}`; if (segment?.index === 0) stage?.trigger('nod'); },
   onStop: preservePreview => { stage?.cancelAction?.(); if (!preservePreview) $('reference-preview')?.pause(); },
   onCancel: turnId => { void fetch(`/api/turns/${encodeURIComponent(turnId)}/cancel`, { method: 'POST', keepalive: true, headers: { 'X-Exo-Credentials': '1' } }).then(response => { if (!response.ok) throw new Error(); }).catch(() => { $('app-error').textContent = '本地已停止，服务端取消确认失败；已发出的模型调用仍可能计费。'; }); },
 });
@@ -70,7 +71,7 @@ try {
       if (event.data?.type !== 'memory-mutated') return;
       invalidateConversation(Boolean(memorySourceId));
       $('provider-note').textContent = '共同经历在另一页面修改或删除，旧回复与语音已停止。';
-      void Promise.all([memories(), refreshHistory()]).catch(fail);
+      naturalMemories.invalidate(); void Promise.all([memories(), refreshHistory(), naturalMemories.load()]).catch(fail);
     };
   }
 } catch { /* Server context-generation still rejects stale completions. */ }
@@ -79,7 +80,7 @@ const config = () => ({ provider: $('provider').value, model: $('model-name').va
 const character = () => ({ timeline: $('character-timeline').value || 'aftermath', style: $('character-style').value || 'natural' });
 const historyPath = () => { const chosen = character(); return chosen.timeline === 'aftermath' && chosen.style === 'natural' ? '/api/history' : `/api/history?timeline=${chosen.timeline}&style=${chosen.style}`; };
 const sourcePath = id => { const chosen = character(); return `/api/sources/${encodeURIComponent(id)}?timeline=${chosen.timeline}&style=${chosen.style}`; };
-const speechOptions = () => ({ emotion: $('voice-emotion').value, speed: Number($('voice-speed').value) });
+const speechOptions = () => ({ emotion: $('voice-emotion').value, speed: Number($('voice-speed').value), expressionMode: $('expression-mode').value });
 function replySpeechOptions(result) {
   const options = speechOptions();
   if ($('expression-mode').value !== 'reply') return options;
@@ -92,6 +93,26 @@ function replySpeechOptions(result) {
   return options;
 }
 const fail = error => { $('app-error').textContent = error.message || String(error); };
+let manualMemoryCount = 0;
+const naturalMemories = new NaturalMemoryControls({
+  adapter: {
+    list: async ({ signal, offset }) => {
+      const chosen = character();
+      const result = await api(`/api/interaction-memories?timeline=${encodeURIComponent(chosen.timeline)}&style=${encodeURIComponent(chosen.style)}&limit=50&offset=${offset}`, { signal });
+      if (!Array.isArray(result.items) || typeof result.hasMore !== 'boolean') throw Error('自动记忆列表无效，请重新载入。');
+      return { hasMore: result.hasMore, rows: result.items.map(row => ({ key: row.eventId, text: row.text,
+        updatedLabel: `${new Date(row.updatedAt).toLocaleString()} · 第 ${row.revision} 版 · ${{reality:'用户报告',uncertain:'未确定',fiction:'虚构',hypothetical:'假设'}[row.domain] || '用户报告'}`,
+        evidence: [{ label: '用户交谈来源', text: row.text }],
+      })) };
+    },
+    revise: (eventId, text, { signal }) => api(`/api/interaction-memories/${encodeURIComponent(eventId)}`, { method: 'PATCH', body: JSON.stringify({ text }), signal }),
+    remove: (eventId, { signal }) => api(`/api/interaction-memories/${encodeURIComponent(eventId)}`, { method: 'DELETE', signal }),
+  },
+  onBeforeMutation: () => invalidateConversation(),
+  onMutation: async result => { invalidateConversation(); announceMemoryMutation(); if (result?.retained === false) $('app-error').textContent = '纠正内容未保留，该来源已移除。'; await Promise.all([refreshHistory(), memories()]); },
+});
+mountNaturalMemoryControls($('natural-memory-list'), naturalMemories);
+naturalMemories.subscribe(state => { $('memory-count').textContent = manualMemoryCount + state.rows.length + (state.hasMore ? '+' : ''); });
 
 async function api(path, options = {}) {
   let response;
@@ -141,6 +162,7 @@ async function send(text, remoteTest = false) {
   const startedAt = Date.now();
   chatController = new AbortController(); const controller = chatController;
   busy = true; $('send').disabled = true; $('remote-test').disabled = true; $('app-error').textContent = '';
+  showTab('chat');
   const turn = speech.beginTurn();
   turn.remoteId = globalThis.crypto.randomUUID();
   turn.signal.addEventListener('abort', () => controller.abort(), { once: true });
@@ -163,15 +185,16 @@ async function send(text, remoteTest = false) {
     if (result.error) fail(result.error);
     updateBudget(result.budget);
     const options = replySpeechOptions(result);
+    void naturalMemories.load();
+    if (!speech.lifecycle.owns(turn)) return;
     if ($('auto-speak').checked) {
       const voice = speech.voices.find(v => v.value === $('voice-select').value);
       $('expression-state').textContent = voice?.engine !== 'gpt-sovits' ? '当前系统备用声使用 neutral 表达。'
         : segments.some(s => !voice.emotions?.includes(s.emotion)) ? '段落表达未登记，实际使用 neutral；保留当前声线。'
-        : '交谈按回复情绪发声；手动参考表达用于声音试听。';
+        : options.expressionMode === 'manual' ? `手动参考表达：${options.emotion}；实际发声时以声音服务确认值为准。` : '交谈按回复情绪发声。';
       await speech.speakSegments(segments, $('voice-select').value, { ...options, turn });
     }
     else speech.lifecycle.set(turn, 'idle');
-    showTab('chat');
   } catch (error) { if (!controller.signal.aborted && generation === contextGeneration && speech.lifecycle.owns(turn)) { fail(new Error(`${error.message || '回复失败'} 没有自动重试。`)); speech.lifecycle.set(turn, 'error'); speech.cancelRemote(turn); } }
   finally {
     // Keep rapid repeated clicks inside one send, even when failure returns immediately.
@@ -239,6 +262,7 @@ $('provider').onchange = () => {
 };
 function changeCharacter() {
   invalidateConversation();
+  naturalMemories.invalidate(); void naturalMemories.load();
   $('mode-status').textContent = '本机 · 演示模式';
   $('provider-note').textContent = '角色配置已切换；当前仍为有限规则演示，尚未接入大模型。';
   const chosen = character();
@@ -307,7 +331,7 @@ $('confirm-voice-preference').onclick = () => {
 };
 $('voice-emotion').onchange = () => { speech.stop(); preferredEmotion = $('voice-emotion').value; stage?.setExpression?.(preferredEmotion); voiceDetails(); };
 $('voice-speed').onchange = () => speech.stop();
-$('expression-mode').onchange = () => { speech.stop(); $('expression-state').textContent = '交谈按回复情绪发声；手动参考表达用于声音试听。'; };
+$('expression-mode').onchange = () => { speech.stop(); $('expression-state').textContent = $('expression-mode').value === 'manual' ? '交谈使用手动参考表达；未登记会明确停止，不自动回退。' : '交谈按回复情绪发声；未登记的表达会明确使用 neutral。'; };
 $('voice-test').onclick = () => void speech.speak('你终于来了。下一幕，就由我们一起写吧。', $('voice-select').value, speechOptions());
 $('refresh-voices').onclick = () => void voices();
 speech.onVoicesChanged = () => { void voices(); };
@@ -316,7 +340,7 @@ async function memories() {
   const generation = contextGeneration;
   const rows = await api('/api/memories');
   if (generation !== contextGeneration) return;
-  $('memory-count').textContent = rows.length; $('memory-list').replaceChildren();
+  manualMemoryCount = rows.length; $('memory-count').textContent = manualMemoryCount + naturalMemories.state.rows.length + (naturalMemories.state.hasMore ? '+' : ''); $('memory-list').replaceChildren();
   if (!rows.length) $('memory-list').append(element('p', 'empty', '这里还没有共同经历。保存你认可的片段，让它成为下次见面的线索。'));
   for (const row of rows) {
     const card = element('article', 'memory-card'); card.dataset.memoryId = row.id;
@@ -329,7 +353,7 @@ async function memories() {
       const save = element('button', '', '保存修改');
       save.onclick = async () => {
         invalidateConversation();
-        try { await api(`/api/memories/${row.id}`, { method: 'PATCH', body: JSON.stringify({ text: text.value }) }); announceMemoryMutation(); await memories(); await refreshHistory(); }
+        try { await api(`/api/memories/${row.id}`, { method: 'PATCH', body: JSON.stringify({ text: text.value }) }); announceMemoryMutation(); await memories(); await refreshHistory(); await naturalMemories.load(); }
         catch (error) { fail(error); await refreshHistory().catch(fail); }
       };
       card.append(text, save);
@@ -337,7 +361,7 @@ async function memories() {
     remove.onclick = async () => {
       if (!confirm('删除这条经历及旧聊天上下文？这将防止它被再次引用。')) return;
       invalidateConversation();
-      try { await api(`/api/memories/${row.id}`, { method: 'DELETE' }); announceMemoryMutation(); await memories(); await refreshHistory(); }
+      try { await api(`/api/memories/${row.id}`, { method: 'DELETE' }); announceMemoryMutation(); await memories(); await refreshHistory(); await naturalMemories.load(); }
       catch (error) { fail(error); await refreshHistory().catch(fail); }
     };
     actions.append(edit, remove); card.append(actions); $('memory-list').append(card);
@@ -367,7 +391,7 @@ $('memory-form').onsubmit = async event => {
 };
 $('memory-manual').onclick = () => resetMemorySource();
 
-globalThis.addEventListener('pagehide', () => { chatController?.abort(); realChat = false; renderChatMode(); speech.stop(); $('api-key').value = ''; });
+globalThis.addEventListener('pagehide', () => { naturalMemories.dispose(); chatController?.abort(); realChat = false; renderChatMode(); speech.stop(); $('api-key').value = ''; });
 
 async function boot() {
   status = await api('/api/status'); providers = status.providers;
@@ -384,7 +408,7 @@ async function boot() {
   if (selected) { $('model-select').value = selected.url; void stage?.load(selected.url); }
   else $('model-state').textContent = '缺少本地 PMX；请按 README 安装资产。';
   updateBudget(status.budget);
-  await Promise.all([refreshHistory(), memories(), voices()]);
+  await Promise.all([refreshHistory(), memories(), voices(), naturalMemories.load()]);
   if (Array.from($('voice-emotion').options).some(o => o.value === savedSettings.emotion)) $('voice-emotion').value = savedSettings.emotion;
   voiceDetails();
   settingsReady = true; persistSettings(); renderChatMode();

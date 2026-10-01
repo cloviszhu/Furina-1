@@ -1,20 +1,20 @@
 # Design
 
 ## Context
-父线程已交自然记忆ca990c3给集成owner，前端list/revise/delete合同待提供。既有共同经历tab仍管理手动记忆。
+接口已由edd8b5e明确，见docs/interaction-memory-api-contract.md。自动与手动记忆在共同经历tab分别显示。
 
 ## Goals / Non-Goals
-目标：准备完整用户管理状态及呈现，不假设后端字段、URL、修订语义。当前不挂正式页面。
+目标：用户可查看、纠正、删除自动episode，正确取消演出并刷新多处来源。不改服务端逻辑或自动提取策略，不部署。
 
 ## Decisions
-使用内部呈现适配器list({signal})、revise(key,text,{signal})、remove(key,{signal})，仅表示前端回调契约，不是HTTP接口建议。列表由适配器映射为{key,text,evidence:[{label,text}],updatedLabel}；key为opaque值，不假设episode字段。
-状态分unconnected/loading/ready/error，编辑草稿和删除确认独立，mutation锁阻止重复提交。只有确认的编辑/删除调用onBeforeMutation停止旧对话；成功后onMutation触发跨页失效通知与相关列表刷新。读取generation拒绝旧snapshot，dispose中止读取与修改。
-全部记忆文本以textContent呈现，不执行用户记忆中的HTML。
+内部呈现adapter映射GET items，key取eventId，limit50/offset分页，hasMore触发加载更多。PATCH/DELETE使用eventId。created/updated来源字段用来显示时间、修订和类型。onBeforeMutation停止旧对话，成功后onMutation停止可能新开的演出、广播失效并刷新历史/手动记录，再加载自动列表。retained:false告知来源已移除。
+generation和AbortController拒绝旧snapshot与不同角色上下文结果；pagehide dispose。正文使用textContent。
+manual表达保持segment emotion，另发独立referenceEmotion；以WAV头X-Exo-Emotion及X-Exo-Expression-Mode确认实际值。缺失/不一致拒播，注册不支持明确失败，舞台只在audio start采用确认表达。既有试听无turn路径保持兼容。
 
 ## Risks / Trade-offs
-后台修订的revision与source lineage未知 → 等服务端合同后由adapter映射，防止失效纠正重新引入旧来源。
-列表刷新失败 → 保留当前记录与草稿，错误可见；变更成功后的刷新失败不能误称变更失败。
-无接口接线 → 模块仅独立测试，不将此增量宣称完成自动记忆功能。
+分页期间记录变化 → 重复key拒绝并要求重新载入。
+修订成功后刷新失败 → 不重复写入，展示刷新失败供重新载入。
+假音频通过 → 不证明角色声线及人类感知，统一验收单独记录。
 
 ## Migration Plan
-独立提交供父线程集成。合同到达后接到共同经历tab，与手动记忆明确区分，验证实际列表/纠正/删除影响检索与跨页取消。
+提交前端增量给集成owner。其已有edd8b5e服务端及244cddd呈现模块后，只合入本次末尾增量。生产发布由父线程另行决定。

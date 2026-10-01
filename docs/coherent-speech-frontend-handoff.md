@@ -1,3 +1,5 @@
+2026-10-01 更新：自动记忆管理和手动回复表达已按确认合同接线；此前下述合同待定项已解决，最新结果见 [自动记忆控制交接](natural-memory-controls-handoff.md)。自然动作感知验收仍未完成。
+
 # 前端连贯说话里程碑交接
 
 分支：feat/speech-turn-lifecycle。worktree：C:/Users/zhu06/Documents/ChatGPT/Project Exo/.worktrees/speech-turn-lifecycle。

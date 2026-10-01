@@ -51,3 +51,15 @@ test('another card cannot silently discard an unsaved correction', async () => {
   assert.deepEqual(controls.state.edit, { key: row.key, draft: '未保存的纠正' }); assert.equal(controls.state.deleting, null);
   controls.cancel(); controls.edit('second'); assert.equal(controls.state.edit.key, 'second');
 });
+test('pagination appends using visible offset and a context invalidation rejects late pages', async () => {
+  const offsets = [], pending = deferred();
+  const controls = new NaturalMemoryControls({ adapter: { list: async ({ offset }) => { offsets.push(offset); return offset ? pending.promise : { rows: [row], hasMore: true }; } } });
+  await controls.load(); assert(controls.state.hasMore); const more = controls.load({ append: true }); controls.invalidate();
+  pending.resolve({ rows: [{ key: 'old', text: 'old context' }], hasMore: false }); await more;
+  assert.deepEqual(offsets, [0, 1]); assert.deepEqual(controls.state.rows, []); assert.equal(controls.state.hasMore, false);
+});
+test('successful retained:false result reaches the mutation callback without repeating the write', async () => {
+  let received, writes = 0;
+  const controls = new NaturalMemoryControls({ adapter: { list: async () => [row], revise: async () => { writes++; return { retained: false }; } }, onMutation: result => { received = result; } });
+  await controls.load(); controls.edit(row.key); await controls.save(); assert.equal(received.retained, false); assert.equal(writes, 1); assert.equal(controls.state.edit, null);
+});

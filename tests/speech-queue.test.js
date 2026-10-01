@@ -41,7 +41,7 @@ test('shared completion contract rejects wrong identity, order or changed text',
 });
 test('shared TTS carries identity and registered segment emotion, cancellation notifies once', async () => {
   const requests = [], cancelled = [];
-  const { speech, sources } = fixture(async (_path, options) => { requests.push(JSON.parse(options.body)); return { ok: true, arrayBuffer: async () => new ArrayBuffer(4) }; });
+  const { speech, sources } = fixture(async (_path, options) => { requests.push(JSON.parse(options.body)); return { ok: true, headers: new Headers({ 'X-Exo-Emotion': 'happy' }), arrayBuffer: async () => new ArrayBuffer(4) }; });
   speech.onCancel = id => cancelled.push(id);
   const turn = speech.beginTurn(); turn.remoteId = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
   const promise = speech.speakSegments([{ segmentId: `${turn.remoteId}:0`, index: 0, text: '一。', emotion: 'happy' }], 'neural:mock', { emotion: 'neutral', turn }); await flush();
@@ -56,6 +56,17 @@ test('silent audio still owns speaking; subtitle and expression begin after audi
   sources[0].onended(); await flush(); assert.equal(sources.length, 2);
   assert(events.indexOf('第一句。') < events.indexOf('第二句。'));
   sources[1].onended(); assert.deepEqual(await promise, { completed: true }); assert.equal(speech.lifecycle.phase, 'idle');
+});
+test('manual emotion preserves semantic segment and uses only the confirmed audio expression', async () => {
+  let body; const { speech, events, sources } = fixture(async (_path, options) => { body = JSON.parse(options.body); return { ok: true, headers: new Headers({ 'X-Exo-Emotion': 'happy', 'X-Exo-Expression-Mode': 'manual' }), arrayBuffer: async () => new ArrayBuffer(4) }; });
+  const turn = speech.beginTurn(); turn.remoteId = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
+  const promise = speech.speakSegments([{ segmentId: `${turn.remoteId}:0`, text: '一。', emotion: 'neutral' }], 'neural:mock', { turn, emotion: 'happy', expressionMode: 'manual' }); await flush();
+  assert.equal(body.emotion, 'neutral'); assert.equal(body.referenceEmotion, 'happy'); assert.equal(body.expressionMode, 'manual'); assert(events.includes('happy'));
+  sources[0].onended(); assert((await promise).completed);
+  speech.fetchAudio = async () => ({ ok: true, headers: new Headers({ 'X-Exo-Emotion': 'neutral', 'X-Exo-Expression-Mode': 'reply' }), arrayBuffer: async () => new ArrayBuffer(4) });
+  const next = speech.beginTurn(); next.remoteId = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
+  const failed = await speech.speakSegments([{ segmentId: `${next.remoteId}:0`, text: '二。', emotion: 'neutral' }], 'neural:mock', { turn: next, emotion: 'happy', expressionMode: 'manual' });
+  assert(failed.error); assert.equal(sources.length, 1); assert.equal(speech.lifecycle.phase, 'error');
 });
 test('stop immediately clears playback, drops prepared next sentence and allows another turn', async () => {
   const { speech, events, sources } = fixture(); const promise = speech.speak('一。二。', 'neural:mock'); await flush();

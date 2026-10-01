@@ -1,30 +1,26 @@
-# 自动记忆控制呈现准备交接
+# 自动记忆控制与手动表达已接合同
 
-本增量只准备src/natural-memory-controls.js，不猜HTTP接口，不修改server，不挂正式页面。继续feat/speech-turn-lifecycle分支，父线程可只cherry-pick本次增量提交，前置f3bfee5已交集成owner。
+## 当前结果
 
-## 已实现
+本增量已按edd8b5e的docs/interaction-memory-api-contract.md接线，共同经历tab显示自动记录和原手动记忆两个区块。无需逐条点击保存来形成自动episode。
+GET带当前timeline/style、limit50与offset，hasMore提供加载更多，时间/修订版/来源类型可见。自动卡片使用eventId作为opaque操作key，PATCH/DELETE不使用episodeId。纠正失败保留草稿，删除要明确确认；修改成功停止演出并刷新history、manualmemory和自动记录，BroadcastChannel只广播失效标记，另一页重新读取。retained:false显示内容未保留/来源移除，不把它伪称保存成功。
+成功聊天后自动刷新记录，不阻塞首句TTS准备。修订期间不会由旧发送结束流程把用户抢回聊天tab。
 
-NaturalMemoryControls：unconnected/loading/ready/error状态、列表刷新、来源展示、纠正草稿与显式保存、删除确认与取消。待处理mutation锁防重复提交；修改失败保留草稿，删除失败保留卡片。generation和AbortController作废迟到列表与离开页面结果。
-mountNaturalMemoryControls：复用memory-card样式；语义按钮、textarea标签与错误alert。正文和来源全部使用textContent，记忆中的HTML不执行。不要求用户逐条保存才能形成自动记忆。
+## 表达兼容
 
-## 内部呈现适配器，非服务端API建议
+/api/speech emotion仍等于模型段落；manual另发expressionMode:'manual'和referenceEmotion用户选择。读取X-Exo-Emotion和X-Exo-Expression-Mode，确认实际采用值。音频起始时舞台/表达状态按实际值变化。manual响应缺少确认或与所选不同会停止，不伪称采用，不fallback。后台400未登记同样是明确错误，不调用备用TTS。reply模式按注册情况提供段落emotion或省略以使用neutral，最终仍以响应头为准。模型text/emotion及turn/segment身份不被手动表达覆盖。
+声音试听保留旧无turn短句路径，声线preferred/effective及恢复未改变。
 
-- list({signal})返回 [{key,text,evidence?:[{label,text}],updatedLabel?}]。
-- revise(key,text,{signal})成功resolve，失败reject；key为opaque。
-- remove(key,{signal})成功resolve，失败reject。
-- onBeforeMutation在明确保存/确认删除后调用，用来取消当前对话/演出。
-- onMutation仅成功后调用，用来广播跨页失效、刷新历史和相关计数。
+## 集成记录
 
-正式API的episode ID、revision、source lineage、响应包裹、分页/筛选、失败与失效约束尚未提供。适配器映射真实合同后才能接到共同经历tab，并应把自动与手动记忆明确区分；此模块不取代既有手动记忆卡片。
+在隔离worktree合并edd8b5e，不重复cherry-pick已含的f3bfee5/ca990c3。旧服务端cherry造成5处冲突（turn文档/index/turns/tests），完整采用edd8b5e对应文件解决，merge为4803bd2；未自行修改服务端逻辑。集成owner应核对并只cherry-pick本次末尾前端增量，前置244cddd也需要已有。
 
-## 最小手动表达兼容建议，等待双方确认
+## 验证
 
-建议只扩展/api/speech：现有emotion继续携带段落emotion并严格校验；增加独立referenceEmotion传用户明确的manual参考表达。服务端验证该voice登记后用referenceEmotion合成，WAV响应头返回实际采用值（例如X-Exo-Reference-Emotion，名称待双方确认）。自动模式默认跟随段落；不支持的段落表达可按既有明确neutral策略。manual未登记必须失败，不fallback，不伪称按用户选择。
-前端播放开始时字幕跟段落text，舞台表情跟服务端确认的实际参考表达。保留preferred/effective声线、manual设置及取消行为。不改LLM生成emotion或text，不改turn/segment身份或等段约束，无新增收费模型调用。
-该字段/响应头仅为供父线程协调的具体建议，未实施、未视为已授权API。待合同明确后前端和服务端分别按所有权接线。
+最终全套Node163/163通过；生命周期/管理控制/记忆UI专项26/26通过。7条隔离Edge回归通过：完整队列、model/TTS取消与刷新、显式收费、声线删除恢复、记忆持久化、纯呈现、安全文本、实际automaticlist/revise/delete、跨页失效、manual响应确认及未登记拒绝。
+实际页面新增流程用独立loopback端口、临时SQLite、fake provider/AudioContext/TTS及禁用的Windows凭据bridge；未读取真实key、未访问真实模型/GPU、未影响生产app/TTS。未推main或部署。build和OpenSpec strict通过，既有bundle告警仍存在。
 
-## 验证与剩余工作
+真实角色声线、真实模型回合效果、自然动作感知和长期自然记忆效果仍待统一验收。本次是管理控制与manual表达兼容接线，不代表产品已接近成品。
 
-6/6 Node状态测试通过；1/1独立Edge呈现流程通过，覆盖来源、纠正失败恢复、删除确认/取消、待处理锁与HTML文本安全。已实际查看本地浏览器截图：卡片、来源折叠与操作按钮可见，沿用既有样式。测试仅随机loopback静态服务器和假回调，无应用API、真实DB、key、模型、TTS或GPU。正式页面/生产服务未修改。
-当前未完成：实际list/revise/delete联调、修订/删除对真实检索与跨页取消的影响、共同经历tab挂载、手动表达新合同接线。不能宣称自动记忆控制已可在正式页面使用。
 
+实际页面视觉复查发现自动区继承flex列表后卡片会被压缩；已改为记忆面板整体滚动，卡片与纠正/删除按钮完整可见。布局修复后自动记忆/原手动记忆两条浏览器流程复跑通过；新增自动区无裁切断言及本地截图。截图仅是假数据+缺失模型占位，不包含真实资产、凭据或用户会话。

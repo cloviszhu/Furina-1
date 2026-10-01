@@ -14,3 +14,6 @@
 .speech-subtitle { position: absolute; bottom: 112px; left: 8%; right: 8%; text-align: center; color: #edf5ff; font-size: 16px; line-height: 1.65; text-shadow: 0 2px 8px #071425; pointer-events: none; z-index: 2; }
 .speech-subtitle:empty { display: none; }
 @media(max-width:820px) { .speech-subtitle { bottom: 95px; font-size: 14px; } }
+#memory-panel.active { display: block; overflow-y: auto; }
+#memory-panel .memory-list { flex: none; overflow: visible; }
+#natural-memory-list { padding-bottom: 12px; }

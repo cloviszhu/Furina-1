@@ -54,19 +54,23 @@ export class SpeechController {
       ? { backend: 'gpt-sovits', text: segment.text, referenceId: voice.id, ...(segment.segmentId && !voice.emotions?.includes(segment.emotion) ? {} : { emotion: segment.segmentId ? segment.emotion : options.emotion }), speed: options.speed }
       : { text: segment.text, voice: voice.id };
     if (turn.remoteId && segment.segmentId) Object.assign(body, { turnId: turn.remoteId, segmentId: segment.segmentId });
+    if (voice.engine === 'gpt-sovits' && segment.segmentId && options.expressionMode === 'manual') Object.assign(body, { emotion: segment.emotion, expressionMode: 'manual', referenceEmotion: options.emotion });
     const response = await (this.fetchAudio || fetch)('/api/speech', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), signal: turn.signal });
     if (!this.lifecycle.owns(turn)) return null;
     if (!response.ok) throw new Error((await response.json()).error || '语音生成失败');
     const data = await response.arrayBuffer();
     if (!this.lifecycle.owns(turn)) return null;
     const audio = await this.context.decodeAudioData(data);
-    return this.lifecycle.owns(turn) ? audio : null;
+    const actualEmotion = response.headers?.get('X-Exo-Emotion');
+    if (turn.remoteId && segment.segmentId && !['neutral', 'calm', 'happy', 'sad', 'angry', 'surprised'].includes(actualEmotion)) throw new Error('声音服务未确认实际表达；已停止播放。');
+    if (options.expressionMode === 'manual' && voice.engine === 'gpt-sovits' && segment.segmentId && (actualEmotion !== options.emotion || response.headers?.get('X-Exo-Expression-Mode') !== 'manual')) throw new Error('声音服务未采用所选手动表达；已停止播放。');
+    return this.lifecycle.owns(turn) ? { audio, actualEmotion: actualEmotion || options.emotion } : null;
   }
   speak(text, value, options = {}) { return this.speakSegments(splitSpeech(text).map((text, index) => ({ id: index, text })), value, options); }
-  async speakSegments(segments, value, { emotion = 'neutral', speed = 1, turn } = {}) {
+  async speakSegments(segments, value, { emotion = 'neutral', speed = 1, expressionMode = 'reply', turn } = {}) {
     if (!turn) { this.stop(); turn = this.lifecycle.begin('preparing'); }
     if (!this.lifecycle.owns(turn)) return { cancelled: true };
-    const voice = this.voices.find(v => v.value === value), options = { emotion, speed };
+    const voice = this.voices.find(v => v.value === value), options = { emotion, speed, expressionMode };
     try {
       if (!voice || !voice.localService) throw new Error('没有可用本地声音；请刷新或选择声音。');
       if (voice.engine === 'gpt-sovits' && !voice.emotions?.includes(emotion)) throw new Error('当前声线未登记所选表达。');
@@ -84,8 +88,9 @@ export class SpeechController {
         const prepared = buffered ? await pending : {};
         if (!this.lifecycle.owns(turn)) return { cancelled: true };
         if (prepared.error) throw prepared.error;
+        if (buffered && prepared.audio) segment.emotion = prepared.audio.actualEmotion;
         pending = buffered && index + 1 < segments.length ? prepare(segments[index + 1]) : null;
-        await this.play(segment, prepared.audio, voice, turn);
+        await this.play(segment, prepared.audio?.audio, voice, turn);
       }
       if (!this.lifecycle.owns(turn)) return { cancelled: true };
       this.reset(); this.lifecycle.set(turn, 'idle'); this.onState('播放结束 · 本地分句语音'); return { completed: true };

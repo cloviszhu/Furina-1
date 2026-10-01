@@ -24,7 +24,8 @@
         </section>
         <p id="app-error" class="error app-error" role="alert"></p>
         <section id="memory-panel" class="panel">
-          <div class="conversation-heading"><span class="eyebrow">OUR SHARED MOMENTS</span><h2>值得留下的片段。</h2><p>由你确认后保存，重启后仍可回忆。修改或删除会清空聊天上下文，避免旧说法被再次引用。</p></div>
+          <div class="conversation-heading"><span class="eyebrow">OUR SHARED MOMENTS</span><h2>值得留下的片段。</h2><p>成功交谈中的用户经历会自动整理；你可以纠正或删除，也可另行手动保留。</p></div>
+          <div id="natural-memory-list" class="memory-list"></div><h3>手动保留的共同经历</h3>
           <form id="memory-form"><label for="memory-text">保存一段共同经历</label><textarea id="memory-text" rows="3" maxlength="2000" placeholder="例如：今天我们一起讨论了歌剧，约定下次试试布丁。"></textarea><div class="composer-footer"><span id="memory-source">来源：你的手动记录</span><button id="memory-save" class="primary" type="submit">记住这一刻</button></div></form>
           <button id="memory-manual" type="button" class="quiet">改为手动记录（不关联聊天）</button>
           <div id="memory-list" class="memory-list"></div>

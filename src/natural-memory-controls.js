@@ -4,22 +4,25 @@ export class NaturalMemoryControls {
   constructor({ adapter, onBeforeMutation = () => {}, onMutation = () => {} } = {}) {
     Object.assign(this, { adapter, onBeforeMutation, onMutation });
     this.listeners = new Set(); this.generation = 0;
-    this.state = { phase: adapter ? 'ready' : 'unconnected', rows: [], edit: null, deleting: null, pending: null, error: '' };
+    this.state = { phase: adapter ? 'ready' : 'unconnected', rows: [], hasMore: false, edit: null, deleting: null, pending: null, error: '' };
   }
   subscribe(listener) { this.listeners.add(listener); listener(this.state); return () => this.listeners.delete(listener); }
   update(patch) { if (this.disposed) return; this.state = { ...this.state, ...patch }; for (const listener of this.listeners) listener(this.state); }
-  async load() {
+  async load({ append = false } = {}) {
     if (!this.adapter || this.state.pending || this.disposed) return;
     const generation = ++this.generation;
     this.readController?.abort(); this.readController = new AbortController();
     const controller = this.readController;
     this.update({ phase: 'loading', error: '' });
     try {
-      const rows = await this.adapter.list({ signal: controller.signal });
+      const result = await this.adapter.list({ signal: controller.signal, offset: append ? this.state.rows.length : 0 });
       if (generation !== this.generation || controller.signal.aborted) return;
+      const rows = Array.isArray(result) ? result : result.rows;
       if (!Array.isArray(rows) || new Set(rows.map(r => r.key)).size !== rows.length || rows.some(r => typeof r.key !== 'string' || !r.key || typeof r.text !== 'string')) throw Error('记忆列表格式无效，请重新载入。');
       // Never overwrite a draft with a late list snapshot.
-      this.update({ rows, phase: 'ready' });
+      const combined = append ? [...this.state.rows, ...rows] : rows;
+      if (new Set(combined.map(r => r.key)).size !== combined.length) throw Error('记忆分页已变化，请重新载入。');
+      this.update({ rows: combined, hasMore: Boolean(result.hasMore), phase: 'ready' });
     } catch (error) {
       if (generation === this.generation && !controller.signal.aborted) this.update({ phase: 'error', error: error.message || '记忆暂时无法载入。' });
     }
@@ -50,13 +53,12 @@ export class NaturalMemoryControls {
     try {
       await this.onBeforeMutation();
       if (controller.signal.aborted) return;
-      if (operation === 'revise') await this.adapter.revise(key, text, { signal: controller.signal });
-      else await this.adapter.remove(key, { signal: controller.signal });
+      const result = operation === 'revise' ? await this.adapter.revise(key, text, { signal: controller.signal }) : await this.adapter.remove(key, { signal: controller.signal });
       if (generation !== this.generation || controller.signal.aborted) return;
       this.update({ edit: null, deleting: null, pending: null });
       // The operation succeeded. A subsequent refresh failure must not suggest
       // that the write failed or invite the user to repeat the mutation.
-      try { await this.onMutation(); } catch { this.update({ error: '记忆已更新，相关内容刷新失败，请重新载入。' }); }
+      try { await this.onMutation(result); } catch { this.update({ error: '记忆已更新，相关内容刷新失败，请重新载入。' }); }
       await this.load();
     } catch (error) {
       if (generation === this.generation && !controller.signal.aborted) this.update({ phase: 'ready', pending: null, error: error.message || '操作未完成，请重试。' });
@@ -64,6 +66,10 @@ export class NaturalMemoryControls {
   }
   dispose() {
     this.disposed = true; ++this.generation; this.readController?.abort(); this.mutationController?.abort(); this.listeners.clear();
+  }
+  invalidate() {
+    ++this.generation; this.readController?.abort(); this.mutationController?.abort();
+    this.update({ phase: 'ready', rows: [], hasMore: false, edit: null, deleting: null, pending: null, error: '' });
   }
 }
 
@@ -97,6 +103,7 @@ export function mountNaturalMemoryControls(container, controller) {
       } else card.append(button('纠正', () => controller.edit(row.key)), button('删除', () => controller.confirmDelete(row.key)));
       container.append(card);
     }
+    if (state.hasMore) { const more = node('button', '加载更多'); more.type = 'button'; more.disabled = Boolean(state.pending) || state.phase === 'loading'; more.onclick = () => void controller.load({ append: true }); container.append(more); }
   });
   return () => { unsubscribe(); controller.dispose(); container.replaceChildren(); };
 }
