@@ -1,0 +1,144 @@
+{
+  "packVersion": "furina-4.2-core-story-v1",
+  "canonEdition": "4.2",
+  "coverage": [
+    {
+      "arc": "profile",
+      "recordIds": [
+        "navia-desserts",
+        "navia-desserts-feeling",
+        "callas-duel-witness",
+        "archon-role-ended",
+        "moved-out",
+        "earlier-performance-reluctance",
+        "profile-acting-range",
+        "profile-stagecraft",
+        "profile-animals",
+        "profile-mask-pressure",
+        "profile-clorinde-social-pending",
+        "profile-queen-crown",
+        "profile-food-opinion"
+      ],
+      "status": "partial",
+      "notes": "聚会顺序未明确保守 pending；不含后续角色关联/邮件。"
+    },
+    {
+      "arc": "aq-act1",
+      "recordIds": [
+        "act1-arrival-challenge",
+        "act1-prosecution",
+        "act1-wrong-accusation-concern",
+        "act1-acquittal"
+      ],
+      "status": "key-scenes",
+      "notes": "已核查芙宁娜关键场景；其他人物支线/全部对白不在范围。"
+    },
+    {
+      "arc": "aq-act2",
+      "recordIds": [
+        "act2-navia-testimony",
+        "act2-tartaglia-verdict",
+        "act2-public-defense",
+        "act2-vacher-verdict"
+      ],
+      "status": "key-scenes",
+      "notes": "已核查芙宁娜关键场景；其他人物支线/全部对白不在范围。"
+    },
+    {
+      "arc": "aq-act3",
+      "recordIds": [
+        "act3-first-diplomacy",
+        "act3-meropide-custody"
+      ],
+      "status": "key-scenes",
+      "notes": "已核查芙宁娜关键场景；其他人物支线/全部对白不在范围。"
+    },
+    {
+      "arc": "aq-act4",
+      "recordIds": [
+        "act4-second-tea-pressure",
+        "act4-attack-experienced",
+        "act4-attacker-motive-author"
+      ],
+      "status": "key-scenes",
+      "notes": "已核查芙宁娜关键场景；其他人物支线/全部对白不在范围。"
+    },
+    {
+      "arc": "aq-act5",
+      "recordIds": [
+        "focalors-neuvillette-private",
+        "act5-neuvillette-pressure",
+        "act5-secret-investigation",
+        "act5-public-criticism",
+        "act5-mirror-promise",
+        "act5-public-role-adjustment",
+        "act5-hydrology-monitoring",
+        "act5-private-fatigue",
+        "act5-traveler-confiding",
+        "act5-origin-author",
+        "act5-plan-reported",
+        "act5-flood-survivors",
+        "act5-trial-pending"
+      ],
+      "status": "partial",
+      "notes": "自身审判完整转写入口冲突待解；其余关键出场/回忆/结果有核查，不等于本幕全部剧情。"
+    },
+    {
+      "arc": "sq-opening",
+      "recordIds": [
+        "macaroni-daily-life",
+        "sq-refusal-visit",
+        "sq-artistic-advisor"
+      ],
+      "status": "key-scenes",
+      "notes": "已核查芙宁娜关键场景；其他人物支线/全部对白不在范围。"
+    },
+    {
+      "arc": "sq-middle",
+      "recordIds": [
+        "sq-navia-poisson-help",
+        "sq-face-poisson",
+        "sq-honest-friendship"
+      ],
+      "status": "key-scenes",
+      "notes": "已核查芙宁娜关键场景；其他人物支线/全部对白不在范围。"
+    },
+    {
+      "arc": "sq-finale",
+      "recordIds": [
+        "clio-performance",
+        "vision-received",
+        "performance-return",
+        "sq-vilmant-report",
+        "sq-aurelie-notebook",
+        "sq-ordinary-story-interest",
+        "sq-final-song-choice",
+        "sq-self-expression"
+      ],
+      "status": "key-scenes",
+      "notes": "已核查芙宁娜关键场景；其他人物支线/全部对白不在范围。"
+    }
+  ],
+  "excluded": [
+    "4.2 后 backstory",
+    "年龄和精确499年",
+    "Vision 赠予者及全机制",
+    "全部公众知道秘密",
+    "角色恋爱/医学诊断",
+    "当前用户等同旅行者",
+    "未明确的聚会先后"
+  ],
+  "pendingRecordIds": [
+    "teaser-stage-choice",
+    "profile-clorinde-social-pending",
+    "act5-trial-pending"
+  ],
+  "sourceConflicts": [
+    {
+      "sourceRef": "aq5-trial-pending",
+      "resolution": "pending until correct trial page or captured original scene is verified",
+      "providedByParent": "vo_fdaq304 scene4/8 trial details",
+      "observedByResearch": "URL routes to unrelated later NPC"
+    }
+  ]
+}

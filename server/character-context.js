@@ -1,4 +1,4 @@
-import defaultPack from './data/furina-canon-4.2.v1.json' with { type: 'json' };
+import defaultPack from './data/furina-canon-4.2.v2.json' with { type: 'json' };
 
 const STAGES = Object.freeze({ 'before-aftermath': 0, aftermath: 1, performer: 2 });
 const OWNERS = ['furina', 'focalors', 'neuvillette', 'author'];
