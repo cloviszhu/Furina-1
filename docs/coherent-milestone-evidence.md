@@ -48,3 +48,7 @@ node ../../../node_modules/@playwright/test/cli.js test tests/browser/coherent-t
 组合SQLite用例发现并修复：自然纠正调用旧clearSourceConversation时传NULL，SQL排除条件使无关确认来源未被保留；改用明确的非匹配排除值，保留无关确认记忆。历史清理会替换确认来源ID，现在统一追踪新旧来源别名，后续manual删除仍能同步对应自动episode。连续三次纠正保持两条独立确认记忆与两个当前别名，不随revision累积旧别名；来源/旧history/secret/计划相关检查20/20通过。达到检索结果limit后停止额外capsule派生，预算不扩大。
 
 首次汇合全量Node检查161/162，通过项包括原有凭据/预算；唯一失败为新检索优化测试误以为中文单字“茶”属于现有二元词法索引，已改为有索引的“喜欢茶”并通过。该测试没有修改产品词法语义。最终Node复核结果须以修复后的日志为准，不以该次失败日志宣称全部通过。
+
+修复后8b89ffd代码的最终复核：Node163/163通过（36.8秒，含真正SQLite及fake Windows凭据bridge）；五项Edge浏览器检查5/5通过（34.4秒，包括顺序演出、中断/模式/迟到、现有manual记忆DB reopen、adapter-only自动记忆控件）。日志在本worktree的artifacts/coherent-milestone/node-final.log和browser-final.log。Vite审阅构建输出到artifacts/coherent-milestone/build，未写生产dist；有既有774kB bundle警告。OpenSpec全部14项strict通过。自然记忆正式页面与referenceEmotion前端增量仍需汇合后检查，adapter-only控件检查不能替代正式页面集成。
+
+只读审查开发分支：`https://github.com/cloviszhu/Furina-1/tree/milestone/turn-segments`，推送已确认。与main07aa的AGENTS文件无差异，等价cherry-pick不需要重复覆盖文档。已检查推送文件清单和numstat，无模型/渲染PNG/音频/运行DB/秘密/工作树目录；未推main、未创建PR、未部署。
