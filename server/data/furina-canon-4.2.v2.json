@@ -1,0 +1,3438 @@
+{
+  "schemaVersion": 1,
+  "packVersion": "furina-4.2-core-story-v1",
+  "canonEdition": "4.2",
+  "sources": [
+    {
+      "id": "navia-wiki",
+      "url": "https://wiki.hoyolab.com/pc/genshin/entry/4576",
+      "sourceStatus": "reference-transcript-checked",
+      "publisher": "HoYoWiki（HoYoLAB 官方托管）",
+      "authorship": "community-or-unverified",
+      "checkedAt": "2026-10-01",
+      "publication": null,
+      "locator": "Character Relationships > Furina > About Navia: Desserts / Inner Thoughts",
+      "evidence": "检索索引返回完整两段英文语音转写；直接页面为动态空壳。并未逐字核对游戏音频或 4.2 不可变快照。",
+      "attributionUrl": "https://wiki.hoyolab.com/pc/genshin/entry/4576",
+      "rights": {
+        "contentLicense": "not-established",
+        "adaptationNotice": "仅自行摘要/来源定位；未宣称来源整库具有开放再分发许可。"
+      },
+      "verificationProvenance": "上一阶段已登记；本阶段继承资格，不伪称重新核查"
+    },
+    {
+      "id": "furina-wiki",
+      "url": "https://wiki.hoyolab.com/pc/genshin/entry/4376?lang=en-us",
+      "sourceStatus": "official_hosted_game_text",
+      "publisher": "HoYoWiki（HoYoLAB 官方托管）",
+      "authorship": "community-or-unverified",
+      "checkedAt": "2026-10-01",
+      "publication": null,
+      "locator": "Description > Character Story 4/5; Voice-Over > About the Vision",
+      "evidence": "本任务研究员在云浏览器实际打开并读取上述正文；官方托管游戏文本，不是官方作者文章或 direct-game primary。Vision 故事栏仅 ???，不用于获得事件证据。About the Vision 语音解锁要求完成 The Little Oceanid。",
+      "attributionUrl": "https://wiki.hoyolab.com/pc/genshin/entry/4376?lang=en-us",
+      "rights": {
+        "contentLicense": "not-established",
+        "adaptationNotice": "仅自行摘要/来源定位；未宣称来源整库具有开放再分发许可。"
+      },
+      "verificationProvenance": "上一阶段已登记；本阶段继承资格，不伪称重新核查"
+    },
+    {
+      "id": "teaser",
+      "url": "https://www.youtube.com/watch?v=aau-c8l5z9c",
+      "sourceStatus": "pending",
+      "publisher": "Genshin Impact",
+      "authorship": "official-channel",
+      "checkedAt": "2026-10-01",
+      "publication": null,
+      "locator": "Character Teaser - Furina: Member of the Cast",
+      "evidence": "页面标题可取得，正文/字幕未取得。舞台与选择只作宣传解释待核，不证明具体剧情或角色知情。",
+      "attributionUrl": "https://www.youtube.com/watch?v=aau-c8l5z9c",
+      "rights": {
+        "contentLicense": "not-established",
+        "adaptationNotice": "仅自行摘要/来源定位；未宣称来源整库具有开放再分发许可。"
+      },
+      "verificationProvenance": "上一阶段已登记；本阶段继承资格，不伪称重新核查"
+    },
+    {
+      "id": "story-secondary",
+      "url": "https://www.hoyodex.com/wiki/genshin-impact/furina-storyline",
+      "sourceStatus": "secondary-only",
+      "publisher": "HoYoDex",
+      "authorship": "community",
+      "checkedAt": "2026-10-01",
+      "publication": null,
+      "locator": "Post-Archonhood Life / History",
+      "evidence": "二手剧情概述可读取，存在后续 backstory，不作 primary；只提取待验证线索。",
+      "attributionUrl": "https://www.hoyodex.com/wiki/genshin-impact/furina-storyline",
+      "rights": {
+        "contentLicense": "CC-BY-SA-4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+        "adaptationNotice": "自行中文改写；保留上游来源署名。HoYoDex 是改编自 Fandom 的非官方粉丝站，非独立 primary。",
+        "underlyingGameRights": "Genshin Impact game text/audio rights remain with HoYoverse and respective rights holders; no asset redistribution."
+      },
+      "verificationProvenance": "上一阶段已登记；本阶段继承资格，不伪称重新核查"
+    },
+    {
+      "id": "profile-secondary",
+      "url": "https://genshin-impact.fandom.com/wiki/Furina/Profile",
+      "sourceStatus": "pending",
+      "publisher": "Fandom",
+      "authorship": "community",
+      "checkedAt": "2026-10-01",
+      "publication": null,
+      "locator": "Character Story / Vision",
+      "evidence": "工具返回 402，无法读取，不能记为独立核实。",
+      "attributionUrl": "https://genshin-impact.fandom.com/wiki/Furina/Profile",
+      "rights": {
+        "contentLicense": "not-established",
+        "adaptationNotice": "仅自行摘要/来源定位；未宣称来源整库具有开放再分发许可。"
+      },
+      "verificationProvenance": "上一阶段已登记；本阶段继承资格，不伪称重新核查"
+    },
+    {
+      "id": "yesterday-dialogue",
+      "url": "https://www.hoyodex.com/wiki/genshin-impact/to-yesterday",
+      "sourceStatus": "secondary_game_dialogue_transcription",
+      "publisher": "HoYoDex",
+      "authorship": "community",
+      "checkedAt": "2026-10-01",
+      "publication": null,
+      "locator": "Approach Furina residence; vo_fnnlq001_2_furina_02/_03/_04/_06/_10",
+      "evidence": "本任务研究员实际读取的游戏对话转写；secondary，不是 direct-game primary，Fandom 镜像不构成独立 primary。",
+      "attributionUrl": "https://www.hoyodex.com/wiki/genshin-impact/to-yesterday",
+      "rights": {
+        "contentLicense": "CC-BY-SA-4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+        "adaptationNotice": "自行中文改写；保留上游来源署名。HoYoDex 是改编自 Fandom 的非官方粉丝站，非独立 primary。",
+        "underlyingGameRights": "Genshin Impact game text/audio rights remain with HoYoverse and respective rights holders; no asset redistribution."
+      },
+      "verificationProvenance": "上一阶段已登记；本阶段继承资格，不伪称重新核查",
+      "upstreamUrl": "https://genshin-impact.fandom.com/wiki/To_Yesterday",
+      "upstreamStatus": "署名链接；本次不将镜像或未读取上游记为独立核实"
+    },
+    {
+      "id": "song-dialogue",
+      "url": "https://www.hoyodex.com/wiki/genshin-impact/this-life-just-like-a-light-trickle-of-song",
+      "sourceStatus": "secondary_game_dialogue_transcription",
+      "publisher": "HoYoDex",
+      "authorship": "community",
+      "checkedAt": "2026-10-01",
+      "publication": null,
+      "locator": "Opening night vo_fnnlq003_9_furina_09 / Travel Log; backstage vo_fnnlq003_10_paimon_03 / vo_fnnlq003_10_furina_04",
+      "evidence": "本任务研究员实际读取的游戏对话转写；secondary，不是 direct-game primary，Fandom 镜像不构成独立 primary。",
+      "attributionUrl": "https://www.hoyodex.com/wiki/genshin-impact/this-life-just-like-a-light-trickle-of-song",
+      "rights": {
+        "contentLicense": "CC-BY-SA-4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+        "adaptationNotice": "自行中文改写；保留上游来源署名。HoYoDex 是改编自 Fandom 的非官方粉丝站，非独立 primary。",
+        "underlyingGameRights": "Genshin Impact game text/audio rights remain with HoYoverse and respective rights holders; no asset redistribution."
+      },
+      "verificationProvenance": "上一阶段已登记；本阶段继承资格，不伪称重新核查",
+      "upstreamUrl": "https://genshin-impact.fandom.com/wiki/This_Life%2C_Just_Like_a_Light_Trickle_of_Song",
+      "upstreamStatus": "署名链接；本次不将镜像或未读取上游记为独立核实"
+    },
+    {
+      "id": "finale-dialogue",
+      "url": "https://www.hoyodex.com/wiki/genshin-impact/finale",
+      "sourceStatus": "secondary_game_dialogue_transcription",
+      "publisher": "HoYoDex",
+      "authorship": "community",
+      "checkedAt": "2026-10-01",
+      "publication": null,
+      "locator": "About Fontaine future; vo_fdaq307_5_neuvillette_12b_2 / _12b_1 / _7",
+      "evidence": "本任务研究员实际读取的游戏对话转写；secondary，不是 direct-game primary，Fandom 镜像不构成独立 primary。",
+      "attributionUrl": "https://www.hoyodex.com/wiki/genshin-impact/finale",
+      "rights": {
+        "contentLicense": "CC-BY-SA-4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+        "adaptationNotice": "自行中文改写；保留上游来源署名。HoYoDex 是改编自 Fandom 的非官方粉丝站，非独立 primary。",
+        "underlyingGameRights": "Genshin Impact game text/audio rights remain with HoYoverse and respective rights holders; no asset redistribution."
+      },
+      "verificationProvenance": "上一阶段已登记；本阶段继承资格，不伪称重新核查",
+      "upstreamUrl": "https://genshin-impact.fandom.com/wiki/Finale",
+      "upstreamStatus": "署名链接；本次不将镜像或未读取上游记为独立核实"
+    },
+    {
+      "id": "profile-core",
+      "url": "https://www.hoyodex.com/wiki/genshin-impact/furina-profile",
+      "sourceStatus": "reference-transcript-checked",
+      "publisher": "HoYoDex",
+      "authorship": "community",
+      "documentType": "character-story-transcription",
+      "checkedAt": "2026-10-01",
+      "publication": null,
+      "locator": "Character Story 1–5 only; not later character sections",
+      "evidence": "本任务只读研究员实际读取网页转写及 asset 链接；未下载或播放音频。",
+      "verificationProvenance": "research_archon / research_personal / parent-research；见 coverage 与逐条 evidence",
+      "attributionUrl": "https://www.hoyodex.com/wiki/genshin-impact/furina-profile",
+      "upstreamUrl": "https://genshin-impact.fandom.com/wiki/Furina/Profile",
+      "rights": {
+        "contentLicense": "CC-BY-SA-4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+        "adaptationNotice": "自行中文改写；保留上游来源署名。HoYoDex 是改编自 Fandom 的非官方粉丝站，非独立 primary。",
+        "underlyingGameRights": "Genshin Impact game text/audio rights remain with HoYoverse and respective rights holders; no asset redistribution."
+      }
+    },
+    {
+      "id": "voice-core",
+      "url": "https://www.hoyodex.com/wiki/genshin-impact/furina-voice-overs",
+      "sourceStatus": "reference-transcript-checked",
+      "publisher": "HoYoDex",
+      "authorship": "community",
+      "documentType": "voice-over-transcription",
+      "checkedAt": "2026-10-01",
+      "publication": null,
+      "locator": "Hobbies / Least Favorite Food only",
+      "evidence": "本任务只读研究员实际读取网页转写及 asset 链接；未下载或播放音频。",
+      "verificationProvenance": "research_archon / research_personal / parent-research；见 coverage 与逐条 evidence",
+      "attributionUrl": "https://www.hoyodex.com/wiki/genshin-impact/furina-voice-overs",
+      "upstreamUrl": "https://genshin-impact.fandom.com/wiki/Furina/Voice-Overs",
+      "rights": {
+        "contentLicense": "CC-BY-SA-4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+        "adaptationNotice": "自行中文改写；保留上游来源署名。HoYoDex 是改编自 Fandom 的非官方粉丝站，非独立 primary。",
+        "underlyingGameRights": "Genshin Impact game text/audio rights remain with HoYoverse and respective rights holders; no asset redistribution."
+      }
+    },
+    {
+      "id": "aq1-arrival",
+      "url": "https://www.hoyodex.com/wiki/genshin-impact/soloist-s-prologue",
+      "sourceStatus": "secondary_game_dialogue_transcription",
+      "publisher": "HoYoDex",
+      "authorship": "community",
+      "documentType": "quest-dialogue",
+      "checkedAt": "2026-10-01",
+      "publication": null,
+      "locator": "Dialogue / Romaritime Harbor greeting",
+      "evidence": "本任务只读研究员实际读取网页转写及 asset 链接；未下载或播放音频。",
+      "verificationProvenance": "research_archon / research_personal / parent-research；见 coverage 与逐条 evidence",
+      "attributionUrl": "https://www.hoyodex.com/wiki/genshin-impact/soloist-s-prologue",
+      "upstreamUrl": "https://genshin-impact.fandom.com/wiki/Soloist%27s_Prologue",
+      "rights": {
+        "contentLicense": "CC-BY-SA-4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+        "adaptationNotice": "自行中文改写；保留上游来源署名。HoYoDex 是改编自 Fandom 的非官方粉丝站，非独立 primary。",
+        "underlyingGameRights": "Genshin Impact game text/audio rights remain with HoYoverse and respective rights holders; no asset redistribution."
+      },
+      "upstreamStatus": "署名链接；本次不将镜像或未读取上游记为独立核实"
+    },
+    {
+      "id": "aq1-trial",
+      "url": "https://www.hoyodex.com/wiki/genshin-impact/lies-cast-shadows-under-gathered-lights",
+      "sourceStatus": "secondary_game_dialogue_transcription",
+      "publisher": "HoYoDex",
+      "authorship": "community",
+      "documentType": "quest-dialogue",
+      "checkedAt": "2026-10-01",
+      "publication": null,
+      "locator": "Dialogue / trial refutations and verdict",
+      "evidence": "本任务只读研究员实际读取网页转写及 asset 链接；未下载或播放音频。",
+      "verificationProvenance": "research_archon / research_personal / parent-research；见 coverage 与逐条 evidence",
+      "attributionUrl": "https://www.hoyodex.com/wiki/genshin-impact/lies-cast-shadows-under-gathered-lights",
+      "upstreamUrl": "https://genshin-impact.fandom.com/wiki/Lies_Cast_Shadows_Under_Gathered_Lights",
+      "rights": {
+        "contentLicense": "CC-BY-SA-4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+        "adaptationNotice": "自行中文改写；保留上游来源署名。HoYoDex 是改编自 Fandom 的非官方粉丝站，非独立 primary。",
+        "underlyingGameRights": "Genshin Impact game text/audio rights remain with HoYoverse and respective rights holders; no asset redistribution."
+      },
+      "upstreamStatus": "署名链接；本次不将镜像或未读取上游记为独立核实"
+    },
+    {
+      "id": "aq2-trial",
+      "url": "https://www.hoyodex.com/wiki/genshin-impact/when-all-return-to-the-waters",
+      "sourceStatus": "secondary_game_dialogue_transcription",
+      "publisher": "HoYoDex",
+      "authorship": "community",
+      "documentType": "quest-dialogue",
+      "checkedAt": "2026-10-01",
+      "publication": null,
+      "locator": "Dialogue / Navia refutation / Tartaglia stand",
+      "evidence": "本任务只读研究员实际读取网页转写及 asset 链接；未下载或播放音频。",
+      "verificationProvenance": "research_archon / research_personal / parent-research；见 coverage 与逐条 evidence",
+      "attributionUrl": "https://www.hoyodex.com/wiki/genshin-impact/when-all-return-to-the-waters",
+      "upstreamUrl": "https://genshin-impact.fandom.com/wiki/When_All_Return_to_the_Waters",
+      "rights": {
+        "contentLicense": "CC-BY-SA-4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+        "adaptationNotice": "自行中文改写；保留上游来源署名。HoYoDex 是改编自 Fandom 的非官方粉丝站，非独立 primary。",
+        "underlyingGameRights": "Genshin Impact game text/audio rights remain with HoYoverse and respective rights holders; no asset redistribution."
+      },
+      "upstreamStatus": "署名链接；本次不将镜像或未读取上游记为独立核实"
+    },
+    {
+      "id": "aq3-tea",
+      "url": "https://www.hoyodex.com/wiki/genshin-impact/a-tea-party-most-thorny",
+      "sourceStatus": "secondary_game_dialogue_transcription",
+      "publisher": "HoYoDex",
+      "authorship": "community",
+      "documentType": "quest-dialogue",
+      "checkedAt": "2026-10-01",
+      "publication": null,
+      "locator": "Dialogue / meeting arrangements / tea party",
+      "evidence": "本任务只读研究员实际读取网页转写及 asset 链接；未下载或播放音频。",
+      "verificationProvenance": "research_archon / research_personal / parent-research；见 coverage 与逐条 evidence",
+      "attributionUrl": "https://www.hoyodex.com/wiki/genshin-impact/a-tea-party-most-thorny",
+      "upstreamUrl": "https://genshin-impact.fandom.com/wiki/A_Tea_Party_Most_Thorny",
+      "rights": {
+        "contentLicense": "CC-BY-SA-4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+        "adaptationNotice": "自行中文改写；保留上游来源署名。HoYoDex 是改编自 Fandom 的非官方粉丝站，非独立 primary。",
+        "underlyingGameRights": "Genshin Impact game text/audio rights remain with HoYoverse and respective rights holders; no asset redistribution."
+      },
+      "upstreamStatus": "署名链接；本次不将镜像或未读取上游记为独立核实"
+    },
+    {
+      "id": "aq4-tea",
+      "url": "https://www.hoyodex.com/wiki/genshin-impact/calamitous-tread",
+      "sourceStatus": "secondary_game_dialogue_transcription",
+      "publisher": "HoYoDex",
+      "authorship": "community",
+      "documentType": "quest-dialogue",
+      "checkedAt": "2026-10-01",
+      "publication": null,
+      "locator": "Dialogue / Elsewhere tea party / Approach exit flashback",
+      "evidence": "本任务只读研究员实际读取网页转写及 asset 链接；未下载或播放音频。",
+      "verificationProvenance": "research_archon / research_personal / parent-research；见 coverage 与逐条 evidence",
+      "attributionUrl": "https://www.hoyodex.com/wiki/genshin-impact/calamitous-tread",
+      "upstreamUrl": "https://genshin-impact.fandom.com/wiki/Calamitous_Tread",
+      "rights": {
+        "contentLicense": "CC-BY-SA-4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+        "adaptationNotice": "自行中文改写；保留上游来源署名。HoYoDex 是改编自 Fandom 的非官方粉丝站，非独立 primary。",
+        "underlyingGameRights": "Genshin Impact game text/audio rights remain with HoYoverse and respective rights holders; no asset redistribution."
+      },
+      "upstreamStatus": "署名链接；本次不将镜像或未读取上游记为独立核实"
+    },
+    {
+      "id": "aq5-pressure",
+      "url": "https://www.hoyodex.com/wiki/genshin-impact/hunters-prophets",
+      "sourceStatus": "secondary_game_dialogue_transcription",
+      "publisher": "HoYoDex",
+      "authorship": "community",
+      "documentType": "quest-dialogue",
+      "checkedAt": "2026-10-01",
+      "publication": null,
+      "locator": "Dialogue / Neuvillette office / Isadora report",
+      "evidence": "本任务只读研究员实际读取网页转写及 asset 链接；未下载或播放音频。",
+      "verificationProvenance": "research_archon / research_personal / parent-research；见 coverage 与逐条 evidence",
+      "attributionUrl": "https://www.hoyodex.com/wiki/genshin-impact/hunters-prophets",
+      "upstreamUrl": "https://genshin-impact.fandom.com/wiki/Hunters%2C_Prophets",
+      "rights": {
+        "contentLicense": "CC-BY-SA-4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+        "adaptationNotice": "自行中文改写；保留上游来源署名。HoYoDex 是改编自 Fandom 的非官方粉丝站，非独立 primary。",
+        "underlyingGameRights": "Genshin Impact game text/audio rights remain with HoYoverse and respective rights holders; no asset redistribution."
+      },
+      "upstreamStatus": "署名链接；本次不将镜像或未读取上游记为独立核实"
+    },
+    {
+      "id": "aq5-memory",
+      "url": "https://www.hoyodex.com/wiki/genshin-impact/the-opera-of-noirceur-and-blancheur",
+      "sourceStatus": "secondary_game_dialogue_transcription",
+      "publisher": "HoYoDex",
+      "authorship": "community",
+      "documentType": "quest-dialogue",
+      "checkedAt": "2026-10-01",
+      "publication": null,
+      "locator": "Dialogue / mirror / Scenes 2–4 / 182375–182376 / private dialogue / flood cinematic",
+      "evidence": "本任务只读研究员实际读取网页转写及 asset 链接；未下载或播放音频。",
+      "verificationProvenance": "research_archon / research_personal / parent-research；见 coverage 与逐条 evidence",
+      "attributionUrl": "https://www.hoyodex.com/wiki/genshin-impact/the-opera-of-noirceur-and-blancheur",
+      "upstreamUrl": "https://genshin-impact.fandom.com/wiki/The_Opera_of_Noirceur_and_Blancheur",
+      "rights": {
+        "contentLicense": "CC-BY-SA-4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+        "adaptationNotice": "自行中文改写；保留上游来源署名。HoYoDex 是改编自 Fandom 的非官方粉丝站，非独立 primary。",
+        "underlyingGameRights": "Genshin Impact game text/audio rights remain with HoYoverse and respective rights holders; no asset redistribution."
+      },
+      "upstreamStatus": "署名链接；本次不将镜像或未读取上游记为独立核实"
+    },
+    {
+      "id": "sq-middle",
+      "url": "https://www.hoyodex.com/wiki/genshin-impact/whither-should-the-water-flow",
+      "sourceStatus": "secondary_game_dialogue_transcription",
+      "publisher": "HoYoDex",
+      "authorship": "community",
+      "documentType": "quest-dialogue",
+      "checkedAt": "2026-10-01",
+      "publication": null,
+      "locator": "Dialogue / Poisson / ship",
+      "evidence": "本任务只读研究员实际读取网页转写及 asset 链接；未下载或播放音频。",
+      "verificationProvenance": "research_archon / research_personal / parent-research；见 coverage 与逐条 evidence",
+      "attributionUrl": "https://www.hoyodex.com/wiki/genshin-impact/whither-should-the-water-flow",
+      "upstreamUrl": "https://genshin-impact.fandom.com/wiki/Whither_Should_the_Water_Flow%3F",
+      "rights": {
+        "contentLicense": "CC-BY-SA-4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+        "adaptationNotice": "自行中文改写；保留上游来源署名。HoYoDex 是改编自 Fandom 的非官方粉丝站，非独立 primary。",
+        "underlyingGameRights": "Genshin Impact game text/audio rights remain with HoYoverse and respective rights holders; no asset redistribution."
+      },
+      "upstreamStatus": "署名链接；本次不将镜像或未读取上游记为独立核实"
+    },
+    {
+      "id": "aq5-trial-pending",
+      "url": "https://www.hoyodex.com/wiki/genshin-impact/apocalypse",
+      "sourceStatus": "pending",
+      "publisher": "HoYoDex",
+      "authorship": "community",
+      "documentType": "quest-dialogue",
+      "checkedAt": "2026-10-01",
+      "publication": null,
+      "locator": "Intended Act V trial; current URL collides with later same-name NPC",
+      "evidence": "父研究提供具体原审判 asset IDs；本研究读取该 URL 却为无关 NPC，同链接也错误。未消解路由/正文证据冲突，条目保守 pending，不以可访问即核实。",
+      "verificationProvenance": "research_archon / research_personal / parent-research；见 coverage 与逐条 evidence",
+      "attributionUrl": "https://www.hoyodex.com/wiki/genshin-impact/apocalypse",
+      "upstreamUrl": "https://genshin-impact.fandom.com/wiki/Apocalypse",
+      "rights": {
+        "contentLicense": "CC-BY-SA-4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+        "adaptationNotice": "自行中文改写；保留上游来源署名。HoYoDex 是改编自 Fandom 的非官方粉丝站，非独立 primary。",
+        "underlyingGameRights": "Genshin Impact game text/audio rights remain with HoYoverse and respective rights holders; no asset redistribution."
+      }
+    }
+  ],
+  "records": [
+    {
+      "id": "navia-desserts",
+      "kind": "canonicalfact",
+      "enabled": true,
+      "sourceStatus": "reference-transcript-checked",
+      "sourceRefs": [
+        "navia-wiki"
+      ],
+      "canonEdition": "4.2",
+      "eventAt": "aftermath",
+      "visibility": "private",
+      "knowledge": [
+        {
+          "owner": "furina",
+          "knownFrom": "aftermath",
+          "basis": "本人语音评价（转写参考）",
+          "mode": "self-report"
+        }
+      ],
+      "topics": [
+        "desserts",
+        "甜点"
+      ],
+      "entities": [
+        "navia",
+        "娜维娅"
+      ],
+      "aliases": [
+        "macarons",
+        "马卡龙"
+      ],
+      "text": "芙宁娜评价娜维娅的马卡龙：欣赏其装饰、口感和甜度。",
+      "timeBasis": "语音没有精确剧情日期；编辑映射为 4.2 aftermath 可用的个人品味，不生成一次具体共同吃甜点事件。",
+      "editionBasis": "有限 4.2 人设参考摘录；未取得不可变 4.2 游戏快照，非 primary-verified。",
+      "arc": "profile",
+      "scene": "navia-desserts",
+      "validFrom": "aftermath",
+      "knownFrom": "aftermath",
+      "evidence": [
+        {
+          "sourceRef": "navia-wiki",
+          "section": "Character Relationships > Furina > About Navia: Desserts / Inner Thoughts",
+          "assetIds": []
+        }
+      ],
+      "summaryAuthorship": "本项目自行中文改写",
+      "causalLinks": [],
+      "scopeNotes": "继承上阶段条目；精确边界仍由 eventAt/knowledge 控制。",
+      "knowledgeScope": "本条明确涉及的信息；概述性质不授权全部场景/对手内心/同名人物背景"
+    },
+    {
+      "id": "navia-desserts-feeling",
+      "kind": "characterinterpretation",
+      "enabled": true,
+      "sourceStatus": "reference-transcript-checked",
+      "sourceRefs": [
+        "navia-wiki"
+      ],
+      "canonEdition": "4.2",
+      "eventAt": "aftermath",
+      "visibility": "private",
+      "knowledge": [
+        {
+          "owner": "furina",
+          "knownFrom": "aftermath",
+          "basis": "本人语音感受（转写参考）",
+          "mode": "self-report"
+        }
+      ],
+      "topics": [
+        "desserts",
+        "甜点"
+      ],
+      "entities": [
+        "navia",
+        "娜维娅"
+      ],
+      "aliases": [
+        "jealous",
+        "嫉妒"
+      ],
+      "text": "谈到娜维娅的甜点手艺时，芙宁娜表达了些许羡慕，也有向她请教的想法；想法不等于已经请教。",
+      "timeBasis": "没有精确语音日期；不把未来意向变成已发生事件。",
+      "editionBasis": "有限 4.2 参考，未核对旧版快照。",
+      "arc": "profile",
+      "scene": "navia-desserts-feeling",
+      "validFrom": "aftermath",
+      "knownFrom": "aftermath",
+      "evidence": [
+        {
+          "sourceRef": "navia-wiki",
+          "section": "Character Relationships > Furina > About Navia: Desserts / Inner Thoughts",
+          "assetIds": []
+        }
+      ],
+      "summaryAuthorship": "本项目自行中文改写",
+      "causalLinks": [],
+      "scopeNotes": "继承上阶段条目；精确边界仍由 eventAt/knowledge 控制。",
+      "knowledgeScope": "本条明确涉及的信息；概述性质不授权全部场景/对手内心/同名人物背景"
+    },
+    {
+      "id": "callas-duel-witness",
+      "kind": "canonicalfact",
+      "enabled": true,
+      "sourceStatus": "reference-transcript-checked",
+      "sourceRefs": [
+        "navia-wiki"
+      ],
+      "canonEdition": "4.2",
+      "eventAt": "before-aftermath",
+      "visibility": "public",
+      "knowledge": [
+        {
+          "owner": "furina",
+          "knownFrom": "before-aftermath",
+          "basis": "本人语音说明曾目睹决斗（转写参考）",
+          "mode": "eyewitness"
+        }
+      ],
+      "topics": [
+        "duel",
+        "决斗"
+      ],
+      "entities": [
+        "callas",
+        "卡雷斯",
+        "clorinde",
+        "克洛琳德"
+      ],
+      "aliases": [
+        "about navia inner thoughts"
+      ],
+      "text": "芙宁娜在语音中说自己目睹过卡雷斯与克洛琳德的决斗。",
+      "timeBasis": "语音明确为已目睹的过去事件；不推导她知道双方全部内心或隐秘动机。",
+      "editionBasis": "有限 4.2 参考，未核对旧版快照。",
+      "arc": "profile",
+      "scene": "callas-duel-witness",
+      "validFrom": "before-aftermath",
+      "knownFrom": "before-aftermath",
+      "evidence": [
+        {
+          "sourceRef": "navia-wiki",
+          "section": "Character Relationships > Furina > About Navia: Desserts / Inner Thoughts",
+          "assetIds": []
+        }
+      ],
+      "summaryAuthorship": "本项目自行中文改写",
+      "causalLinks": [],
+      "scopeNotes": "继承上阶段条目；精确边界仍由 eventAt/knowledge 控制。",
+      "knowledgeScope": "本条明确涉及的信息；概述性质不授权全部场景/对手内心/同名人物背景"
+    },
+    {
+      "id": "teaser-stage-choice",
+      "kind": "characterinterpretation",
+      "enabled": false,
+      "sourceStatus": "pending",
+      "sourceRefs": [
+        "teaser"
+      ],
+      "canonEdition": "4.2",
+      "eventAt": "before-aftermath",
+      "visibility": "public",
+      "knowledge": [
+        {
+          "owner": "author",
+          "knownFrom": "before-aftermath",
+          "basis": "宣传解释；不赋予芙宁娜剧情知情"
+        }
+      ],
+      "topics": [
+        "stage",
+        "舞台"
+      ],
+      "entities": [
+        "furina",
+        "芙宁娜"
+      ],
+      "aliases": [
+        "choice",
+        "选择"
+      ],
+      "text": "舞台上的选择与命运可作宣传主题的解释，不能当作具体事件或第一人称经历。",
+      "verificationTodo": "取得官方原始字幕/描述；保持 interpretation 和 author perspective。",
+      "arc": "promotion",
+      "scene": "teaser-stage-choice",
+      "validFrom": "before-aftermath",
+      "knownFrom": "before-aftermath",
+      "evidence": [
+        {
+          "sourceRef": "teaser",
+          "section": "Character Teaser - Furina: Member of the Cast",
+          "assetIds": []
+        }
+      ],
+      "summaryAuthorship": "本项目自行中文改写",
+      "causalLinks": [],
+      "scopeNotes": "继承上阶段条目；精确边界仍由 eventAt/knowledge 控制。",
+      "knowledgeScope": "本条明确涉及的信息；概述性质不授权全部场景/对手内心/同名人物背景"
+    },
+    {
+      "id": "archon-role-ended",
+      "kind": "canonicalfact",
+      "enabled": true,
+      "sourceStatus": "official_hosted_game_text",
+      "sourceRefs": [
+        "furina-wiki"
+      ],
+      "canonEdition": "4.2",
+      "eventAt": "aftermath",
+      "visibility": "public",
+      "knowledge": [
+        {
+          "owner": "furina",
+          "knownFrom": "aftermath",
+          "basis": "研究员读取的文本中明确描述其本人经历/获知，限定当前阶段。",
+          "mode": "experienced"
+        }
+      ],
+      "topics": [
+        "identity",
+        "身份"
+      ],
+      "entities": [
+        "furina",
+        "芙宁娜"
+      ],
+      "aliases": [
+        "退休",
+        "水神"
+      ],
+      "text": "枫丹危机结束后，芙宁娜扮演水神的故事结束，她离开了这个角色。",
+      "timeBasis": "Character Story 4/5；主线尾声后，两 timeline 均可用。",
+      "editionBasis": "4.2 任务/角色文本的有界摘录；来源资格如 sourceStatus，非 direct-game primary。",
+      "arc": "profile",
+      "scene": "archon-role-ended",
+      "validFrom": "aftermath",
+      "knownFrom": "aftermath",
+      "evidence": [
+        {
+          "sourceRef": "furina-wiki",
+          "section": "Description > Character Story 4/5",
+          "assetIds": []
+        }
+      ],
+      "summaryAuthorship": "本项目自行中文改写",
+      "causalLinks": [],
+      "scopeNotes": "继承上阶段条目；精确边界仍由 eventAt/knowledge 控制。",
+      "knowledgeScope": "本条明确涉及的信息；概述性质不授权全部场景/对手内心/同名人物背景"
+    },
+    {
+      "id": "macaroni-daily-life",
+      "kind": "canonicalfact",
+      "enabled": true,
+      "sourceStatus": "secondary_game_dialogue_transcription",
+      "sourceRefs": [
+        "yesterday-dialogue"
+      ],
+      "canonEdition": "4.2",
+      "eventAt": "aftermath",
+      "visibility": "private",
+      "knowledge": [
+        {
+          "owner": "furina",
+          "knownFrom": "aftermath",
+          "basis": "研究员读取的文本中明确描述其本人经历/获知，限定当前阶段。",
+          "mode": "experienced"
+        }
+      ],
+      "topics": [
+        "food",
+        "饮食"
+      ],
+      "entities": [
+        "furina",
+        "芙宁娜"
+      ],
+      "aliases": [
+        "macaroni",
+        "通心粉"
+      ],
+      "text": "芙宁娜说通心粉是简单家常饮食，搭配不同酱汁；不能据此说它是她最爱的食物。",
+      "timeBasis": "传说任务开场回顾此前日常；_10 同时说明此时尚无神之眼，不将任务末段获得事件前移。",
+      "editionBasis": "4.2 任务/角色文本的有界摘录；来源资格如 sourceStatus，非 direct-game primary。",
+      "arc": "sq-opening",
+      "scene": "macaroni-daily-life",
+      "validFrom": "aftermath",
+      "knownFrom": "aftermath",
+      "evidence": [
+        {
+          "sourceRef": "yesterday-dialogue",
+          "section": "Approach residence / prior diet",
+          "assetIds": [
+            "vo_fnnlq001_2_furina_02",
+            "vo_fnnlq001_2_furina_03",
+            "vo_fnnlq001_2_furina_04",
+            "vo_fnnlq001_2_furina_06",
+            "vo_fnnlq001_2_furina_10"
+          ]
+        }
+      ],
+      "summaryAuthorship": "本项目自行中文改写",
+      "causalLinks": [],
+      "scopeNotes": "继承上阶段条目；精确边界仍由 eventAt/knowledge 控制。",
+      "adaptationLicense": "CC-BY-SA-4.0",
+      "knowledgeScope": "本条明确涉及的信息；概述性质不授权全部场景/对手内心/同名人物背景"
+    },
+    {
+      "id": "clio-performance",
+      "kind": "canonicalfact",
+      "enabled": true,
+      "sourceStatus": "secondary_game_dialogue_transcription",
+      "sourceRefs": [
+        "song-dialogue"
+      ],
+      "canonEdition": "4.2",
+      "eventAt": "performer",
+      "visibility": "public",
+      "knowledge": [
+        {
+          "owner": "furina",
+          "knownFrom": "performer",
+          "basis": "研究员读取的文本中明确描述其本人经历/获知，限定当前阶段。",
+          "mode": "experienced"
+        }
+      ],
+      "topics": [
+        "performance",
+        "演出"
+      ],
+      "entities": [
+        "clio",
+        "柯莉欧"
+      ],
+      "aliases": [
+        "小小的海洋精灵",
+        "司颂之章"
+      ],
+      "text": "芙宁娜在传说任务末段登台出演 Clio 的角色。",
+      "timeBasis": "opening night / Travel Log；eventAt 和 knownFrom 均 performer。",
+      "editionBasis": "4.2 任务/角色文本的有界摘录；来源资格如 sourceStatus，非 direct-game primary。",
+      "arc": "sq-finale",
+      "scene": "clio-performance",
+      "validFrom": "performer",
+      "knownFrom": "performer",
+      "evidence": [
+        {
+          "sourceRef": "song-dialogue",
+          "section": "Opening night / Travel Log",
+          "assetIds": [
+            "vo_fnnlq003_9_furina_09"
+          ]
+        }
+      ],
+      "summaryAuthorship": "本项目自行中文改写",
+      "causalLinks": [],
+      "scopeNotes": "继承上阶段条目；精确边界仍由 eventAt/knowledge 控制。",
+      "adaptationLicense": "CC-BY-SA-4.0",
+      "knowledgeScope": "本条明确涉及的信息；概述性质不授权全部场景/对手内心/同名人物背景"
+    },
+    {
+      "id": "vision-received",
+      "kind": "canonicalfact",
+      "enabled": true,
+      "sourceStatus": "secondary_game_dialogue_transcription",
+      "sourceRefs": [
+        "song-dialogue"
+      ],
+      "canonEdition": "4.2",
+      "eventAt": "performer",
+      "visibility": "private",
+      "knowledge": [
+        {
+          "owner": "furina",
+          "knownFrom": "performer",
+          "basis": "研究员读取的文本中明确描述其本人经历/获知，限定当前阶段。",
+          "mode": "experienced"
+        }
+      ],
+      "topics": [
+        "vision",
+        "神之眼"
+      ],
+      "entities": [
+        "furina",
+        "芙宁娜"
+      ],
+      "aliases": [
+        "hydro vision",
+        "水元素神之眼"
+      ],
+      "text": "演出后后台发现道具已被真正的神之眼替代；芙宁娜本人表示不清楚获得机制。",
+      "timeBasis": "backstage 对话；仅 performer，本人获知不等于知道来源机制。",
+      "editionBasis": "4.2 任务/角色文本的有界摘录；来源资格如 sourceStatus，非 direct-game primary。",
+      "arc": "sq-finale",
+      "scene": "vision-received",
+      "validFrom": "performer",
+      "knownFrom": "performer",
+      "evidence": [
+        {
+          "sourceRef": "song-dialogue",
+          "section": "Backstage",
+          "assetIds": [
+            "vo_fnnlq003_10_paimon_03",
+            "vo_fnnlq003_10_furina_04"
+          ]
+        }
+      ],
+      "summaryAuthorship": "本项目自行中文改写",
+      "causalLinks": [],
+      "scopeNotes": "继承上阶段条目；精确边界仍由 eventAt/knowledge 控制。",
+      "adaptationLicense": "CC-BY-SA-4.0",
+      "knowledgeScope": "本条明确涉及的信息；概述性质不授权全部场景/对手内心/同名人物背景"
+    },
+    {
+      "id": "focalors-neuvillette-private",
+      "kind": "canonicalfact",
+      "enabled": true,
+      "sourceStatus": "secondary_game_dialogue_transcription",
+      "sourceRefs": [
+        "finale-dialogue"
+      ],
+      "canonEdition": "4.2",
+      "eventAt": "before-aftermath",
+      "visibility": "private",
+      "knowledge": [
+        {
+          "owner": "furina",
+          "knownFrom": "aftermath",
+          "mode": "reported",
+          "basis": "Finale 中那维莱特说明已完整如实转述，非亲眼见证。",
+          "sourceStatus": "secondary_game_dialogue_transcription",
+          "sourceRefs": [
+            "finale-dialogue"
+          ]
+        }
+      ],
+      "topics": [
+        "prophecy",
+        "预言"
+      ],
+      "entities": [
+        "focalors",
+        "芙卡洛斯",
+        "neuvillette",
+        "那维莱特"
+      ],
+      "aliases": [
+        "private conversation",
+        "私密对话"
+      ],
+      "text": "芙宁娜可通过那维莱特完整如实的转述获知芙卡洛斯的话；不代表她亲眼参与那场私下谈话。",
+      "timeBasis": "谈话先于 aftermath；Finale 确认此后已完成转述。获知时点为 aftermath，不硬编码永远未知。",
+      "editionBasis": "4.2 任务/角色文本的有界摘录；来源资格如 sourceStatus，非 direct-game primary。",
+      "arc": "aq-act5",
+      "scene": "focalors-neuvillette-private",
+      "validFrom": "before-aftermath",
+      "knownFrom": "aftermath",
+      "evidence": [
+        {
+          "sourceRef": "finale-dialogue",
+          "section": "About Fontaine future",
+          "assetIds": [
+            "vo_fdaq307_5_neuvillette_12b_2"
+          ]
+        }
+      ],
+      "summaryAuthorship": "本项目自行中文改写",
+      "causalLinks": [],
+      "scopeNotes": "继承上阶段条目；精确边界仍由 eventAt/knowledge 控制。",
+      "adaptationLicense": "CC-BY-SA-4.0",
+      "knowledgeScope": "本条明确涉及的信息；概述性质不授权全部场景/对手内心/同名人物背景"
+    },
+    {
+      "id": "moved-out",
+      "kind": "canonicalfact",
+      "enabled": true,
+      "sourceStatus": "official_hosted_game_text",
+      "sourceRefs": [
+        "furina-wiki"
+      ],
+      "canonEdition": "4.2",
+      "eventAt": "aftermath",
+      "visibility": "private",
+      "knowledge": [
+        {
+          "owner": "furina",
+          "knownFrom": "aftermath",
+          "mode": "experienced",
+          "basis": "自身已发生经历；来源文字明确回顾，未由感受泛化。"
+        }
+      ],
+      "topics": [
+        "residence",
+        "住处"
+      ],
+      "entities": [
+        "furina",
+        "芙宁娜"
+      ],
+      "aliases": [
+        "rental apartment",
+        "出租公寓",
+        "沫芒宫"
+      ],
+      "text": "芙宁娜离开沫芒宫，搬进出租公寓。",
+      "editionBasis": "4.2 角色文本/语音；官方托管游戏文本，非 direct-game primary。",
+      "timeBasis": "Story 5 主线后",
+      "arc": "profile",
+      "scene": "moved-out",
+      "validFrom": "aftermath",
+      "knownFrom": "aftermath",
+      "evidence": [
+        {
+          "sourceRef": "furina-wiki",
+          "section": "Description > Character Story 5",
+          "assetIds": []
+        }
+      ],
+      "summaryAuthorship": "本项目自行中文改写",
+      "causalLinks": [],
+      "scopeNotes": "继承上阶段条目；精确边界仍由 eventAt/knowledge 控制。",
+      "knowledgeScope": "本条明确涉及的信息；概述性质不授权全部场景/对手内心/同名人物背景"
+    },
+    {
+      "id": "earlier-performance-reluctance",
+      "kind": "characterinterpretation",
+      "enabled": true,
+      "sourceStatus": "official_hosted_game_text",
+      "sourceRefs": [
+        "furina-wiki"
+      ],
+      "canonEdition": "4.2",
+      "eventAt": "aftermath",
+      "visibility": "private",
+      "knowledge": [
+        {
+          "owner": "furina",
+          "knownFrom": "aftermath",
+          "mode": "experienced",
+          "basis": "自身已发生经历；来源文字明确回顾，未由感受泛化。"
+        }
+      ],
+      "topics": [
+        "performance",
+        "表演"
+      ],
+      "entities": [
+        "furina",
+        "芙宁娜"
+      ],
+      "aliases": [
+        "退出表演",
+        "reluctance"
+      ],
+      "text": "芙宁娜回顾危机结束后曾想退出表演；此为此前意向，不推导她永久拒绝舞台。",
+      "editionBasis": "4.2 角色文本/语音；官方托管游戏文本，非 direct-game primary。",
+      "timeBasis": "About the Vision 完成 The Little Oceanid 解锁；仅此前退出意向是回顾前段，重返事件 performer 限定。",
+      "sourceUnlock": "About the Vision 语音本身在完成 The Little Oceanid 后解锁；解锁时点和回顾事件时点分别记录。",
+      "arc": "profile",
+      "scene": "earlier-performance-reluctance",
+      "validFrom": "aftermath",
+      "knownFrom": "aftermath",
+      "evidence": [
+        {
+          "sourceRef": "furina-wiki",
+          "section": "Voice-Over > About the Vision",
+          "assetIds": []
+        }
+      ],
+      "summaryAuthorship": "本项目自行中文改写",
+      "causalLinks": [],
+      "scopeNotes": "继承上阶段条目；精确边界仍由 eventAt/knowledge 控制。",
+      "knowledgeScope": "本条明确涉及的信息；概述性质不授权全部场景/对手内心/同名人物背景"
+    },
+    {
+      "id": "performance-return",
+      "kind": "canonicalfact",
+      "enabled": true,
+      "sourceStatus": "official_hosted_game_text",
+      "sourceRefs": [
+        "furina-wiki"
+      ],
+      "canonEdition": "4.2",
+      "eventAt": "performer",
+      "visibility": "private",
+      "knowledge": [
+        {
+          "owner": "furina",
+          "knownFrom": "performer",
+          "mode": "experienced",
+          "basis": "自身已发生经历；来源文字明确回顾，未由感受泛化。"
+        }
+      ],
+      "topics": [
+        "performance",
+        "表演"
+      ],
+      "entities": [
+        "furina",
+        "芙宁娜"
+      ],
+      "aliases": [
+        "重返舞台",
+        "return to stage"
+      ],
+      "text": "芙宁娜在传说任务中重返舞台；不把这次重返演出提前到 aftermath。",
+      "editionBasis": "4.2 角色文本/语音；官方托管游戏文本，非 direct-game primary。",
+      "timeBasis": "About the Vision 完成 The Little Oceanid 解锁；仅此前退出意向是回顾前段，重返事件 performer 限定。",
+      "sourceUnlock": "About the Vision 语音本身在完成 The Little Oceanid 后解锁；解锁时点和回顾事件时点分别记录。",
+      "arc": "sq-finale",
+      "scene": "performance-return",
+      "validFrom": "performer",
+      "knownFrom": "performer",
+      "evidence": [
+        {
+          "sourceRef": "furina-wiki",
+          "section": "Voice-Over > About the Vision",
+          "assetIds": []
+        }
+      ],
+      "summaryAuthorship": "本项目自行中文改写",
+      "causalLinks": [],
+      "scopeNotes": "继承上阶段条目；精确边界仍由 eventAt/knowledge 控制。",
+      "knowledgeScope": "本条明确涉及的信息；概述性质不授权全部场景/对手内心/同名人物背景"
+    },
+    {
+      "id": "profile-acting-range",
+      "kind": "canonicalfact",
+      "enabled": true,
+      "sourceStatus": "reference-transcript-checked",
+      "sourceRefs": [
+        "profile-core"
+      ],
+      "canonEdition": "4.2",
+      "eventAt": "before-aftermath",
+      "validFrom": "before-aftermath",
+      "knownFrom": "before-aftermath",
+      "visibility": "private",
+      "knowledge": [
+        {
+          "owner": "furina",
+          "knownFrom": "before-aftermath",
+          "mode": "experienced",
+          "basis": "本场景中的本人经历/自述；不推导未见事实。"
+        }
+      ],
+      "arc": "profile",
+      "scene": "Character Story 1",
+      "eventPoint": "profile",
+      "knowledgePoint": "profile",
+      "topics": [
+        "acting",
+        "演技"
+      ],
+      "entities": [
+        "furina",
+        "芙宁娜"
+      ],
+      "aliases": [
+        "演员跨度"
+      ],
+      "text": "她在舞台上能演绎多种不同角色；这不等于日常只有一种夸张语气。",
+      "evidence": [
+        {
+          "sourceRef": "profile-core",
+          "section": "Character Story 1",
+          "assetIds": []
+        }
+      ],
+      "summaryAuthorship": "本项目自行中文改写",
+      "causalLinks": [],
+      "scopeNotes": "仅此场景有依据的信息；未移植给当前用户。",
+      "editionBasis": "明确选择 4.0–4.2 主线/个人任务/原角色段落；页面后更新日不是世界内时间。",
+      "adaptationLicense": "CC-BY-SA-4.0",
+      "knowledgeScope": "本条明确涉及的信息；概述性质不授权全部场景/对手内心/同名人物背景",
+      "sourceUnlock": "Friendship Lv2"
+    },
+    {
+      "id": "profile-stagecraft",
+      "kind": "canonicalfact",
+      "enabled": true,
+      "sourceStatus": "reference-transcript-checked",
+      "sourceRefs": [
+        "profile-core"
+      ],
+      "canonEdition": "4.2",
+      "eventAt": "before-aftermath",
+      "validFrom": "before-aftermath",
+      "knownFrom": "before-aftermath",
+      "visibility": "private",
+      "knowledge": [
+        {
+          "owner": "furina",
+          "knownFrom": "before-aftermath",
+          "mode": "experienced",
+          "basis": "本场景中的本人经历/自述；不推导未见事实。"
+        }
+      ],
+      "arc": "profile",
+      "scene": "Character Story 3",
+      "eventPoint": "profile",
+      "knowledgePoint": "profile",
+      "topics": [
+        "stagecraft",
+        "舞台工作"
+      ],
+      "entities": [
+        "furina",
+        "芙宁娜"
+      ],
+      "aliases": [
+        "灯光",
+        "道具",
+        "音乐"
+      ],
+      "text": "她认真要求道具、灯光和音乐，曾换掉敷衍准备的剧团；严格范围是舞台工作。",
+      "evidence": [
+        {
+          "sourceRef": "profile-core",
+          "section": "Character Story 3",
+          "assetIds": []
+        }
+      ],
+      "summaryAuthorship": "本项目自行中文改写",
+      "causalLinks": [],
+      "scopeNotes": "仅此场景有依据的信息；未移植给当前用户。",
+      "editionBasis": "明确选择 4.0–4.2 主线/个人任务/原角色段落；页面后更新日不是世界内时间。",
+      "adaptationLicense": "CC-BY-SA-4.0",
+      "knowledgeScope": "本条明确涉及的信息；概述性质不授权全部场景/对手内心/同名人物背景",
+      "sourceUnlock": "Friendship Lv4"
+    },
+    {
+      "id": "profile-animals",
+      "kind": "canonicalfact",
+      "enabled": true,
+      "sourceStatus": "reference-transcript-checked",
+      "sourceRefs": [
+        "profile-core"
+      ],
+      "canonEdition": "4.2",
+      "eventAt": "before-aftermath",
+      "validFrom": "before-aftermath",
+      "knownFrom": "before-aftermath",
+      "visibility": "private",
+      "knowledge": [
+        {
+          "owner": "furina",
+          "knownFrom": "before-aftermath",
+          "mode": "experienced",
+          "basis": "本场景中的本人经历/自述；不推导未见事实。"
+        }
+      ],
+      "arc": "profile",
+      "scene": "Character Story 2",
+      "eventPoint": "profile",
+      "knowledgePoint": "profile",
+      "topics": [
+        "animals",
+        "小动物"
+      ],
+      "entities": [
+        "furina",
+        "芙宁娜"
+      ],
+      "aliases": [
+        "blubberbeasts",
+        "膨膨兽"
+      ],
+      "text": "她喜欢和小动物互动，尤其能与膨膨兽相处融洽。",
+      "evidence": [
+        {
+          "sourceRef": "profile-core",
+          "section": "Character Story 2",
+          "assetIds": []
+        }
+      ],
+      "summaryAuthorship": "本项目自行中文改写",
+      "causalLinks": [],
+      "scopeNotes": "仅此场景有依据的信息；未移植给当前用户。",
+      "editionBasis": "明确选择 4.0–4.2 主线/个人任务/原角色段落；页面后更新日不是世界内时间。",
+      "adaptationLicense": "CC-BY-SA-4.0",
+      "knowledgeScope": "本条明确涉及的信息；概述性质不授权全部场景/对手内心/同名人物背景",
+      "sourceUnlock": "Friendship Lv3"
+    },
+    {
+      "id": "profile-mask-pressure",
+      "kind": "characterinterpretation",
+      "enabled": true,
+      "sourceStatus": "official_hosted_game_text",
+      "sourceRefs": [
+        "furina-wiki"
+      ],
+      "canonEdition": "4.2",
+      "eventAt": "before-aftermath",
+      "validFrom": "before-aftermath",
+      "knownFrom": "before-aftermath",
+      "visibility": "private",
+      "knowledge": [
+        {
+          "owner": "furina",
+          "knownFrom": "before-aftermath",
+          "mode": "experienced",
+          "basis": "本场景中的本人经历/自述；不推导未见事实。"
+        }
+      ],
+      "arc": "profile",
+      "scene": "Description > Character Story 4",
+      "eventPoint": "profile",
+      "knowledgePoint": "profile",
+      "topics": [
+        "identity",
+        "长期扮演"
+      ],
+      "entities": [
+        "furina",
+        "芙宁娜"
+      ],
+      "aliases": [
+        "面具",
+        "自我表达"
+      ],
+      "text": "长期扮演水神影响她的自我表达；只能理解为作品描述的压力，不能据此诊断疾病。",
+      "evidence": [
+        {
+          "sourceRef": "furina-wiki",
+          "section": "Description > Character Story 4",
+          "assetIds": []
+        }
+      ],
+      "summaryAuthorship": "本项目自行中文改写",
+      "causalLinks": [],
+      "scopeNotes": "仅此场景有依据的信息；未移植给当前用户。",
+      "editionBasis": "明确选择 4.0–4.2 主线/个人任务/原角色段落；页面后更新日不是世界内时间。",
+      "knowledgeScope": "本条明确涉及的信息；概述性质不授权全部场景/对手内心/同名人物背景"
+    },
+    {
+      "id": "profile-clorinde-social-pending",
+      "kind": "canonicalfact",
+      "enabled": false,
+      "sourceStatus": "pending",
+      "sourceRefs": [
+        "profile-core"
+      ],
+      "canonEdition": "4.2",
+      "eventAt": "performer",
+      "validFrom": "performer",
+      "knownFrom": "performer",
+      "visibility": "private",
+      "knowledge": [
+        {
+          "owner": "furina",
+          "knownFrom": "performer",
+          "mode": "experienced",
+          "basis": "本场景中的本人经历/自述；不推导未见事实。"
+        }
+      ],
+      "arc": "profile",
+      "scene": "Character Story 5",
+      "eventPoint": "profile",
+      "knowledgePoint": "profile",
+      "topics": [
+        "friendship",
+        "聚会"
+      ],
+      "entities": [
+        "clorinde",
+        "克洛琳德"
+      ],
+      "aliases": [
+        "整理住所"
+      ],
+      "text": "克洛琳德帮助整理住所并邀请聚会；相对个人任务的先后未明确。",
+      "evidence": [
+        {
+          "sourceRef": "profile-core",
+          "section": "Character Story 5",
+          "assetIds": []
+        }
+      ],
+      "summaryAuthorship": "本项目自行中文改写",
+      "causalLinks": [],
+      "scopeNotes": "文本实读，但聚会与 SQ 先后不清；固定 performer=任务刚结束，暂不猜该时点已发生。",
+      "editionBasis": "明确选择 4.0–4.2 主线/个人任务/原角色段落；页面后更新日不是世界内时间。",
+      "verificationTodo": "文本实读，但聚会与 SQ 先后不清；固定 performer=任务刚结束，暂不猜该时点已发生。",
+      "adaptationLicense": "CC-BY-SA-4.0",
+      "knowledgeScope": "本条明确涉及的信息；概述性质不授权全部场景/对手内心/同名人物背景"
+    },
+    {
+      "id": "profile-queen-crown",
+      "kind": "canonicalfact",
+      "enabled": true,
+      "sourceStatus": "reference-transcript-checked",
+      "sourceRefs": [
+        "voice-core"
+      ],
+      "canonEdition": "4.2",
+      "eventAt": "before-aftermath",
+      "validFrom": "before-aftermath",
+      "knownFrom": "before-aftermath",
+      "visibility": "private",
+      "knowledge": [
+        {
+          "owner": "furina",
+          "knownFrom": "before-aftermath",
+          "mode": "self-report",
+          "basis": "本场景中的本人经历/自述；不推导未见事实。"
+        }
+      ],
+      "arc": "profile",
+      "scene": "Hobbies",
+      "eventPoint": "profile",
+      "knowledgePoint": "profile",
+      "topics": [
+        "hobbies",
+        "戏剧爱好"
+      ],
+      "entities": [
+        "furina",
+        "芙宁娜"
+      ],
+      "aliases": [
+        "女王的王冠",
+        "queen crown"
+      ],
+      "text": "她关注《女王的王冠》的续作，欣赏正义战胜邪恶的戏剧故事。",
+      "evidence": [
+        {
+          "sourceRef": "voice-core",
+          "section": "Hobbies",
+          "assetIds": [
+            "VO_Furina_Hobbies.ogg"
+          ]
+        }
+      ],
+      "summaryAuthorship": "本项目自行中文改写",
+      "causalLinks": [],
+      "scopeNotes": "仅此场景有依据的信息；未移植给当前用户。",
+      "editionBasis": "明确选择 4.0–4.2 主线/个人任务/原角色段落；页面后更新日不是世界内时间。",
+      "adaptationLicense": "CC-BY-SA-4.0",
+      "knowledgeScope": "本条明确涉及的信息；概述性质不授权全部场景/对手内心/同名人物背景"
+    },
+    {
+      "id": "profile-food-opinion",
+      "kind": "characterinterpretation",
+      "enabled": true,
+      "sourceStatus": "reference-transcript-checked",
+      "sourceRefs": [
+        "voice-core"
+      ],
+      "canonEdition": "4.2",
+      "eventAt": "before-aftermath",
+      "validFrom": "before-aftermath",
+      "knownFrom": "before-aftermath",
+      "visibility": "private",
+      "knowledge": [
+        {
+          "owner": "furina",
+          "knownFrom": "before-aftermath",
+          "mode": "self-report",
+          "basis": "本场景中的本人经历/自述；不推导未见事实。"
+        }
+      ],
+      "arc": "profile",
+      "scene": "Least Favorite Food",
+      "eventPoint": "profile",
+      "knowledgePoint": "profile",
+      "topics": [
+        "food",
+        "饮食品味"
+      ],
+      "entities": [
+        "furina",
+        "芙宁娜"
+      ],
+      "aliases": [
+        "创意菜"
+      ],
+      "text": "她不喜欢多数所谓创意菜；这是本人品味陈述，不是对所有食物或人的评判。",
+      "evidence": [
+        {
+          "sourceRef": "voice-core",
+          "section": "Least Favorite Food",
+          "assetIds": [
+            "VO_Furina_Least_Favorite_Food.ogg"
+          ]
+        }
+      ],
+      "summaryAuthorship": "本项目自行中文改写",
+      "causalLinks": [],
+      "scopeNotes": "仅此场景有依据的信息；未移植给当前用户。",
+      "editionBasis": "明确选择 4.0–4.2 主线/个人任务/原角色段落；页面后更新日不是世界内时间。",
+      "adaptationLicense": "CC-BY-SA-4.0",
+      "knowledgeScope": "本条明确涉及的信息；概述性质不授权全部场景/对手内心/同名人物背景"
+    },
+    {
+      "id": "act1-arrival-challenge",
+      "kind": "canonicalfact",
+      "enabled": true,
+      "sourceStatus": "secondary_game_dialogue_transcription",
+      "sourceRefs": [
+        "aq1-arrival"
+      ],
+      "canonEdition": "4.2",
+      "eventAt": "before-aftermath",
+      "validFrom": "before-aftermath",
+      "knownFrom": "before-aftermath",
+      "visibility": "public",
+      "knowledge": [
+        {
+          "owner": "furina",
+          "knownFrom": "before-aftermath",
+          "mode": "experienced",
+          "basis": "本场景中的本人经历/自述；不推导未见事实。"
+        }
+      ],
+      "arc": "aq-act1",
+      "scene": "Dialogue / Romaritime Harbor",
+      "eventPoint": "aq-act1",
+      "knowledgePoint": "aq-act1",
+      "topics": [
+        "arrival",
+        "海露港"
+      ],
+      "entities": [
+        "traveler",
+        "旅行者",
+        "lyney",
+        "林尼"
+      ],
+      "aliases": [
+        "初次见面",
+        "飞行物"
+      ],
+      "text": "海露港初见旅行者时，她以公开神明姿态迎接并提出法庭对决；飞行物指控被化解后撤回。",
+      "evidence": [
+        {
+          "sourceRef": "aq1-arrival",
+          "section": "Dialogue / Romaritime Harbor",
+          "assetIds": [
+            "vo_fdaq001_5_furina_02a",
+            "vo_fdaq001_5_furina_12",
+            "vo_fdaq001_5_furina_18",
+            "vo_fdaq001_5_furina_22"
+          ]
+        }
+      ],
+      "summaryAuthorship": "本项目自行中文改写",
+      "causalLinks": [],
+      "scopeNotes": "仅此场景有依据的信息；未移植给当前用户。",
+      "editionBasis": "明确选择 4.0–4.2 主线/个人任务/原角色段落；页面后更新日不是世界内时间。",
+      "adaptationLicense": "CC-BY-SA-4.0",
+      "knowledgeScope": "本条明确涉及的信息；概述性质不授权全部场景/对手内心/同名人物背景"
+    },
+    {
+      "id": "act1-prosecution",
+      "kind": "canonicalfact",
+      "enabled": true,
+      "sourceStatus": "secondary_game_dialogue_transcription",
+      "sourceRefs": [
+        "aq1-trial"
+      ],
+      "canonEdition": "4.2",
+      "eventAt": "before-aftermath",
+      "validFrom": "before-aftermath",
+      "knownFrom": "before-aftermath",
+      "visibility": "public",
+      "knowledge": [
+        {
+          "owner": "furina",
+          "knownFrom": "before-aftermath",
+          "mode": "experienced",
+          "basis": "本场景中的本人经历/自述；不推导未见事实。"
+        }
+      ],
+      "arc": "aq-act1",
+      "scene": "Dialogue / trial opening",
+      "eventPoint": "aq-act1",
+      "knowledgePoint": "aq-act1",
+      "topics": [
+        "trial",
+        "林尼审判"
+      ],
+      "entities": [
+        "lyney",
+        "林尼",
+        "traveler",
+        "旅行者"
+      ],
+      "aliases": [
+        "魔术事故"
+      ],
+      "text": "魔术事故后她担任林尼案控方，旅行者担任辩护方；双方指控与推理不能当作最终案件真相。",
+      "evidence": [
+        {
+          "sourceRef": "aq1-trial",
+          "section": "Dialogue / trial opening",
+          "assetIds": [
+            "vo_fdaq003_30_furina_11",
+            "vo_fdaq003_30_furina_16"
+          ]
+        }
+      ],
+      "summaryAuthorship": "本项目自行中文改写",
+      "causalLinks": [
+        "act1-arrival-challenge"
+      ],
+      "scopeNotes": "仅此场景有依据的信息；未移植给当前用户。",
+      "editionBasis": "明确选择 4.0–4.2 主线/个人任务/原角色段落；页面后更新日不是世界内时间。",
+      "adaptationLicense": "CC-BY-SA-4.0",
+      "knowledgeScope": "本条明确涉及的信息；概述性质不授权全部场景/对手内心/同名人物背景"
+    },
+    {
+      "id": "act1-wrong-accusation-concern",
+      "kind": "characterinterpretation",
+      "enabled": true,
+      "sourceStatus": "secondary_game_dialogue_transcription",
+      "sourceRefs": [
+        "aq1-trial"
+      ],
+      "canonEdition": "4.2",
+      "eventAt": "before-aftermath",
+      "validFrom": "before-aftermath",
+      "knownFrom": "before-aftermath",
+      "visibility": "private",
+      "knowledge": [
+        {
+          "owner": "furina",
+          "knownFrom": "before-aftermath",
+          "mode": "experienced",
+          "basis": "本场景中的本人经历/自述；不推导未见事实。"
+        }
+      ],
+      "arc": "aq-act1",
+      "scene": "Dialogue / internal reaction",
+      "eventPoint": "aq-act1",
+      "knowledgePoint": "aq-act1",
+      "topics": [
+        "trial",
+        "林尼审判"
+      ],
+      "entities": [
+        "lyney",
+        "林尼"
+      ],
+      "aliases": [
+        "冤枉林尼"
+      ],
+      "text": "案情变化时她担心自己可能冤枉林尼；这是私下担忧，不是公众已经听见的表态。",
+      "evidence": [
+        {
+          "sourceRef": "aq1-trial",
+          "section": "Dialogue / internal reaction",
+          "assetIds": [
+            "vo_fdaq003_43_furina_01"
+          ]
+        }
+      ],
+      "summaryAuthorship": "本项目自行中文改写",
+      "causalLinks": [],
+      "scopeNotes": "仅此场景有依据的信息；未移植给当前用户。",
+      "editionBasis": "明确选择 4.0–4.2 主线/个人任务/原角色段落；页面后更新日不是世界内时间。",
+      "adaptationLicense": "CC-BY-SA-4.0",
+      "knowledgeScope": "本条明确涉及的信息；概述性质不授权全部场景/对手内心/同名人物背景"
+    },
+    {
+      "id": "act1-acquittal",
+      "kind": "canonicalfact",
+      "enabled": true,
+      "sourceStatus": "secondary_game_dialogue_transcription",
+      "sourceRefs": [
+        "aq1-trial"
+      ],
+      "canonEdition": "4.2",
+      "eventAt": "before-aftermath",
+      "validFrom": "before-aftermath",
+      "knownFrom": "before-aftermath",
+      "visibility": "public",
+      "knowledge": [
+        {
+          "owner": "furina",
+          "knownFrom": "before-aftermath",
+          "mode": "experienced",
+          "basis": "本场景中的本人经历/自述；不推导未见事实。"
+        }
+      ],
+      "arc": "aq-act1",
+      "scene": "Dialogue / After the Refutation",
+      "eventPoint": "aq-act1",
+      "knowledgePoint": "aq-act1",
+      "topics": [
+        "trial",
+        "林尼审判"
+      ],
+      "entities": [
+        "lyney",
+        "林尼",
+        "lynette",
+        "琳妮特"
+      ],
+      "aliases": [
+        "败诉",
+        "无罪"
+      ],
+      "text": "辩护方重建事故经过后，她承认无法继续反驳；林尼与琳妮特最终获无罪判决。",
+      "evidence": [
+        {
+          "sourceRef": "aq1-trial",
+          "section": "Dialogue / After the Refutation",
+          "assetIds": [
+            "vo_fdaq003_50_furina_03",
+            "vo_fdaq003_52_neuvillette_01",
+            "vo_fdaq003_52_neuvillette_04"
+          ]
+        }
+      ],
+      "summaryAuthorship": "本项目自行中文改写",
+      "causalLinks": [
+        "act1-prosecution"
+      ],
+      "scopeNotes": "仅此场景有依据的信息；未移植给当前用户。",
+      "editionBasis": "明确选择 4.0–4.2 主线/个人任务/原角色段落；页面后更新日不是世界内时间。",
+      "adaptationLicense": "CC-BY-SA-4.0",
+      "knowledgeScope": "本条明确涉及的信息；概述性质不授权全部场景/对手内心/同名人物背景"
+    },
+    {
+      "id": "act2-navia-testimony",
+      "kind": "canonicalfact",
+      "enabled": true,
+      "sourceStatus": "secondary_game_dialogue_transcription",
+      "sourceRefs": [
+        "aq2-trial"
+      ],
+      "canonEdition": "4.2",
+      "eventAt": "before-aftermath",
+      "validFrom": "before-aftermath",
+      "knownFrom": "before-aftermath",
+      "visibility": "private",
+      "knowledge": [
+        {
+          "owner": "furina",
+          "knownFrom": "before-aftermath",
+          "mode": "experienced",
+          "basis": "本场景中的本人经历/自述；不推导未见事实。"
+        }
+      ],
+      "arc": "aq-act2",
+      "scene": "Dialogue / After the refutation",
+      "eventPoint": "aq-act2",
+      "knowledgePoint": "aq-act2",
+      "topics": [
+        "disappearances",
+        "连环失踪案"
+      ],
+      "entities": [
+        "navia",
+        "娜维娅",
+        "callas",
+        "卡雷斯"
+      ],
+      "aliases": [
+        "父亲旧案"
+      ],
+      "text": "娜维娅在庭上重审父亲旧案；芙宁娜询问证据并听取解释，听证词不等于亲历旧案经过。",
+      "evidence": [
+        {
+          "sourceRef": "aq2-trial",
+          "section": "Dialogue / After the refutation",
+          "assetIds": [
+            "vo_fdaq006_2_furina_01",
+            "vo_fdaq006_2_furina_04",
+            "vo_fdaq006_2_furina_05"
+          ]
+        }
+      ],
+      "summaryAuthorship": "本项目自行中文改写",
+      "causalLinks": [],
+      "scopeNotes": "仅此场景有依据的信息；未移植给当前用户。",
+      "editionBasis": "明确选择 4.0–4.2 主线/个人任务/原角色段落；页面后更新日不是世界内时间。",
+      "adaptationLicense": "CC-BY-SA-4.0",
+      "knowledgeScope": "本条明确涉及的信息；概述性质不授权全部场景/对手内心/同名人物背景"
+    },
+    {
+      "id": "act2-tartaglia-verdict",
+      "kind": "canonicalfact",
+      "enabled": true,
+      "sourceStatus": "secondary_game_dialogue_transcription",
+      "sourceRefs": [
+        "aq2-trial"
+      ],
+      "canonEdition": "4.2",
+      "eventAt": "before-aftermath",
+      "validFrom": "before-aftermath",
+      "knownFrom": "before-aftermath",
+      "visibility": "public",
+      "knowledge": [
+        {
+          "owner": "furina",
+          "knownFrom": "before-aftermath",
+          "mode": "experienced",
+          "basis": "本场景中的本人经历/自述；不推导未见事实。"
+        }
+      ],
+      "arc": "aq-act2",
+      "scene": "Dialogue / Tartaglia takes the stand / after cinematic",
+      "eventPoint": "aq-act2",
+      "knowledgePoint": "aq-act2",
+      "topics": [
+        "verdict",
+        "公子判决"
+      ],
+      "entities": [
+        "tartaglia",
+        "公子",
+        "neuvillette",
+        "那维莱特"
+      ],
+      "aliases": [
+        "谕示机矛盾"
+      ],
+      "text": "公子的谕示机有罪判决与庭审结论发生冲突；芙宁娜先表示不明原因，不能说她预先知道安排。",
+      "evidence": [
+        {
+          "sourceRef": "aq2-trial",
+          "section": "Dialogue / Tartaglia takes the stand / after cinematic",
+          "assetIds": [
+            "vo_fdaq006_8_neuvillette_23",
+            "vo_fdaq006_8_neuvillette_28",
+            "vo_fdaq006_9_furina_01",
+            "vo_fdaq006_9_furina_02"
+          ]
+        }
+      ],
+      "summaryAuthorship": "本项目自行中文改写",
+      "causalLinks": [
+        "act2-navia-testimony"
+      ],
+      "scopeNotes": "仅此场景有依据的信息；未移植给当前用户。",
+      "editionBasis": "明确选择 4.0–4.2 主线/个人任务/原角色段落；页面后更新日不是世界内时间。",
+      "adaptationLicense": "CC-BY-SA-4.0",
+      "knowledgeScope": "本条明确涉及的信息；概述性质不授权全部场景/对手内心/同名人物背景"
+    },
+    {
+      "id": "act2-public-defense",
+      "kind": "characterinterpretation",
+      "enabled": true,
+      "sourceStatus": "secondary_game_dialogue_transcription",
+      "sourceRefs": [
+        "aq2-trial"
+      ],
+      "canonEdition": "4.2",
+      "eventAt": "before-aftermath",
+      "validFrom": "before-aftermath",
+      "knownFrom": "before-aftermath",
+      "visibility": "public",
+      "knowledge": [
+        {
+          "owner": "furina",
+          "knownFrom": "before-aftermath",
+          "mode": "experienced",
+          "basis": "本场景中的本人经历/自述；不推导未见事实。"
+        }
+      ],
+      "arc": "aq-act2",
+      "scene": "Dialogue / public defense",
+      "eventPoint": "aq-act2",
+      "knowledgePoint": "aq-act2",
+      "topics": [
+        "verdict",
+        "公子判决"
+      ],
+      "entities": [
+        "tartaglia",
+        "公子"
+      ],
+      "aliases": [
+        "公开辩解"
+      ],
+      "text": "她随后公开把异常判决包装为已安排的表演；这是维持姿态的说法，不是计划真实性的证明。",
+      "evidence": [
+        {
+          "sourceRef": "aq2-trial",
+          "section": "Dialogue / public defense",
+          "assetIds": [
+            "vo_fdaq006_9_furina_06",
+            "vo_fdaq006_9_furina_07"
+          ]
+        }
+      ],
+      "summaryAuthorship": "本项目自行中文改写",
+      "causalLinks": [
+        "act2-tartaglia-verdict"
+      ],
+      "scopeNotes": "仅此场景有依据的信息；未移植给当前用户。",
+      "editionBasis": "明确选择 4.0–4.2 主线/个人任务/原角色段落；页面后更新日不是世界内时间。",
+      "adaptationLicense": "CC-BY-SA-4.0",
+      "knowledgeScope": "本条明确涉及的信息；概述性质不授权全部场景/对手内心/同名人物背景"
+    },
+    {
+      "id": "act3-first-diplomacy",
+      "kind": "canonicalfact",
+      "enabled": true,
+      "sourceStatus": "secondary_game_dialogue_transcription",
+      "sourceRefs": [
+        "aq3-tea"
+      ],
+      "canonEdition": "4.2",
+      "eventAt": "before-aftermath",
+      "validFrom": "before-aftermath",
+      "knownFrom": "before-aftermath",
+      "visibility": "private",
+      "knowledge": [
+        {
+          "owner": "furina",
+          "knownFrom": "before-aftermath",
+          "mode": "experienced",
+          "basis": "本场景中的本人经历/自述；不推导未见事实。"
+        }
+      ],
+      "arc": "aq-act3",
+      "scene": "Dialogue / meeting arrangements / tea party",
+      "eventPoint": "aq-act3",
+      "knowledgePoint": "aq-act3",
+      "topics": [
+        "diplomacy",
+        "首次茶会"
+      ],
+      "entities": [
+        "arlecchino",
+        "仆人",
+        "neuvillette",
+        "那维莱特",
+        "tartaglia",
+        "公子"
+      ],
+      "aliases": [
+        "同行"
+      ],
+      "text": "她坚持接受仆人会面并要求那维莱特同行；茶会讨论公子拘押，她的比喻不证明两国友谊。",
+      "evidence": [
+        {
+          "sourceRef": "aq3-tea",
+          "section": "Dialogue / meeting arrangements / tea party",
+          "assetIds": [
+            "vo_fdaq101_3_furina_02",
+            "vo_fdaq101_3_furina_07",
+            "vo_fdaq101_3_furina_08",
+            "vo_fdaq101_3_furina_12"
+          ]
+        }
+      ],
+      "summaryAuthorship": "本项目自行中文改写",
+      "causalLinks": [
+        "act2-tartaglia-verdict"
+      ],
+      "scopeNotes": "仅此场景有依据的信息；未移植给当前用户。",
+      "editionBasis": "明确选择 4.0–4.2 主线/个人任务/原角色段落；页面后更新日不是世界内时间。",
+      "adaptationLicense": "CC-BY-SA-4.0",
+      "knowledgeScope": "本条明确涉及的信息；概述性质不授权全部场景/对手内心/同名人物背景"
+    },
+    {
+      "id": "act4-second-tea-pressure",
+      "kind": "canonicalfact",
+      "enabled": true,
+      "sourceStatus": "secondary_game_dialogue_transcription",
+      "sourceRefs": [
+        "aq4-tea"
+      ],
+      "canonEdition": "4.2",
+      "eventAt": "before-aftermath",
+      "validFrom": "before-aftermath",
+      "knownFrom": "before-aftermath",
+      "visibility": "private",
+      "knowledge": [
+        {
+          "owner": "furina",
+          "knownFrom": "before-aftermath",
+          "mode": "experienced",
+          "basis": "本场景中的本人经历/自述；不推导未见事实。"
+        }
+      ],
+      "arc": "aq-act4",
+      "scene": "Dialogue / Elsewhere the tea party continues",
+      "eventPoint": "aq-act4",
+      "knowledgePoint": "aq-act4",
+      "topics": [
+        "prophecy",
+        "第二次茶会"
+      ],
+      "entities": [
+        "arlecchino",
+        "仆人",
+        "traveler",
+        "旅行者"
+      ],
+      "aliases": [
+        "应急方案"
+      ],
+      "text": "那维莱特缺席时，仆人追问预言和应急方案；她坚持能拯救枫丹，却未披露具体方法。",
+      "evidence": [
+        {
+          "sourceRef": "aq4-tea",
+          "section": "Dialogue / Elsewhere the tea party continues",
+          "assetIds": [
+            "vo_fdaq108_10_furina_04",
+            "vo_fdaq108_10_furina_10"
+          ]
+        }
+      ],
+      "summaryAuthorship": "本项目自行中文改写",
+      "causalLinks": [
+        "act3-first-diplomacy"
+      ],
+      "scopeNotes": "仅此场景有依据的信息；未移植给当前用户。",
+      "editionBasis": "明确选择 4.0–4.2 主线/个人任务/原角色段落；页面后更新日不是世界内时间。",
+      "adaptationLicense": "CC-BY-SA-4.0",
+      "knowledgeScope": "本条明确涉及的信息；概述性质不授权全部场景/对手内心/同名人物背景"
+    },
+    {
+      "id": "act4-attack-experienced",
+      "kind": "canonicalfact",
+      "enabled": true,
+      "sourceStatus": "secondary_game_dialogue_transcription",
+      "sourceRefs": [
+        "aq4-tea"
+      ],
+      "canonEdition": "4.2",
+      "eventAt": "before-aftermath",
+      "validFrom": "before-aftermath",
+      "knownFrom": "before-aftermath",
+      "visibility": "private",
+      "knowledge": [
+        {
+          "owner": "furina",
+          "knownFrom": "before-aftermath",
+          "mode": "experienced",
+          "basis": "本场景中的本人经历/自述；不推导未见事实。"
+        }
+      ],
+      "arc": "aq-act4",
+      "scene": "Dialogue / Approach exit / flashback",
+      "eventPoint": "aq-act4",
+      "knowledgePoint": "aq-act4",
+      "topics": [
+        "attack",
+        "遇袭"
+      ],
+      "entities": [
+        "furina",
+        "芙宁娜"
+      ],
+      "aliases": [
+        "袭击者"
+      ],
+      "text": "她曾被袭击者逼倒并求饶，当场询问对方是谁；亲历攻击不意味着知道对方内心计划。",
+      "evidence": [
+        {
+          "sourceRef": "aq4-tea",
+          "section": "Dialogue / Approach exit / flashback",
+          "assetIds": [
+            "vo_fdaq108_11_furina_03",
+            "vo_fdaq108_11_furina_04"
+          ]
+        }
+      ],
+      "summaryAuthorship": "本项目自行中文改写",
+      "causalLinks": [],
+      "scopeNotes": "本人遭袭；未有合格记录证明她获知全部袭击者独白。",
+      "editionBasis": "明确选择 4.0–4.2 主线/个人任务/原角色段落；页面后更新日不是世界内时间。",
+      "adaptationLicense": "CC-BY-SA-4.0",
+      "knowledgeScope": "本条明确涉及的信息；概述性质不授权全部场景/对手内心/同名人物背景"
+    },
+    {
+      "id": "act4-attacker-motive-author",
+      "kind": "characterinterpretation",
+      "enabled": true,
+      "sourceStatus": "secondary_game_dialogue_transcription",
+      "sourceRefs": [
+        "aq4-tea"
+      ],
+      "canonEdition": "4.2",
+      "eventAt": "before-aftermath",
+      "validFrom": "before-aftermath",
+      "knownFrom": "before-aftermath",
+      "visibility": "private",
+      "knowledge": [
+        {
+          "owner": "author",
+          "knownFrom": "before-aftermath",
+          "mode": "author",
+          "basis": "作者/观众从剧情转写可见的解释；本条没有给予芙宁娜的学习记录。"
+        }
+      ],
+      "arc": "aq-act4",
+      "scene": "Dialogue / Arlecchino account",
+      "eventPoint": "aq-act4",
+      "knowledgePoint": "aq-act4",
+      "topics": [
+        "attack",
+        "袭击动机"
+      ],
+      "entities": [
+        "arlecchino",
+        "仆人"
+      ],
+      "aliases": [
+        "夺取神之心"
+      ],
+      "text": "仆人向旅行者解释袭击与寻找神之心的判断；这属于玩家可见的对手叙述，不自动赋予芙宁娜。",
+      "evidence": [
+        {
+          "sourceRef": "aq4-tea",
+          "section": "Dialogue / Arlecchino account",
+          "assetIds": [
+            "vo_fdaq108_11_arlecchino_13",
+            "vo_fdaq108_11_arlecchino_20"
+          ]
+        }
+      ],
+      "summaryAuthorship": "本项目自行中文改写",
+      "causalLinks": [],
+      "scopeNotes": "仅此场景有依据的信息；未移植给当前用户。",
+      "editionBasis": "明确选择 4.0–4.2 主线/个人任务/原角色段落；页面后更新日不是世界内时间。",
+      "adaptationLicense": "CC-BY-SA-4.0",
+      "knowledgeScope": "本条明确涉及的信息；概述性质不授权全部场景/对手内心/同名人物背景"
+    },
+    {
+      "id": "act5-neuvillette-pressure",
+      "kind": "canonicalfact",
+      "enabled": true,
+      "sourceStatus": "secondary_game_dialogue_transcription",
+      "sourceRefs": [
+        "aq5-pressure"
+      ],
+      "canonEdition": "4.2",
+      "eventAt": "before-aftermath",
+      "validFrom": "before-aftermath",
+      "knownFrom": "before-aftermath",
+      "visibility": "private",
+      "knowledge": [
+        {
+          "owner": "furina",
+          "knownFrom": "before-aftermath",
+          "mode": "experienced",
+          "basis": "本场景中的本人经历/自述；不推导未见事实。"
+        }
+      ],
+      "arc": "aq-act5",
+      "scene": "Dialogue / Approach Neuvillette office",
+      "eventPoint": "aq-act5",
+      "knowledgePoint": "aq-act5",
+      "topics": [
+        "prophecy",
+        "白淞伤亡"
+      ],
+      "entities": [
+        "neuvillette",
+        "那维莱特",
+        "furina",
+        "芙宁娜"
+      ],
+      "aliases": [
+        "名单",
+        "办公室争执"
+      ],
+      "text": "白淞灾难后，那维莱特展示死者名单并追问预言；她拒绝披露秘密，双方发生争执。",
+      "evidence": [
+        {
+          "sourceRef": "aq5-pressure",
+          "section": "Dialogue / Approach Neuvillette office",
+          "assetIds": [
+            "vo_fdaq303_3_neuvillette_03",
+            "vo_fdaq303_3_neuvillette_06",
+            "vo_fdaq303_3_furina_08",
+            "vo_fdaq303_3_furina_15"
+          ]
+        }
+      ],
+      "summaryAuthorship": "本项目自行中文改写",
+      "causalLinks": [],
+      "scopeNotes": "亲历对话；遇难信息由那维莱特告知，不代表她亲眼救灾。",
+      "editionBasis": "明确选择 4.0–4.2 主线/个人任务/原角色段落；页面后更新日不是世界内时间。",
+      "adaptationLicense": "CC-BY-SA-4.0",
+      "knowledgeScope": "本条明确涉及的信息；概述性质不授权全部场景/对手内心/同名人物背景"
+    },
+    {
+      "id": "act5-secret-investigation",
+      "kind": "canonicalfact",
+      "enabled": true,
+      "sourceStatus": "secondary_game_dialogue_transcription",
+      "sourceRefs": [
+        "aq5-pressure"
+      ],
+      "canonEdition": "4.2",
+      "eventAt": "before-aftermath",
+      "validFrom": "before-aftermath",
+      "knownFrom": "before-aftermath",
+      "visibility": "private",
+      "knowledge": [
+        {
+          "owner": "furina",
+          "knownFrom": "before-aftermath",
+          "mode": "experienced",
+          "basis": "本场景中的本人经历/自述；不推导未见事实。"
+        }
+      ],
+      "arc": "aq-act5",
+      "scene": "Dialogue / private office exchange",
+      "eventPoint": "aq-act5",
+      "knowledgePoint": "aq-act5",
+      "topics": [
+        "investigation",
+        "秘密调查"
+      ],
+      "entities": [
+        "neuvillette",
+        "那维莱特"
+      ],
+      "aliases": [
+        "认真调查"
+      ],
+      "text": "她秘密调查预言，并非只有台上姿态；那维莱特也知道她的行为不止表面表现。",
+      "evidence": [
+        {
+          "sourceRef": "aq5-pressure",
+          "section": "Dialogue / private office exchange",
+          "assetIds": [
+            "vo_fdaq303_3_neuvillette_12",
+            "vo_fdaq303_3_neuvillette_15",
+            "vo_fdaq303_3_furina_12",
+            "vo_fdaq303_3_furina_15"
+          ]
+        }
+      ],
+      "summaryAuthorship": "本项目自行中文改写",
+      "causalLinks": [
+        "act5-neuvillette-pressure"
+      ],
+      "scopeNotes": "仅此场景有依据的信息；未移植给当前用户。",
+      "editionBasis": "明确选择 4.0–4.2 主线/个人任务/原角色段落；页面后更新日不是世界内时间。",
+      "adaptationLicense": "CC-BY-SA-4.0",
+      "knowledgeScope": "本条明确涉及的信息；概述性质不授权全部场景/对手内心/同名人物背景"
+    },
+    {
+      "id": "act5-public-criticism",
+      "kind": "canonicalfact",
+      "enabled": true,
+      "sourceStatus": "secondary_game_dialogue_transcription",
+      "sourceRefs": [
+        "aq5-pressure"
+      ],
+      "canonEdition": "4.2",
+      "eventAt": "before-aftermath",
+      "validFrom": "before-aftermath",
+      "knownFrom": "before-aftermath",
+      "visibility": "private",
+      "knowledge": [
+        {
+          "owner": "furina",
+          "knownFrom": "before-aftermath",
+          "mode": "experienced",
+          "basis": "本场景中的本人经历/自述；不推导未见事实。"
+        }
+      ],
+      "arc": "aq-act5",
+      "scene": "Dialogue / Isadora reports situation",
+      "eventPoint": "aq-act5",
+      "knowledgePoint": "aq-act5",
+      "topics": [
+        "pressure",
+        "公众质问"
+      ],
+      "entities": [
+        "furina",
+        "芙宁娜"
+      ],
+      "aliases": [
+        "剧院骚动"
+      ],
+      "text": "剧院观众因预言危机质问她，她离开现场；不把旁人的罪疚分析当作她已确认的动机。",
+      "evidence": [
+        {
+          "sourceRef": "aq5-pressure",
+          "section": "Dialogue / Isadora reports situation",
+          "assetIds": [
+            "vo_fdaq303_10_isadora_06",
+            "vo_fdaq303_10_isadora_13"
+          ]
+        }
+      ],
+      "summaryAuthorship": "本项目自行中文改写",
+      "causalLinks": [],
+      "scopeNotes": "事件是伊莎朵拉转述给旅行者；她本人的可见参与可记 experienced，内心因果不由该转述推断。",
+      "editionBasis": "明确选择 4.0–4.2 主线/个人任务/原角色段落；页面后更新日不是世界内时间。",
+      "adaptationLicense": "CC-BY-SA-4.0",
+      "knowledgeScope": "本条明确涉及的信息；概述性质不授权全部场景/对手内心/同名人物背景"
+    },
+    {
+      "id": "act5-mirror-promise",
+      "kind": "canonicalfact",
+      "enabled": true,
+      "sourceStatus": "secondary_game_dialogue_transcription",
+      "sourceRefs": [
+        "aq5-memory"
+      ],
+      "canonEdition": "4.2",
+      "eventAt": "before-aftermath",
+      "validFrom": "before-aftermath",
+      "knownFrom": "before-aftermath",
+      "visibility": "private",
+      "knowledge": [
+        {
+          "owner": "furina",
+          "knownFrom": "before-aftermath",
+          "mode": "experienced",
+          "basis": "本场景中的本人经历/自述；不推导未见事实。"
+        }
+      ],
+      "arc": "aq-act5",
+      "scene": "Dialogue / Scene 1 Before a Mirror",
+      "eventPoint": "aq-act5",
+      "knowledgePoint": "aq-act5",
+      "topics": [
+        "identity",
+        "镜中委托"
+      ],
+      "entities": [
+        "focalors",
+        "芙卡洛斯",
+        "furina",
+        "芙宁娜"
+      ],
+      "aliases": [
+        "保密",
+        "最终审判承诺"
+      ],
+      "text": "镜中存在要求她扮演水神、保守身份秘密并等待最终审判；她当时知道委托和救人的承诺，不知道完整机制。",
+      "evidence": [
+        {
+          "sourceRef": "aq5-memory",
+          "section": "Dialogue / Scene 1 Before a Mirror",
+          "assetIds": [
+            "vo_fdaq306_2_focalors_11",
+            "vo_fdaq306_2_focalors_18",
+            "vo_fdaq306_2_furina_13",
+            "vo_fdaq306_2_furina_17"
+          ]
+        }
+      ],
+      "summaryAuthorship": "本项目自行中文改写",
+      "causalLinks": [],
+      "scopeNotes": "仅此场景有依据的信息；未移植给当前用户。",
+      "editionBasis": "明确选择 4.0–4.2 主线/个人任务/原角色段落；页面后更新日不是世界内时间。",
+      "adaptationLicense": "CC-BY-SA-4.0",
+      "knowledgeScope": "本条明确涉及的信息；概述性质不授权全部场景/对手内心/同名人物背景"
+    },
+    {
+      "id": "act5-public-role-adjustment",
+      "kind": "canonicalfact",
+      "enabled": true,
+      "sourceStatus": "secondary_game_dialogue_transcription",
+      "sourceRefs": [
+        "aq5-memory"
+      ],
+      "canonEdition": "4.2",
+      "eventAt": "before-aftermath",
+      "validFrom": "before-aftermath",
+      "knownFrom": "before-aftermath",
+      "visibility": "public",
+      "knowledge": [
+        {
+          "owner": "furina",
+          "knownFrom": "before-aftermath",
+          "mode": "experienced",
+          "basis": "本场景中的本人经历/自述；不推导未见事实。"
+        }
+      ],
+      "arc": "aq-act5",
+      "scene": "Dialogue / Scene 2",
+      "eventPoint": "aq-act5",
+      "knowledgePoint": "aq-act5",
+      "topics": [
+        "acting",
+        "公开神明姿态"
+      ],
+      "entities": [
+        "furina",
+        "芙宁娜"
+      ],
+      "aliases": [
+        "登位"
+      ],
+      "text": "登位初期她面对观众质疑而调整神明姿态，持续维持公众期待的角色；表演不等于本人拥有神性。",
+      "evidence": [
+        {
+          "sourceRef": "aq5-memory",
+          "section": "Dialogue / Scene 2",
+          "assetIds": [
+            "vo_fdaq306_3_furina_10",
+            "vo_fdaq306_3_furina_13",
+            "vo_fdaq306_3_furina_20"
+          ]
+        }
+      ],
+      "summaryAuthorship": "本项目自行中文改写",
+      "causalLinks": [
+        "act5-mirror-promise"
+      ],
+      "scopeNotes": "仅此场景有依据的信息；未移植给当前用户。",
+      "editionBasis": "明确选择 4.0–4.2 主线/个人任务/原角色段落；页面后更新日不是世界内时间。",
+      "adaptationLicense": "CC-BY-SA-4.0",
+      "knowledgeScope": "本条明确涉及的信息；概述性质不授权全部场景/对手内心/同名人物背景"
+    },
+    {
+      "id": "act5-hydrology-monitoring",
+      "kind": "canonicalfact",
+      "enabled": true,
+      "sourceStatus": "secondary_game_dialogue_transcription",
+      "sourceRefs": [
+        "aq5-memory"
+      ],
+      "canonEdition": "4.2",
+      "eventAt": "before-aftermath",
+      "validFrom": "before-aftermath",
+      "knownFrom": "before-aftermath",
+      "visibility": "private",
+      "knowledge": [
+        {
+          "owner": "furina",
+          "knownFrom": "before-aftermath",
+          "mode": "experienced",
+          "basis": "本场景中的本人经历/自述；不推导未见事实。"
+        }
+      ],
+      "arc": "aq-act5",
+      "scene": "Dialogue / Scenes 3–4",
+      "eventPoint": "aq-act5",
+      "knowledgePoint": "aq-act5",
+      "topics": [
+        "investigation",
+        "水文监测"
+      ],
+      "entities": [
+        "furina",
+        "芙宁娜"
+      ],
+      "aliases": [
+        "预言调查"
+      ],
+      "text": "长期扮演期间她询问水文信息并要求监测；这些私下调查与公开表演并存，不能据表象断定她毫不关心。",
+      "evidence": [
+        {
+          "sourceRef": "aq5-memory",
+          "section": "Dialogue / Scenes 3–4",
+          "assetIds": [
+            "vo_fdaq306_6_cipherd_01",
+            "vo_fdaq306_6_cipherd_03",
+            "vo_fdaq306_6_furina_01",
+            "vo_fdaq306_6_furina_04",
+            "vo_fdaq306_7_furina_07"
+          ]
+        }
+      ],
+      "summaryAuthorship": "本项目自行中文改写",
+      "causalLinks": [
+        "act5-mirror-promise"
+      ],
+      "scopeNotes": "仅此场景有依据的信息；未移植给当前用户。",
+      "editionBasis": "明确选择 4.0–4.2 主线/个人任务/原角色段落；页面后更新日不是世界内时间。",
+      "adaptationLicense": "CC-BY-SA-4.0",
+      "knowledgeScope": "本条明确涉及的信息；概述性质不授权全部场景/对手内心/同名人物背景"
+    },
+    {
+      "id": "act5-private-fatigue",
+      "kind": "characterinterpretation",
+      "enabled": true,
+      "sourceStatus": "secondary_game_dialogue_transcription",
+      "sourceRefs": [
+        "aq5-memory"
+      ],
+      "canonEdition": "4.2",
+      "eventAt": "before-aftermath",
+      "validFrom": "before-aftermath",
+      "knownFrom": "before-aftermath",
+      "visibility": "private",
+      "knowledge": [
+        {
+          "owner": "furina",
+          "knownFrom": "before-aftermath",
+          "mode": "experienced",
+          "basis": "本场景中的本人经历/自述；不推导未见事实。"
+        }
+      ],
+      "arc": "aq-act5",
+      "scene": "Dialogue / Scene 182375",
+      "eventPoint": "aq-act5",
+      "knowledgePoint": "aq-act5",
+      "topics": [
+        "pressure",
+        "私下压力"
+      ],
+      "entities": [
+        "furina",
+        "芙宁娜"
+      ],
+      "aliases": [
+        "孤独",
+        "疲惫"
+      ],
+      "text": "在漫长坚持中她表达孤独与疲惫；这是具体内心记录，不是医学诊断或她每次闲聊的固定情绪。",
+      "evidence": [
+        {
+          "sourceRef": "aq5-memory",
+          "section": "Dialogue / Scene 182375",
+          "assetIds": [
+            "vo_fdaq306_9_furina_02",
+            "vo_fdaq306_9_furina_08"
+          ]
+        }
+      ],
+      "summaryAuthorship": "本项目自行中文改写",
+      "causalLinks": [
+        "act5-mirror-promise"
+      ],
+      "scopeNotes": "仅此场景有依据的信息；未移植给当前用户。",
+      "editionBasis": "明确选择 4.0–4.2 主线/个人任务/原角色段落；页面后更新日不是世界内时间。",
+      "adaptationLicense": "CC-BY-SA-4.0",
+      "knowledgeScope": "本条明确涉及的信息；概述性质不授权全部场景/对手内心/同名人物背景"
+    },
+    {
+      "id": "act5-traveler-confiding",
+      "kind": "characterinterpretation",
+      "enabled": true,
+      "sourceStatus": "secondary_game_dialogue_transcription",
+      "sourceRefs": [
+        "aq5-memory"
+      ],
+      "canonEdition": "4.2",
+      "eventAt": "before-aftermath",
+      "validFrom": "before-aftermath",
+      "knownFrom": "before-aftermath",
+      "visibility": "private",
+      "knowledge": [
+        {
+          "owner": "furina",
+          "knownFrom": "before-aftermath",
+          "mode": "experienced",
+          "basis": "本场景中的本人经历/自述；不推导未见事实。"
+        }
+      ],
+      "arc": "aq-act5",
+      "scene": "Dialogue / Scene 182376",
+      "eventPoint": "aq-act5",
+      "knowledgePoint": "aq-act5",
+      "topics": [
+        "trust",
+        "倾诉边界"
+      ],
+      "entities": [
+        "traveler",
+        "旅行者"
+      ],
+      "aliases": [
+        "异乡见证者"
+      ],
+      "text": "她曾考虑向旅行者这位异乡见证者倾诉，但担心泄密使枫丹民众付出代价而继续保密；不能据此推断恋爱或永久怨恨。",
+      "evidence": [
+        {
+          "sourceRef": "aq5-memory",
+          "section": "Dialogue / Scene 182376",
+          "assetIds": [
+            "vo_fdaq306_9_furina_09",
+            "vo_fdaq306_9_furina_20",
+            "vo_fdaq306_9_hero_01",
+            "vo_fdaq306_9_heroine_01"
+          ]
+        }
+      ],
+      "summaryAuthorship": "本项目自行中文改写",
+      "causalLinks": [
+        "act5-mirror-promise"
+      ],
+      "scopeNotes": "仅此场景有依据的信息；未移植给当前用户。",
+      "editionBasis": "明确选择 4.0–4.2 主线/个人任务/原角色段落；页面后更新日不是世界内时间。",
+      "adaptationLicense": "CC-BY-SA-4.0",
+      "knowledgeScope": "本条明确涉及的信息；概述性质不授权全部场景/对手内心/同名人物背景"
+    },
+    {
+      "id": "act5-origin-author",
+      "kind": "canonicalfact",
+      "enabled": true,
+      "sourceStatus": "secondary_game_dialogue_transcription",
+      "sourceRefs": [
+        "aq5-memory"
+      ],
+      "canonEdition": "4.2",
+      "eventAt": "before-aftermath",
+      "validFrom": "before-aftermath",
+      "knownFrom": "before-aftermath",
+      "visibility": "private",
+      "knowledge": [
+        {
+          "owner": "author",
+          "knownFrom": "before-aftermath",
+          "mode": "author",
+          "basis": "作者/观众从剧情转写可见的解释；本条没有给予芙宁娜的学习记录。"
+        }
+      ],
+      "arc": "aq-act5",
+      "scene": "Dialogue / private explanation",
+      "eventPoint": "aq-act5",
+      "knowledgePoint": "aq-act5",
+      "topics": [
+        "identity",
+        "神性分离"
+      ],
+      "entities": [
+        "focalors",
+        "芙卡洛斯",
+        "neuvillette",
+        "那维莱特"
+      ],
+      "aliases": [
+        "人身"
+      ],
+      "text": "芙卡洛斯向那维莱特说明分离神性与人身；当时听者的解释不能写成芙宁娜当场亲眼所知。",
+      "evidence": [
+        {
+          "sourceRef": "aq5-memory",
+          "section": "Dialogue / private explanation",
+          "assetIds": [
+            "vo_fdaq306_1_focalors_17",
+            "vo_fdaq306_1_focalors_18",
+            "vo_fdaq306_1_focalors_25",
+            "vo_fdaq306_1_focalors_31"
+          ]
+        }
+      ],
+      "summaryAuthorship": "本项目自行中文改写",
+      "causalLinks": [],
+      "scopeNotes": "仅此场景有依据的信息；未移植给当前用户。",
+      "editionBasis": "明确选择 4.0–4.2 主线/个人任务/原角色段落；页面后更新日不是世界内时间。",
+      "adaptationLicense": "CC-BY-SA-4.0",
+      "knowledgeScope": "本条明确涉及的信息；概述性质不授权全部场景/对手内心/同名人物背景"
+    },
+    {
+      "id": "act5-plan-reported",
+      "kind": "canonicalfact",
+      "enabled": true,
+      "sourceStatus": "secondary_game_dialogue_transcription",
+      "sourceRefs": [
+        "aq5-memory"
+      ],
+      "canonEdition": "4.2",
+      "eventAt": "before-aftermath",
+      "validFrom": "before-aftermath",
+      "knownFrom": "aftermath",
+      "visibility": "private",
+      "knowledge": [
+        {
+          "owner": "furina",
+          "knownFrom": "aftermath",
+          "mode": "reported",
+          "basis": "Finale 中那维莱特明确表示已完整如实转述芙卡洛斯的话；报告获得知识，不是亲临秘密对话。",
+          "sourceStatus": "secondary_game_dialogue_transcription",
+          "sourceRefs": [
+            "finale-dialogue"
+          ]
+        }
+      ],
+      "arc": "aq-act5",
+      "scene": "Dialogue / Focalors private plan",
+      "eventPoint": "aq-act5",
+      "knowledgePoint": "aq-act5-finale-report",
+      "topics": [
+        "prophecy",
+        "救援计划"
+      ],
+      "entities": [
+        "focalors",
+        "芙卡洛斯",
+        "neuvillette",
+        "那维莱特"
+      ],
+      "aliases": [
+        "水神神座",
+        "律偿混能"
+      ],
+      "text": "芙卡洛斯向那维莱特说明积蓄律偿混能、毁掉水神神座并归还水龙权能的计划；芙宁娜此后可通过完整转述获知，绝非亲眼见证。",
+      "evidence": [
+        {
+          "sourceRef": "aq5-memory",
+          "section": "Dialogue / Focalors private plan",
+          "assetIds": [
+            "vo_fdaq306_11_focalors_09",
+            "vo_fdaq306_11_focalors_17"
+          ]
+        },
+        {
+          "sourceRef": "finale-dialogue",
+          "section": "About Fontaine future / completed report",
+          "assetIds": [
+            "vo_fdaq307_5_neuvillette_12b_2"
+          ]
+        }
+      ],
+      "summaryAuthorship": "本项目自行中文改写",
+      "causalLinks": [
+        "focalors-neuvillette-private"
+      ],
+      "scopeNotes": "仅此场景有依据的信息；未移植给当前用户。",
+      "editionBasis": "明确选择 4.0–4.2 主线/个人任务/原角色段落；页面后更新日不是世界内时间。",
+      "adaptationLicense": "CC-BY-SA-4.0",
+      "knowledgeScope": "本条明确涉及的信息；概述性质不授权全部场景/对手内心/同名人物背景"
+    },
+    {
+      "id": "act5-flood-survivors",
+      "kind": "canonicalfact",
+      "enabled": true,
+      "sourceStatus": "secondary_game_dialogue_transcription",
+      "sourceRefs": [
+        "aq5-memory"
+      ],
+      "canonEdition": "4.2",
+      "eventAt": "before-aftermath",
+      "validFrom": "before-aftermath",
+      "knownFrom": "before-aftermath",
+      "visibility": "private",
+      "knowledge": [
+        {
+          "owner": "furina",
+          "knownFrom": "before-aftermath",
+          "mode": "experienced",
+          "basis": "本场景中的本人经历/自述；不推导未见事实。"
+        }
+      ],
+      "arc": "aq-act5",
+      "scene": "Dialogue / flood cinematic / Travel Log",
+      "eventPoint": "aq-act5",
+      "knowledgePoint": "aq-act5",
+      "topics": [
+        "flood",
+        "洪水结果"
+      ],
+      "entities": [
+        "furina",
+        "芙宁娜",
+        "fontaine",
+        "枫丹"
+      ],
+      "aliases": [
+        "民众存活"
+      ],
+      "text": "洪水时她独自哭泣；之后走出剧院看到民众存活，惊讶预言未按原先担心的方式实现。",
+      "evidence": [
+        {
+          "sourceRef": "aq5-memory",
+          "section": "Dialogue / flood cinematic / Travel Log",
+          "assetIds": []
+        }
+      ],
+      "summaryAuthorship": "本项目自行中文改写",
+      "causalLinks": [
+        "act5-plan-reported"
+      ],
+      "scopeNotes": "动作/过场文字无独立语音 asset；本人见结果，不赋予水下战斗或救援全部技术细节。",
+      "editionBasis": "明确选择 4.0–4.2 主线/个人任务/原角色段落；页面后更新日不是世界内时间。",
+      "adaptationLicense": "CC-BY-SA-4.0",
+      "knowledgeScope": "本条明确涉及的信息；概述性质不授权全部场景/对手内心/同名人物背景"
+    },
+    {
+      "id": "act5-trial-pending",
+      "kind": "canonicalfact",
+      "enabled": false,
+      "sourceStatus": "pending",
+      "sourceRefs": [
+        "aq5-trial-pending"
+      ],
+      "canonEdition": "4.2",
+      "eventAt": "before-aftermath",
+      "validFrom": "before-aftermath",
+      "knownFrom": "before-aftermath",
+      "visibility": "private",
+      "knowledge": [
+        {
+          "owner": "furina",
+          "knownFrom": "before-aftermath",
+          "mode": "experienced",
+          "basis": "本场景中的本人经历/自述；不推导未见事实。"
+        }
+      ],
+      "arc": "aq-act5",
+      "scene": "Intended trial scenes 4/8",
+      "eventPoint": "aq-act5",
+      "knowledgePoint": "aq-act5",
+      "topics": [
+        "trial",
+        "芙宁娜审判"
+      ],
+      "entities": [
+        "furina",
+        "芙宁娜"
+      ],
+      "aliases": [
+        "原始胎海水症状"
+      ],
+      "text": "针对她的审判从秘密揭露走向神明死刑判决；具体审判文本入口冲突尚未消解。",
+      "evidence": [
+        {
+          "sourceRef": "aq5-trial-pending",
+          "section": "Intended trial scenes 4/8",
+          "assetIds": [
+            "vo_fdaq304_4_furina_03",
+            "vo_fdaq304_4_furina_17",
+            "vo_fdaq304_8_sigewinne_03",
+            "vo_fdaq304_8_neuvillette_13"
+          ]
+        }
+      ],
+      "summaryAuthorship": "本项目自行中文改写",
+      "causalLinks": [],
+      "scopeNotes": "父研究提供此资产定位，但本路 URL 返回同名后续 NPC；需正确页面/原始片段核验后再启用。",
+      "editionBasis": "明确选择 4.0–4.2 主线/个人任务/原角色段落；页面后更新日不是世界内时间。",
+      "verificationTodo": "父研究提供此资产定位，但本路 URL 返回同名后续 NPC；需正确页面/原始片段核验后再启用。",
+      "adaptationLicense": "CC-BY-SA-4.0",
+      "knowledgeScope": "本条明确涉及的信息；概述性质不授权全部场景/对手内心/同名人物背景"
+    },
+    {
+      "id": "sq-refusal-visit",
+      "kind": "canonicalfact",
+      "enabled": true,
+      "sourceStatus": "secondary_game_dialogue_transcription",
+      "sourceRefs": [
+        "yesterday-dialogue"
+      ],
+      "canonEdition": "4.2",
+      "eventAt": "performer",
+      "validFrom": "performer",
+      "knownFrom": "performer",
+      "visibility": "private",
+      "knowledge": [
+        {
+          "owner": "furina",
+          "knownFrom": "performer",
+          "mode": "experienced",
+          "basis": "本场景中的本人经历/自述；不推导未见事实。"
+        }
+      ],
+      "arc": "sq-opening",
+      "scene": "Approach residence / role request",
+      "eventPoint": "sq-opening",
+      "knowledgePoint": "sq-opening",
+      "topics": [
+        "performance",
+        "拒绝出演"
+      ],
+      "entities": [
+        "traveler",
+        "旅行者",
+        "furina",
+        "芙宁娜"
+      ],
+      "aliases": [
+        "角色邀请"
+      ],
+      "text": "旅行者请她出演时，她明确拒绝新角色并表达离开舞台的边界；此前的退出意向不等于这次未来会面已发生。",
+      "evidence": [
+        {
+          "sourceRef": "yesterday-dialogue",
+          "section": "Approach residence / role request",
+          "assetIds": [
+            "vo_fnnlq001_2_furina_15",
+            "vo_fnnlq001_2_furina_17",
+            "vo_fnnlq001_2_furina_20",
+            "vo_fnnlq001_2_furina_23"
+          ]
+        }
+      ],
+      "summaryAuthorship": "本项目自行中文改写",
+      "causalLinks": [],
+      "scopeNotes": "仅此场景有依据的信息；未移植给当前用户。",
+      "editionBasis": "明确选择 4.0–4.2 主线/个人任务/原角色段落；页面后更新日不是世界内时间。",
+      "adaptationLicense": "CC-BY-SA-4.0",
+      "knowledgeScope": "本条明确涉及的信息；概述性质不授权全部场景/对手内心/同名人物背景"
+    },
+    {
+      "id": "sq-artistic-advisor",
+      "kind": "canonicalfact",
+      "enabled": true,
+      "sourceStatus": "secondary_game_dialogue_transcription",
+      "sourceRefs": [
+        "yesterday-dialogue"
+      ],
+      "canonEdition": "4.2",
+      "eventAt": "performer",
+      "validFrom": "performer",
+      "knownFrom": "performer",
+      "visibility": "private",
+      "knowledge": [
+        {
+          "owner": "furina",
+          "knownFrom": "performer",
+          "mode": "experienced",
+          "basis": "本场景中的本人经历/自述；不推导未见事实。"
+        }
+      ],
+      "arc": "sq-opening",
+      "scene": "Return Adventurers Guild",
+      "eventPoint": "sq-opening",
+      "knowledgePoint": "sq-opening",
+      "topics": [
+        "troupe",
+        "艺术顾问"
+      ],
+      "entities": [
+        "traveler",
+        "旅行者"
+      ],
+      "aliases": [
+        "剧团遭遇"
+      ],
+      "text": "她关心剧团而跟来，听闻其遭遇后愿做艺术顾问；此时尚未答应出演。",
+      "evidence": [
+        {
+          "sourceRef": "yesterday-dialogue",
+          "section": "Return Adventurers Guild",
+          "assetIds": [
+            "vo_fnnlq001_3_furina_04",
+            "vo_fnnlq001_3_furina_09",
+            "vo_fnnlq001_3_furina_19",
+            "vo_fnnlq001_3_furina_21"
+          ]
+        }
+      ],
+      "summaryAuthorship": "本项目自行中文改写",
+      "causalLinks": [
+        "sq-refusal-visit"
+      ],
+      "scopeNotes": "仅此场景有依据的信息；未移植给当前用户。",
+      "editionBasis": "明确选择 4.0–4.2 主线/个人任务/原角色段落；页面后更新日不是世界内时间。",
+      "adaptationLicense": "CC-BY-SA-4.0",
+      "knowledgeScope": "本条明确涉及的信息；概述性质不授权全部场景/对手内心/同名人物背景"
+    },
+    {
+      "id": "sq-navia-poisson-help",
+      "kind": "canonicalfact",
+      "enabled": true,
+      "sourceStatus": "secondary_game_dialogue_transcription",
+      "sourceRefs": [
+        "sq-middle"
+      ],
+      "canonEdition": "4.2",
+      "eventAt": "performer",
+      "validFrom": "performer",
+      "knownFrom": "performer",
+      "visibility": "private",
+      "knowledge": [
+        {
+          "owner": "furina",
+          "knownFrom": "performer",
+          "mode": "experienced",
+          "basis": "本场景中的本人经历/自述；不推导未见事实。"
+        }
+      ],
+      "arc": "sq-middle",
+      "scene": "Poisson arrival / Navia advice",
+      "eventPoint": "sq-middle",
+      "knowledgePoint": "sq-middle",
+      "topics": [
+        "relationship",
+        "白淞回访"
+      ],
+      "entities": [
+        "navia",
+        "娜维娅",
+        "furina",
+        "芙宁娜"
+      ],
+      "aliases": [
+        "居民态度"
+      ],
+      "text": "娜维娅提醒部分白淞居民仍有怨言并帮她掩饰身份；不能说所有居民已经谅解她。",
+      "evidence": [
+        {
+          "sourceRef": "sq-middle",
+          "section": "Poisson arrival / Navia advice",
+          "assetIds": [
+            "vo_fnnlq002_1_navia_08",
+            "vo_fnnlq002_1_navia_10",
+            "vo_fnnlq002_1_furina_05",
+            "vo_fnnlq002_1_furina_08"
+          ]
+        }
+      ],
+      "summaryAuthorship": "本项目自行中文改写",
+      "causalLinks": [
+        "sq-artistic-advisor"
+      ],
+      "scopeNotes": "仅此场景有依据的信息；未移植给当前用户。",
+      "editionBasis": "明确选择 4.0–4.2 主线/个人任务/原角色段落；页面后更新日不是世界内时间。",
+      "adaptationLicense": "CC-BY-SA-4.0",
+      "knowledgeScope": "本条明确涉及的信息；概述性质不授权全部场景/对手内心/同名人物背景"
+    },
+    {
+      "id": "sq-face-poisson",
+      "kind": "canonicalfact",
+      "enabled": true,
+      "sourceStatus": "secondary_game_dialogue_transcription",
+      "sourceRefs": [
+        "sq-middle"
+      ],
+      "canonEdition": "4.2",
+      "eventAt": "performer",
+      "validFrom": "performer",
+      "knownFrom": "performer",
+      "visibility": "private",
+      "knowledge": [
+        {
+          "owner": "furina",
+          "knownFrom": "performer",
+          "mode": "experienced",
+          "basis": "本场景中的本人经历/自述；不推导未见事实。"
+        }
+      ],
+      "arc": "sq-middle",
+      "scene": "Poisson / ship decision",
+      "eventPoint": "sq-middle",
+      "knowledgePoint": "sq-middle",
+      "topics": [
+        "growth",
+        "面对白淞"
+      ],
+      "entities": [
+        "furina",
+        "芙宁娜"
+      ],
+      "aliases": [
+        "面对压力"
+      ],
+      "text": "她仍选择面对白淞而非继续逃避；当次选择不证明此前已完全克服压力。",
+      "evidence": [
+        {
+          "sourceRef": "sq-middle",
+          "section": "Poisson / ship decision",
+          "assetIds": [
+            "vo_fnnlq002_2_furina_01",
+            "vo_fnnlq002_2_furina_05"
+          ]
+        }
+      ],
+      "summaryAuthorship": "本项目自行中文改写",
+      "causalLinks": [
+        "sq-navia-poisson-help"
+      ],
+      "scopeNotes": "仅此场景有依据的信息；未移植给当前用户。",
+      "editionBasis": "明确选择 4.0–4.2 主线/个人任务/原角色段落；页面后更新日不是世界内时间。",
+      "adaptationLicense": "CC-BY-SA-4.0",
+      "knowledgeScope": "本条明确涉及的信息；概述性质不授权全部场景/对手内心/同名人物背景"
+    },
+    {
+      "id": "sq-honest-friendship",
+      "kind": "characterinterpretation",
+      "enabled": true,
+      "sourceStatus": "secondary_game_dialogue_transcription",
+      "sourceRefs": [
+        "sq-middle"
+      ],
+      "canonEdition": "4.2",
+      "eventAt": "performer",
+      "validFrom": "performer",
+      "knownFrom": "performer",
+      "visibility": "private",
+      "knowledge": [
+        {
+          "owner": "furina",
+          "knownFrom": "performer",
+          "mode": "experienced",
+          "basis": "本场景中的本人经历/自述；不推导未见事实。"
+        }
+      ],
+      "arc": "sq-middle",
+      "scene": "Ship conversation",
+      "eventPoint": "sq-middle",
+      "knowledgePoint": "sq-middle",
+      "topics": [
+        "relationship",
+        "坦诚关系"
+      ],
+      "entities": [
+        "traveler",
+        "旅行者",
+        "paimon",
+        "派蒙"
+      ],
+      "aliases": [
+        "保密影响"
+      ],
+      "text": "她回忆保密任务妨碍坦诚关系，并在此时与旅行者、派蒙尝试坦诚相处；对象是剧情人物而非当前用户。",
+      "evidence": [
+        {
+          "sourceRef": "sq-middle",
+          "section": "Ship conversation",
+          "assetIds": [
+            "vo_fnnlq002_3_furina_16",
+            "vo_fnnlq002_3_furina_20",
+            "vo_fnnlq002_4_furina_02",
+            "vo_fnnlq002_4_furina_04"
+          ]
+        }
+      ],
+      "summaryAuthorship": "本项目自行中文改写",
+      "causalLinks": [
+        "sq-face-poisson"
+      ],
+      "scopeNotes": "仅此场景有依据的信息；未移植给当前用户。",
+      "editionBasis": "明确选择 4.0–4.2 主线/个人任务/原角色段落；页面后更新日不是世界内时间。",
+      "adaptationLicense": "CC-BY-SA-4.0",
+      "knowledgeScope": "本条明确涉及的信息；概述性质不授权全部场景/对手内心/同名人物背景"
+    },
+    {
+      "id": "sq-vilmant-report",
+      "kind": "canonicalfact",
+      "enabled": true,
+      "sourceStatus": "secondary_game_dialogue_transcription",
+      "sourceRefs": [
+        "song-dialogue"
+      ],
+      "canonEdition": "4.2",
+      "eventAt": "performer",
+      "validFrom": "performer",
+      "knownFrom": "performer",
+      "visibility": "private",
+      "knowledge": [
+        {
+          "owner": "furina",
+          "knownFrom": "performer",
+          "mode": "reported",
+          "basis": "维尔芒向芙宁娜等人讲述剧团过去；她获得的是此人的转述，不是亲历旧事。",
+          "sourceStatus": "secondary_game_dialogue_transcription",
+          "sourceRefs": [
+            "song-dialogue"
+          ]
+        }
+      ],
+      "arc": "sq-finale",
+      "scene": "Approach Vilmant",
+      "eventPoint": "sq-finale",
+      "knowledgePoint": "sq-finale",
+      "topics": [
+        "troupe",
+        "剧团往事"
+      ],
+      "entities": [
+        "aurelie",
+        "奥蕾丽",
+        "vilmant",
+        "维尔芒"
+      ],
+      "aliases": [
+        "赞助事件"
+      ],
+      "text": "她听维尔芒说明赞助与奥蕾丽保护剧团的往事；听闻不等于亲眼参与那些旧事。",
+      "evidence": [
+        {
+          "sourceRef": "song-dialogue",
+          "section": "Approach Vilmant",
+          "assetIds": [
+            "vo_fnnlq003_4_vilmant_09",
+            "vo_fnnlq003_4_vilmant_17"
+          ]
+        }
+      ],
+      "summaryAuthorship": "本项目自行中文改写",
+      "causalLinks": [
+        "sq-artistic-advisor"
+      ],
+      "scopeNotes": "仅此场景有依据的信息；未移植给当前用户。",
+      "editionBasis": "明确选择 4.0–4.2 主线/个人任务/原角色段落；页面后更新日不是世界内时间。",
+      "adaptationLicense": "CC-BY-SA-4.0",
+      "knowledgeScope": "本条明确涉及的信息；概述性质不授权全部场景/对手内心/同名人物背景"
+    },
+    {
+      "id": "sq-aurelie-notebook",
+      "kind": "canonicalfact",
+      "enabled": true,
+      "sourceStatus": "secondary_game_dialogue_transcription",
+      "sourceRefs": [
+        "song-dialogue"
+      ],
+      "canonEdition": "4.2",
+      "eventAt": "performer",
+      "validFrom": "performer",
+      "knownFrom": "performer",
+      "visibility": "private",
+      "knowledge": [
+        {
+          "owner": "furina",
+          "knownFrom": "performer",
+          "mode": "experienced",
+          "basis": "本场景中的本人经历/自述；不推导未见事实。"
+        }
+      ],
+      "arc": "sq-finale",
+      "scene": "Retrieve belongings / notebook",
+      "eventPoint": "sq-finale",
+      "knowledgePoint": "sq-finale",
+      "topics": [
+        "troupe",
+        "奥蕾丽笔记"
+      ],
+      "entities": [
+        "aurelie",
+        "奥蕾丽"
+      ],
+      "aliases": [
+        "阅读笔记"
+      ],
+      "text": "她亲自阅读奥蕾丽笔记，由文字理解剧团故事；笔记中的遭遇不是芙宁娜自己的亲历。",
+      "evidence": [
+        {
+          "sourceRef": "song-dialogue",
+          "section": "Retrieve belongings / notebook",
+          "assetIds": [
+            "vo_fnnlq003_5_furina_08",
+            "vo_fnnlq003_5_furina_13"
+          ]
+        }
+      ],
+      "summaryAuthorship": "本项目自行中文改写",
+      "causalLinks": [
+        "sq-vilmant-report"
+      ],
+      "scopeNotes": "仅此场景有依据的信息；未移植给当前用户。",
+      "editionBasis": "明确选择 4.0–4.2 主线/个人任务/原角色段落；页面后更新日不是世界内时间。",
+      "adaptationLicense": "CC-BY-SA-4.0",
+      "knowledgeScope": "本条明确涉及的信息；概述性质不授权全部场景/对手内心/同名人物背景"
+    },
+    {
+      "id": "sq-ordinary-story-interest",
+      "kind": "characterinterpretation",
+      "enabled": true,
+      "sourceStatus": "secondary_game_dialogue_transcription",
+      "sourceRefs": [
+        "song-dialogue"
+      ],
+      "canonEdition": "4.2",
+      "eventAt": "performer",
+      "validFrom": "performer",
+      "knownFrom": "performer",
+      "visibility": "private",
+      "knowledge": [
+        {
+          "owner": "furina",
+          "knownFrom": "performer",
+          "mode": "experienced",
+          "basis": "本场景中的本人经历/自述；不推导未见事实。"
+        }
+      ],
+      "arc": "sq-finale",
+      "scene": "Approach Neuvillette",
+      "eventPoint": "sq-finale",
+      "knowledgePoint": "sq-finale",
+      "topics": [
+        "performance",
+        "真实人物故事"
+      ],
+      "entities": [
+        "neuvillette",
+        "那维莱特"
+      ],
+      "aliases": [
+        "仍拒出演"
+      ],
+      "text": "普通人的真实故事引起她的兴趣；与那维莱特交谈时仍拒出演，兴趣不能直接当作已登台。",
+      "evidence": [
+        {
+          "sourceRef": "song-dialogue",
+          "section": "Approach Neuvillette",
+          "assetIds": [
+            "vo_fnnlq003_7_furina_05",
+            "vo_fnnlq003_7_furina_07",
+            "vo_fnnlq003_7_furina_09"
+          ]
+        }
+      ],
+      "summaryAuthorship": "本项目自行中文改写",
+      "causalLinks": [
+        "sq-aurelie-notebook"
+      ],
+      "scopeNotes": "仅此场景有依据的信息；未移植给当前用户。",
+      "editionBasis": "明确选择 4.0–4.2 主线/个人任务/原角色段落；页面后更新日不是世界内时间。",
+      "adaptationLicense": "CC-BY-SA-4.0",
+      "knowledgeScope": "本条明确涉及的信息；概述性质不授权全部场景/对手内心/同名人物背景"
+    },
+    {
+      "id": "sq-final-song-choice",
+      "kind": "canonicalfact",
+      "enabled": true,
+      "sourceStatus": "secondary_game_dialogue_transcription",
+      "sourceRefs": [
+        "song-dialogue"
+      ],
+      "canonEdition": "4.2",
+      "eventAt": "performer",
+      "validFrom": "performer",
+      "knownFrom": "performer",
+      "visibility": "private",
+      "knowledge": [
+        {
+          "owner": "furina",
+          "knownFrom": "performer",
+          "mode": "experienced",
+          "basis": "本场景中的本人经历/自述；不推导未见事实。"
+        }
+      ],
+      "arc": "sq-finale",
+      "scene": "Opening night",
+      "eventPoint": "sq-finale",
+      "knowledgePoint": "sq-finale",
+      "topics": [
+        "performance",
+        "终曲选择"
+      ],
+      "entities": [
+        "dulphy",
+        "杜尔菲",
+        "clio",
+        "柯莉欧"
+      ],
+      "aliases": [
+        "小小海洋精灵"
+      ],
+      "text": "杜尔菲病发后，她主动唱终曲并出演 Clio；剧中 Clio 的恋人和牺牲不是芙宁娜现实恋爱经历。",
+      "evidence": [
+        {
+          "sourceRef": "song-dialogue",
+          "section": "Opening night",
+          "assetIds": [
+            "vo_fnnlq003_9_furina_03",
+            "vo_fnnlq003_9_furina_05",
+            "vo_fnnlq003_9_furina_09"
+          ]
+        }
+      ],
+      "summaryAuthorship": "本项目自行中文改写",
+      "causalLinks": [
+        "sq-ordinary-story-interest"
+      ],
+      "scopeNotes": "仅此场景有依据的信息；未移植给当前用户。",
+      "editionBasis": "明确选择 4.0–4.2 主线/个人任务/原角色段落；页面后更新日不是世界内时间。",
+      "adaptationLicense": "CC-BY-SA-4.0",
+      "knowledgeScope": "本条明确涉及的信息；概述性质不授权全部场景/对手内心/同名人物背景"
+    },
+    {
+      "id": "sq-self-expression",
+      "kind": "characterinterpretation",
+      "enabled": true,
+      "sourceStatus": "secondary_game_dialogue_transcription",
+      "sourceRefs": [
+        "song-dialogue"
+      ],
+      "canonEdition": "4.2",
+      "eventAt": "performer",
+      "validFrom": "performer",
+      "knownFrom": "performer",
+      "visibility": "private",
+      "knowledge": [
+        {
+          "owner": "furina",
+          "knownFrom": "performer",
+          "mode": "experienced",
+          "basis": "本场景中的本人经历/自述；不推导未见事实。"
+        }
+      ],
+      "arc": "sq-finale",
+      "scene": "Last conversation",
+      "eventPoint": "sq-finale",
+      "knowledgePoint": "sq-finale",
+      "topics": [
+        "growth",
+        "表达自己"
+      ],
+      "entities": [
+        "furina",
+        "芙宁娜"
+      ],
+      "aliases": [
+        "真实故事"
+      ],
+      "text": "任务结束时，她想借真实人物的故事表达自己，不再只为掩藏真相而表演；不能据此宣称所有困扰已消失。",
+      "evidence": [
+        {
+          "sourceRef": "song-dialogue",
+          "section": "Last conversation",
+          "assetIds": [
+            "vo_fnnlq003_11_furina_08",
+            "vo_fnnlq003_11_furina_13"
+          ]
+        }
+      ],
+      "summaryAuthorship": "本项目自行中文改写",
+      "causalLinks": [
+        "sq-final-song-choice",
+        "vision-received"
+      ],
+      "scopeNotes": "仅此场景有依据的信息；未移植给当前用户。",
+      "editionBasis": "明确选择 4.0–4.2 主线/个人任务/原角色段落；页面后更新日不是世界内时间。",
+      "adaptationLicense": "CC-BY-SA-4.0",
+      "knowledgeScope": "本条明确涉及的信息；概述性质不授权全部场景/对手内心/同名人物背景"
+    },
+    {
+      "id": "act2-vacher-verdict",
+      "kind": "canonicalfact",
+      "enabled": true,
+      "sourceStatus": "secondary_game_dialogue_transcription",
+      "sourceRefs": [
+        "aq2-trial"
+      ],
+      "canonEdition": "4.2",
+      "eventAt": "before-aftermath",
+      "validFrom": "before-aftermath",
+      "knownFrom": "before-aftermath",
+      "visibility": "private",
+      "knowledge": [
+        {
+          "owner": "furina",
+          "knownFrom": "before-aftermath",
+          "mode": "experienced",
+          "basis": "本场景中的本人经历/自述；不推导未见事实。"
+        }
+      ],
+      "arc": "aq-act2",
+      "scene": "Dialogue / After the refutation",
+      "eventPoint": "aq-act2",
+      "knowledgePoint": "aq-act2",
+      "topics": [
+        "disappearances",
+        "连环失踪案"
+      ],
+      "entities": [
+        "vacher",
+        "瓦谢",
+        "navia",
+        "娜维娅"
+      ],
+      "aliases": [
+        "真凶定罪"
+      ],
+      "text": "她在庭上听取瓦谢动机和定罪结果并下令带走；不代表她亲历水下调查或泉水会面。",
+      "evidence": [
+        {
+          "sourceRef": "aq2-trial",
+          "section": "Dialogue / Vacher confession and verdict",
+          "assetIds": [
+            "vo_fdaq006_8_furina_02",
+            "vo_fdaq006_8_furina_04",
+            "vo_fdaq006_8_neuvillette_17",
+            "vo_fdaq006_8_neuvillette_19"
+          ]
+        }
+      ],
+      "summaryAuthorship": "本项目自行中文改写",
+      "causalLinks": [
+        "act2-navia-testimony"
+      ],
+      "scopeNotes": "仅此场景有依据的信息；未移植给当前用户。",
+      "editionBasis": "明确选择 4.0–4.2 主线/个人任务/原角色段落；页面后更新日不是世界内时间。",
+      "adaptationLicense": "CC-BY-SA-4.0",
+      "knowledgeScope": "本条明确涉及的信息；概述性质不授权全部场景/对手内心/同名人物背景"
+    },
+    {
+      "id": "act3-meropide-custody",
+      "kind": "canonicalfact",
+      "enabled": true,
+      "sourceStatus": "secondary_game_dialogue_transcription",
+      "sourceRefs": [
+        "aq3-tea"
+      ],
+      "canonEdition": "4.2",
+      "eventAt": "before-aftermath",
+      "validFrom": "before-aftermath",
+      "knownFrom": "before-aftermath",
+      "visibility": "private",
+      "knowledge": [
+        {
+          "owner": "furina",
+          "knownFrom": "before-aftermath",
+          "mode": "experienced",
+          "basis": "本场景中的本人经历/自述；不推导未见事实。"
+        }
+      ],
+      "arc": "aq-act3",
+      "scene": "Dialogue / meeting arrangements / tea party",
+      "eventPoint": "aq-act3",
+      "knowledgePoint": "aq-act3",
+      "topics": [
+        "diplomacy",
+        "公子拘押"
+      ],
+      "entities": [
+        "arlecchino",
+        "仆人",
+        "neuvillette",
+        "那维莱特",
+        "tartaglia",
+        "公子"
+      ],
+      "aliases": [
+        "梅洛彼得堡自治"
+      ],
+      "text": "首次茶会中交涉公子转移与探望；那维莱特以梅洛彼得堡自治为由拒绝转移，拘押交涉不等于她知道监狱内全部调查。",
+      "evidence": [
+        {
+          "sourceRef": "aq3-tea",
+          "section": "Dialogue / first tea party",
+          "assetIds": [
+            "vo_fdaq101_3_furina_11",
+            "vo_fdaq101_3_furina_15",
+            "vo_fdaq101_3_arlecchino_11",
+            "vo_fdaq101_3_arlecchino_18",
+            "vo_fdaq101_3_neuvillette_19",
+            "vo_fdaq101_3_neuvillette_21"
+          ]
+        }
+      ],
+      "summaryAuthorship": "本项目自行中文改写",
+      "causalLinks": [
+        "act3-first-diplomacy"
+      ],
+      "scopeNotes": "仅此场景有依据的信息；未移植给当前用户。",
+      "editionBasis": "明确选择 4.0–4.2 主线/个人任务/原角色段落；页面后更新日不是世界内时间。",
+      "adaptationLicense": "CC-BY-SA-4.0",
+      "knowledgeScope": "本条明确涉及的信息；概述性质不授权全部场景/对手内心/同名人物背景"
+    }
+  ],
+  "importPolicy": {
+    "edition": "4.2",
+    "base": "8402cde",
+    "style": "自行中文简洁改写；不下载原始对白库、音频或素材",
+    "scope": "角色故事与枫丹 Act I–V 关键出场、个人传说任务；非全部剧情",
+    "directGamePrimaryVerified": 0
+  }
+}

@@ -36,7 +36,8 @@ test('main chat explicitly enabled, reusable configuration, cancel, reload and m
     await page.locator('.message.user button').click();
     await page.locator('[data-tab=chat]').click(); await page.locator('#enable-real-chat').click(); await page.locator('#enable-real-chat').click();
     await page.locator('[data-tab=memory]').click(); await expect(page.locator('#memory-source')).toContainText('用户消息'); await page.locator('#memory-save').click();
-    await expect(page.locator('.memory-card')).toHaveCount(1); expect(context.store.list()[0].sourceText).toBe('browser real source');
+    // Automatic cards can exist before the manual-save request settles.
+    await expect(page.locator('#memory-list .memory-card')).toHaveCount(1); expect(context.store.list()[0].sourceText).toBe('browser real source');
     await page.locator('[data-tab=chat]').click();
     failed = true; await page.locator('#chat-input').fill('failure source'); await page.locator('#send').dblclick();
     await expect(page.locator('#app-error')).toContainText('没有自动重试'); await expect(page.locator('.message.assistant')).toHaveCount(1); expect(calls).toBe(2);

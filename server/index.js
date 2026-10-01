@@ -18,6 +18,7 @@ import { WindowsCredentials } from './credentials.js';
 import { Turns } from './turns.js';
 import { InteractionMemoryStore, containsPrivateMaterial, domain } from './interaction-memory.js';
 import { mutateInteractionSource, syncConfirmedLineage } from './interaction-memory-integration.js';
+import { createAsrHandler } from './asr.js';
 
 const PROJECT = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.bmp': 'image/bmp', '.pmx': 'application/octet-stream', '.svg': 'image/svg+xml' };
@@ -44,7 +45,7 @@ async function serveFile(res, root, relative) {
   createReadStream(canonical).pipe(res);
 }
 
-export async function createApp({ projectRoot = PROJECT, dataDir = join(PROJECT, 'data'), dev = false, fetchImpl = fetch, localTtsImpl, windowsSpeechImpl, credentials = new WindowsCredentials() } = {}) {
+export async function createApp({ projectRoot = PROJECT, dataDir = join(PROJECT, 'data'), dev = false, fetchImpl = fetch, localTtsImpl, windowsSpeechImpl, credentials = new WindowsCredentials(), asrOptions } = {}) {
   const store = new MemoryStore(join(dataDir, 'exo.sqlite'));
   const interaction = new InteractionMemoryStore(null, { database: store.db, confirmedMemoryStore: store });
   const budget = new RemoteBudget(store.db);
@@ -59,6 +60,7 @@ export async function createApp({ projectRoot = PROJECT, dataDir = join(PROJECT,
   const modelNames = ['【芙宁娜】.pmx', '【芙宁娜_荒】.pmx'];
   let chatBusy = false;
   const turns = new Turns();
+  const asr = createAsrHandler({ runtimeRoot: join(projectRoot, '.runtime'), ...asrOptions });
   let vite;
   if (dev) { const { createServer } = await import('vite'); vite = await createServer({ root: projectRoot, server: { middlewareMode: true, hmr: false }, appType: 'spa' }); }
   const app = http.createServer(async (req, res) => {
@@ -79,6 +81,7 @@ export async function createApp({ projectRoot = PROJECT, dataDir = join(PROJECT,
       if (req.headers['sec-fetch-site'] === 'cross-site') return json(res, 403, { error: '跨站请求被拒绝。' });
       const url = new URL(req.url, `http://${host}`);
       const pathname = decodeURIComponent(url.pathname);
+      if (await asr(req, res)) return;
       if (pathname.startsWith('/api/credentials')) {
         if (pathname !== '/api/credentials/deepseek' || url.search) return json(res, 400, { error: '固定凭据入口不接受目标或参数。' });
         // Sensitive reads and mutations require an explicit same-origin app request.
@@ -330,7 +333,7 @@ export async function createApp({ projectRoot = PROJECT, dataDir = join(PROJECT,
       return await serveFile(res, join(projectRoot, 'dist'), pathname === '/' ? 'index.html' : pathname.slice(1));
     } catch (error) { if (!res.headersSent) json(res, error.status || 400, { ...(error.code && { code: error.code }), ...(req.url === '/api/chat' ? { budget: budget.status() } : {}), error: error.message.includes('SQL') ? '本地数据操作失败。' : error.message }); }
   });
-  return { app, store, interaction, budget, async close() { turns.close(); remoteTests.close(); if (app.listening) await new Promise(r => app.close(r)); referenceImports.close(); await vite?.close(); interaction.close(); store.close(); } };
+  return { app, store, interaction, budget, async close() { turns.close(); remoteTests.close(); const closing = app.listening ? new Promise(r => app.close(r)) : null; await asr.dispose(); await closing; referenceImports.close(); await vite?.close(); interaction.close(); store.close(); } };
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {

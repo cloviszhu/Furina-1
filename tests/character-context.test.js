@@ -1,7 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import pack from '../server/data/furina-canon-4.2.v1.json' with { type: 'json' };
-import { createCharacterContextResolver, resolveCharacterContext, CHARACTER_CONTEXT_LIMITS } from '../server/character-context.js';
+import { createCharacterContextResolver, CHARACTER_CONTEXT_LIMITS } from '../server/character-context.js';
+// Preserve the frozen v1 smallpack's compatibility checks; expanded default is audited separately.
+const resolveCharacterContext = createCharacterContextResolver(pack);
 
 // SYNTHETIC mechanics-only evidence. Never an assertion that a game event/source was verified.
 const source = { id: 'synthetic', url: 'https://example.invalid/synthetic-test',
