@@ -1,63 +1,525 @@
 {
   "schemaVersion": 1,
-  "packVersion": "furina-4.2-smallpack-v1",
+  "packVersion": "furina-4.2-smallpack-v2",
   "canonEdition": "4.2",
   "sources": [
-    {"id":"navia-wiki","url":"https://wiki.hoyolab.com/pc/genshin/entry/4576","sourceStatus":"reference-transcript-checked","publisher":"HoYoWiki（HoYoLAB 官方托管）","authorship":"community-or-unverified","checkedAt":"2026-10-01","publication":null,"locator":"Character Relationships > Furina > About Navia: Desserts / Inner Thoughts","evidence":"检索索引返回完整两段英文语音转写；直接页面为动态空壳。并未逐字核对游戏音频或 4.2 不可变快照。"},
-    {"id":"furina-wiki","url":"https://wiki.hoyolab.com/pc/genshin/entry/4376","sourceStatus":"pending","publisher":"HoYoWiki（HoYoLAB 官方托管）","authorship":"community-or-unverified","checkedAt":"2026-10-01","publication":null,"locator":"Lore / Voice-Over","evidence":"直接页面无正文，不能核实关键剧情或将官方域名视为官方作者。"},
-    {"id":"teaser","url":"https://www.youtube.com/watch?v=aau-c8l5z9c","sourceStatus":"pending","publisher":"Genshin Impact","authorship":"official-channel","checkedAt":"2026-10-01","publication":null,"locator":"Character Teaser - Furina: Member of the Cast","evidence":"页面标题可取得，正文/字幕未取得。舞台与选择只作宣传解释待核，不证明具体剧情或角色知情。"},
-    {"id":"story-secondary","url":"https://www.hoyodex.com/wiki/genshin-impact/furina-storyline","sourceStatus":"secondary-only","publisher":"HoYoDex","authorship":"community","checkedAt":"2026-10-01","publication":null,"locator":"Post-Archonhood Life / History","evidence":"二手剧情概述可读取，存在后续 backstory，不作 primary；只提取待验证线索。"},
-    {"id":"profile-secondary","url":"https://genshin-impact.fandom.com/wiki/Furina/Profile","sourceStatus":"pending","publisher":"Fandom","authorship":"community","checkedAt":"2026-10-01","publication":null,"locator":"Character Story / Vision","evidence":"工具返回 402，无法读取，不能记为独立核实。"}
+    {
+      "id": "navia-wiki",
+      "url": "https://wiki.hoyolab.com/pc/genshin/entry/4576",
+      "sourceStatus": "reference-transcript-checked",
+      "publisher": "HoYoWiki（HoYoLAB 官方托管）",
+      "authorship": "community-or-unverified",
+      "checkedAt": "2026-10-01",
+      "publication": null,
+      "locator": "Character Relationships > Furina > About Navia: Desserts / Inner Thoughts",
+      "evidence": "检索索引返回完整两段英文语音转写；直接页面为动态空壳。并未逐字核对游戏音频或 4.2 不可变快照。"
+    },
+    {
+      "id": "furina-wiki",
+      "url": "https://wiki.hoyolab.com/pc/genshin/entry/4376?lang=en-us",
+      "sourceStatus": "official_hosted_game_text",
+      "publisher": "HoYoWiki（HoYoLAB 官方托管）",
+      "authorship": "community-or-unverified",
+      "checkedAt": "2026-10-01",
+      "publication": null,
+      "locator": "Description > Character Story 4/5; Voice-Over > About the Vision",
+      "evidence": "本任务研究员在云浏览器实际打开并读取上述正文；官方托管游戏文本，不是官方作者文章或 direct-game primary。Vision 故事栏仅 ???，不用于获得事件证据。About the Vision 语音解锁要求完成 The Little Oceanid。"
+    },
+    {
+      "id": "teaser",
+      "url": "https://www.youtube.com/watch?v=aau-c8l5z9c",
+      "sourceStatus": "pending",
+      "publisher": "Genshin Impact",
+      "authorship": "official-channel",
+      "checkedAt": "2026-10-01",
+      "publication": null,
+      "locator": "Character Teaser - Furina: Member of the Cast",
+      "evidence": "页面标题可取得，正文/字幕未取得。舞台与选择只作宣传解释待核，不证明具体剧情或角色知情。"
+    },
+    {
+      "id": "story-secondary",
+      "url": "https://www.hoyodex.com/wiki/genshin-impact/furina-storyline",
+      "sourceStatus": "secondary-only",
+      "publisher": "HoYoDex",
+      "authorship": "community",
+      "checkedAt": "2026-10-01",
+      "publication": null,
+      "locator": "Post-Archonhood Life / History",
+      "evidence": "二手剧情概述可读取，存在后续 backstory，不作 primary；只提取待验证线索。"
+    },
+    {
+      "id": "profile-secondary",
+      "url": "https://genshin-impact.fandom.com/wiki/Furina/Profile",
+      "sourceStatus": "pending",
+      "publisher": "Fandom",
+      "authorship": "community",
+      "checkedAt": "2026-10-01",
+      "publication": null,
+      "locator": "Character Story / Vision",
+      "evidence": "工具返回 402，无法读取，不能记为独立核实。"
+    },
+    {
+      "id": "yesterday-dialogue",
+      "url": "https://www.hoyodex.com/wiki/genshin-impact/to-yesterday",
+      "sourceStatus": "secondary_game_dialogue_transcription",
+      "publisher": "HoYoDex",
+      "authorship": "community",
+      "checkedAt": "2026-10-01",
+      "publication": null,
+      "locator": "Approach Furina residence; vo_fnnlq001_2_furina_02/_03/_04/_06/_10",
+      "evidence": "本任务研究员实际读取的游戏对话转写；secondary，不是 direct-game primary，Fandom 镜像不构成独立 primary。"
+    },
+    {
+      "id": "song-dialogue",
+      "url": "https://www.hoyodex.com/wiki/genshin-impact/this-life-just-like-a-light-trickle-of-song",
+      "sourceStatus": "secondary_game_dialogue_transcription",
+      "publisher": "HoYoDex",
+      "authorship": "community",
+      "checkedAt": "2026-10-01",
+      "publication": null,
+      "locator": "Opening night vo_fnnlq003_9_furina_09 / Travel Log; backstage vo_fnnlq003_10_paimon_03 / vo_fnnlq003_10_furina_04",
+      "evidence": "本任务研究员实际读取的游戏对话转写；secondary，不是 direct-game primary，Fandom 镜像不构成独立 primary。"
+    },
+    {
+      "id": "finale-dialogue",
+      "url": "https://www.hoyodex.com/wiki/genshin-impact/finale",
+      "sourceStatus": "secondary_game_dialogue_transcription",
+      "publisher": "HoYoDex",
+      "authorship": "community",
+      "checkedAt": "2026-10-01",
+      "publication": null,
+      "locator": "About Fontaine future; vo_fdaq307_5_neuvillette_12b_2 / _12b_1 / _7",
+      "evidence": "本任务研究员实际读取的游戏对话转写；secondary，不是 direct-game primary，Fandom 镜像不构成独立 primary。"
+    }
   ],
   "records": [
     {
-      "id":"navia-desserts","kind":"canonicalfact","enabled":true,"sourceStatus":"reference-transcript-checked","sourceRefs":["navia-wiki"],"canonEdition":"4.2","eventAt":"aftermath","visibility":"private",
-      "knowledge":[{"owner":"furina","knownFrom":"aftermath","basis":"本人语音评价（转写参考）"}],
-      "topics":["desserts","甜点"],"entities":["navia","娜维娅"],"aliases":["macarons","马卡龙"],
-      "text":"芙宁娜评价娜维娅的马卡龙：欣赏其装饰、口感和甜度。",
-      "timeBasis":"语音没有精确剧情日期；编辑映射为 4.2 aftermath 可用的个人品味，不生成一次具体共同吃甜点事件。",
-      "editionBasis":"有限 4.2 人设参考摘录；未取得不可变 4.2 游戏快照，非 primary-verified。"
+      "id": "navia-desserts",
+      "kind": "canonicalfact",
+      "enabled": true,
+      "sourceStatus": "reference-transcript-checked",
+      "sourceRefs": [
+        "navia-wiki"
+      ],
+      "canonEdition": "4.2",
+      "eventAt": "aftermath",
+      "visibility": "private",
+      "knowledge": [
+        {
+          "owner": "furina",
+          "knownFrom": "aftermath",
+          "basis": "本人语音评价（转写参考）",
+          "mode": "self-report"
+        }
+      ],
+      "topics": [
+        "desserts",
+        "甜点"
+      ],
+      "entities": [
+        "navia",
+        "娜维娅"
+      ],
+      "aliases": [
+        "macarons",
+        "马卡龙"
+      ],
+      "text": "芙宁娜评价娜维娅的马卡龙：欣赏其装饰、口感和甜度。",
+      "timeBasis": "语音没有精确剧情日期；编辑映射为 4.2 aftermath 可用的个人品味，不生成一次具体共同吃甜点事件。",
+      "editionBasis": "有限 4.2 人设参考摘录；未取得不可变 4.2 游戏快照，非 primary-verified。"
     },
     {
-      "id":"navia-desserts-feeling","kind":"characterinterpretation","enabled":true,"sourceStatus":"reference-transcript-checked","sourceRefs":["navia-wiki"],"canonEdition":"4.2","eventAt":"aftermath","visibility":"private",
-      "knowledge":[{"owner":"furina","knownFrom":"aftermath","basis":"本人语音感受（转写参考）"}],
-      "topics":["desserts","甜点"],"entities":["navia","娜维娅"],"aliases":["jealous","嫉妒"],
-      "text":"谈到娜维娅的甜点手艺时，芙宁娜表达了些许羡慕，也有向她请教的想法；想法不等于已经请教。",
-      "timeBasis":"没有精确语音日期；不把未来意向变成已发生事件。",
-      "editionBasis":"有限 4.2 参考，未核对旧版快照。"
+      "id": "navia-desserts-feeling",
+      "kind": "characterinterpretation",
+      "enabled": true,
+      "sourceStatus": "reference-transcript-checked",
+      "sourceRefs": [
+        "navia-wiki"
+      ],
+      "canonEdition": "4.2",
+      "eventAt": "aftermath",
+      "visibility": "private",
+      "knowledge": [
+        {
+          "owner": "furina",
+          "knownFrom": "aftermath",
+          "basis": "本人语音感受（转写参考）",
+          "mode": "self-report"
+        }
+      ],
+      "topics": [
+        "desserts",
+        "甜点"
+      ],
+      "entities": [
+        "navia",
+        "娜维娅"
+      ],
+      "aliases": [
+        "jealous",
+        "嫉妒"
+      ],
+      "text": "谈到娜维娅的甜点手艺时，芙宁娜表达了些许羡慕，也有向她请教的想法；想法不等于已经请教。",
+      "timeBasis": "没有精确语音日期；不把未来意向变成已发生事件。",
+      "editionBasis": "有限 4.2 参考，未核对旧版快照。"
     },
     {
-      "id":"callas-duel-witness","kind":"canonicalfact","enabled":true,"sourceStatus":"reference-transcript-checked","sourceRefs":["navia-wiki"],"canonEdition":"4.2","eventAt":"before-aftermath","visibility":"public",
-      "knowledge":[{"owner":"furina","knownFrom":"before-aftermath","basis":"本人语音说明曾目睹决斗（转写参考）"}],
-      "topics":["duel","决斗"],"entities":["callas","卡雷斯","clorinde","克洛琳德"],"aliases":["about navia inner thoughts"],
-      "text":"芙宁娜在语音中说自己目睹过卡雷斯与克洛琳德的决斗。",
-      "timeBasis":"语音明确为已目睹的过去事件；不推导她知道双方全部内心或隐秘动机。",
-      "editionBasis":"有限 4.2 参考，未核对旧版快照。"
+      "id": "callas-duel-witness",
+      "kind": "canonicalfact",
+      "enabled": true,
+      "sourceStatus": "reference-transcript-checked",
+      "sourceRefs": [
+        "navia-wiki"
+      ],
+      "canonEdition": "4.2",
+      "eventAt": "before-aftermath",
+      "visibility": "public",
+      "knowledge": [
+        {
+          "owner": "furina",
+          "knownFrom": "before-aftermath",
+          "basis": "本人语音说明曾目睹决斗（转写参考）",
+          "mode": "eyewitness"
+        }
+      ],
+      "topics": [
+        "duel",
+        "决斗"
+      ],
+      "entities": [
+        "callas",
+        "卡雷斯",
+        "clorinde",
+        "克洛琳德"
+      ],
+      "aliases": [
+        "about navia inner thoughts"
+      ],
+      "text": "芙宁娜在语音中说自己目睹过卡雷斯与克洛琳德的决斗。",
+      "timeBasis": "语音明确为已目睹的过去事件；不推导她知道双方全部内心或隐秘动机。",
+      "editionBasis": "有限 4.2 参考，未核对旧版快照。"
     },
     {
-      "id":"teaser-stage-choice","kind":"characterinterpretation","enabled":false,"sourceStatus":"pending","sourceRefs":["teaser"],"canonEdition":"4.2","eventAt":"before-aftermath","visibility":"public",
-      "knowledge":[{"owner":"author","knownFrom":"before-aftermath","basis":"宣传解释；不赋予芙宁娜剧情知情"}],
-      "topics":["stage","舞台"],"entities":["furina","芙宁娜"],"aliases":["choice","选择"],"text":"舞台上的选择与命运可作宣传主题的解释，不能当作具体事件或第一人称经历。","verificationTodo":"取得官方原始字幕/描述；保持 interpretation 和 author perspective。"
+      "id": "teaser-stage-choice",
+      "kind": "characterinterpretation",
+      "enabled": false,
+      "sourceStatus": "pending",
+      "sourceRefs": [
+        "teaser"
+      ],
+      "canonEdition": "4.2",
+      "eventAt": "before-aftermath",
+      "visibility": "public",
+      "knowledge": [
+        {
+          "owner": "author",
+          "knownFrom": "before-aftermath",
+          "basis": "宣传解释；不赋予芙宁娜剧情知情"
+        }
+      ],
+      "topics": [
+        "stage",
+        "舞台"
+      ],
+      "entities": [
+        "furina",
+        "芙宁娜"
+      ],
+      "aliases": [
+        "choice",
+        "选择"
+      ],
+      "text": "舞台上的选择与命运可作宣传主题的解释，不能当作具体事件或第一人称经历。",
+      "verificationTodo": "取得官方原始字幕/描述；保持 interpretation 和 author perspective。"
     },
     {
-      "id":"archon-role-ended","kind":"canonicalfact","enabled":false,"sourceStatus":"pending","sourceRefs":["furina-wiki","story-secondary"],"canonEdition":"4.2","eventAt":"aftermath","visibility":"public",
-      "knowledge":[{"owner":"furina","knownFrom":"aftermath","basis":"待核实本人经历"}],"topics":["identity","身份"],"entities":["furina","芙宁娜"],"aliases":["退休","水神"],"text":"水神角色结束后，芙宁娜开始自己的生活。","verificationTodo":"核对 4.2 主线尾声原始任务文本/官方影像；现有人设不作为新核实。"
+      "id": "archon-role-ended",
+      "kind": "canonicalfact",
+      "enabled": true,
+      "sourceStatus": "official_hosted_game_text",
+      "sourceRefs": [
+        "furina-wiki"
+      ],
+      "canonEdition": "4.2",
+      "eventAt": "aftermath",
+      "visibility": "public",
+      "knowledge": [
+        {
+          "owner": "furina",
+          "knownFrom": "aftermath",
+          "basis": "研究员读取的文本中明确描述其本人经历/获知，限定当前阶段。",
+          "mode": "experienced"
+        }
+      ],
+      "topics": [
+        "identity",
+        "身份"
+      ],
+      "entities": [
+        "furina",
+        "芙宁娜"
+      ],
+      "aliases": [
+        "退休",
+        "水神"
+      ],
+      "text": "枫丹危机结束后，芙宁娜扮演水神的故事结束，她离开了这个角色。",
+      "timeBasis": "Character Story 4/5；主线尾声后，两 timeline 均可用。",
+      "editionBasis": "4.2 任务/角色文本的有界摘录；来源资格如 sourceStatus，非 direct-game primary。"
     },
     {
-      "id":"macaroni-daily-life","kind":"canonicalfact","enabled":false,"sourceStatus":"pending","sourceRefs":["story-secondary","profile-secondary"],"canonEdition":"4.2","eventAt":"aftermath","visibility":"private",
-      "knowledge":[{"owner":"furina","knownFrom":"aftermath","basis":"待核实本人日常"}],"topics":["food","饮食"],"entities":["furina","芙宁娜"],"aliases":["macaroni","通心粉"],"text":"她曾用不同酱汁搭配通心粉作为日常饮食。","verificationTodo":"核对 4.2 传说任务开场对话的游戏原文与时点。"
+      "id": "macaroni-daily-life",
+      "kind": "canonicalfact",
+      "enabled": true,
+      "sourceStatus": "secondary_game_dialogue_transcription",
+      "sourceRefs": [
+        "yesterday-dialogue"
+      ],
+      "canonEdition": "4.2",
+      "eventAt": "aftermath",
+      "visibility": "private",
+      "knowledge": [
+        {
+          "owner": "furina",
+          "knownFrom": "aftermath",
+          "basis": "研究员读取的文本中明确描述其本人经历/获知，限定当前阶段。",
+          "mode": "experienced"
+        }
+      ],
+      "topics": [
+        "food",
+        "饮食"
+      ],
+      "entities": [
+        "furina",
+        "芙宁娜"
+      ],
+      "aliases": [
+        "macaroni",
+        "通心粉"
+      ],
+      "text": "芙宁娜说通心粉是简单家常饮食，搭配不同酱汁；不能据此说它是她最爱的食物。",
+      "timeBasis": "传说任务开场回顾此前日常；_10 同时说明此时尚无神之眼，不将任务末段获得事件前移。",
+      "editionBasis": "4.2 任务/角色文本的有界摘录；来源资格如 sourceStatus，非 direct-game primary。"
     },
     {
-      "id":"clio-performance","kind":"canonicalfact","enabled":false,"sourceStatus":"pending","sourceRefs":["story-secondary"],"canonEdition":"4.2","eventAt":"performer","visibility":"public",
-      "knowledge":[{"owner":"furina","knownFrom":"performer","basis":"待核实亲自出演"}],"topics":["performance","演出"],"entities":["clio","柯莉欧"],"aliases":["小小的海洋精灵","司颂之章"],"text":"芙宁娜代替柯莉欧参与传说任务末段演出。","verificationTodo":"核对 Clio 名字、演员替换与演出原始任务文本；不得提前放入 aftermath。"
+      "id": "clio-performance",
+      "kind": "canonicalfact",
+      "enabled": true,
+      "sourceStatus": "secondary_game_dialogue_transcription",
+      "sourceRefs": [
+        "song-dialogue"
+      ],
+      "canonEdition": "4.2",
+      "eventAt": "performer",
+      "visibility": "public",
+      "knowledge": [
+        {
+          "owner": "furina",
+          "knownFrom": "performer",
+          "basis": "研究员读取的文本中明确描述其本人经历/获知，限定当前阶段。",
+          "mode": "experienced"
+        }
+      ],
+      "topics": [
+        "performance",
+        "演出"
+      ],
+      "entities": [
+        "clio",
+        "柯莉欧"
+      ],
+      "aliases": [
+        "小小的海洋精灵",
+        "司颂之章"
+      ],
+      "text": "芙宁娜在传说任务末段登台出演 Clio 的角色。",
+      "timeBasis": "opening night / Travel Log；eventAt 和 knownFrom 均 performer。",
+      "editionBasis": "4.2 任务/角色文本的有界摘录；来源资格如 sourceStatus，非 direct-game primary。"
     },
     {
-      "id":"vision-received","kind":"canonicalfact","enabled":false,"sourceStatus":"pending","sourceRefs":["story-secondary","profile-secondary"],"canonEdition":"4.2","eventAt":"performer","visibility":"private",
-      "knowledge":[{"owner":"furina","knownFrom":"performer","basis":"待核实本人获得"}],"topics":["vision","神之眼"],"entities":["furina","芙宁娜"],"aliases":["hydro vision","水元素神之眼"],"text":"芙宁娜在传说任务演出后获得水元素神之眼。","verificationTodo":"核对 4.2 原始过场与获得时机；即使核实也不能推导水龙权能或获赠者动机。"
+      "id": "vision-received",
+      "kind": "canonicalfact",
+      "enabled": true,
+      "sourceStatus": "secondary_game_dialogue_transcription",
+      "sourceRefs": [
+        "song-dialogue"
+      ],
+      "canonEdition": "4.2",
+      "eventAt": "performer",
+      "visibility": "private",
+      "knowledge": [
+        {
+          "owner": "furina",
+          "knownFrom": "performer",
+          "basis": "研究员读取的文本中明确描述其本人经历/获知，限定当前阶段。",
+          "mode": "experienced"
+        }
+      ],
+      "topics": [
+        "vision",
+        "神之眼"
+      ],
+      "entities": [
+        "furina",
+        "芙宁娜"
+      ],
+      "aliases": [
+        "hydro vision",
+        "水元素神之眼"
+      ],
+      "text": "演出后后台发现道具已被真正的神之眼替代；芙宁娜本人表示不清楚获得机制。",
+      "timeBasis": "backstage 对话；仅 performer，本人获知不等于知道来源机制。",
+      "editionBasis": "4.2 任务/角色文本的有界摘录；来源资格如 sourceStatus，非 direct-game primary。"
     },
     {
-      "id":"focalors-neuvillette-private","kind":"canonicalfact","enabled":false,"sourceStatus":"pending","sourceRefs":["story-secondary"],"canonEdition":"4.2","eventAt":"before-aftermath","visibility":"private",
-      "knowledge":[{"owner":"focalors","knownFrom":"before-aftermath","basis":"待核实私密谈话参与者"},{"owner":"neuvillette","knownFrom":"before-aftermath","basis":"待核实私密谈话参与者"},{"owner":"author","knownFrom":"before-aftermath","basis":"待核实叙事视角"}],"topics":["prophecy","预言"],"entities":["focalors","芙卡洛斯","neuvillette","那维莱特"],"aliases":["private conversation","私密对话"],"text":"芙卡洛斯与那维莱特私下讨论计划的细节。","verificationTodo":"核对主线原始对话；不可自动添加 furina 为 knowledge owner，也不能把观众看到当作她亲历。"
+      "id": "focalors-neuvillette-private",
+      "kind": "canonicalfact",
+      "enabled": true,
+      "sourceStatus": "secondary_game_dialogue_transcription",
+      "sourceRefs": [
+        "finale-dialogue"
+      ],
+      "canonEdition": "4.2",
+      "eventAt": "before-aftermath",
+      "visibility": "private",
+      "knowledge": [
+        {
+          "owner": "furina",
+          "knownFrom": "aftermath",
+          "mode": "reported",
+          "basis": "Finale 中那维莱特说明已完整如实转述，非亲眼见证。",
+          "sourceStatus": "secondary_game_dialogue_transcription",
+          "sourceRefs": [
+            "finale-dialogue"
+          ]
+        }
+      ],
+      "topics": [
+        "prophecy",
+        "预言"
+      ],
+      "entities": [
+        "focalors",
+        "芙卡洛斯",
+        "neuvillette",
+        "那维莱特"
+      ],
+      "aliases": [
+        "private conversation",
+        "私密对话"
+      ],
+      "text": "芙宁娜可通过那维莱特完整如实的转述获知芙卡洛斯的话；不代表她亲眼参与那场私下谈话。",
+      "timeBasis": "谈话先于 aftermath；Finale 确认此后已完成转述。获知时点为 aftermath，不硬编码永远未知。",
+      "editionBasis": "4.2 任务/角色文本的有界摘录；来源资格如 sourceStatus，非 direct-game primary。"
+    },
+    {
+      "id": "moved-out",
+      "kind": "canonicalfact",
+      "enabled": true,
+      "sourceStatus": "official_hosted_game_text",
+      "sourceRefs": [
+        "furina-wiki"
+      ],
+      "canonEdition": "4.2",
+      "eventAt": "aftermath",
+      "visibility": "private",
+      "knowledge": [
+        {
+          "owner": "furina",
+          "knownFrom": "aftermath",
+          "mode": "experienced",
+          "basis": "自身已发生经历；来源文字明确回顾，未由感受泛化。"
+        }
+      ],
+      "topics": [
+        "residence",
+        "住处"
+      ],
+      "entities": [
+        "furina",
+        "芙宁娜"
+      ],
+      "aliases": [
+        "rental apartment",
+        "出租公寓",
+        "沫芒宫"
+      ],
+      "text": "芙宁娜离开沫芒宫，搬进出租公寓。",
+      "editionBasis": "4.2 角色文本/语音；官方托管游戏文本，非 direct-game primary。",
+      "timeBasis": "Story 5 主线后"
+    },
+    {
+      "id": "earlier-performance-reluctance",
+      "kind": "characterinterpretation",
+      "enabled": true,
+      "sourceStatus": "official_hosted_game_text",
+      "sourceRefs": [
+        "furina-wiki"
+      ],
+      "canonEdition": "4.2",
+      "eventAt": "aftermath",
+      "visibility": "private",
+      "knowledge": [
+        {
+          "owner": "furina",
+          "knownFrom": "aftermath",
+          "mode": "experienced",
+          "basis": "自身已发生经历；来源文字明确回顾，未由感受泛化。"
+        }
+      ],
+      "topics": [
+        "performance",
+        "表演"
+      ],
+      "entities": [
+        "furina",
+        "芙宁娜"
+      ],
+      "aliases": [
+        "退出表演",
+        "reluctance"
+      ],
+      "text": "芙宁娜回顾危机结束后曾想退出表演；此为此前意向，不推导她永久拒绝舞台。",
+      "editionBasis": "4.2 角色文本/语音；官方托管游戏文本，非 direct-game primary。",
+      "timeBasis": "About the Vision 完成 The Little Oceanid 解锁；仅此前退出意向是回顾前段，重返事件 performer 限定。",
+      "sourceUnlock": "About the Vision 语音本身在完成 The Little Oceanid 后解锁；解锁时点和回顾事件时点分别记录。"
+    },
+    {
+      "id": "performance-return",
+      "kind": "canonicalfact",
+      "enabled": true,
+      "sourceStatus": "official_hosted_game_text",
+      "sourceRefs": [
+        "furina-wiki"
+      ],
+      "canonEdition": "4.2",
+      "eventAt": "performer",
+      "visibility": "private",
+      "knowledge": [
+        {
+          "owner": "furina",
+          "knownFrom": "performer",
+          "mode": "experienced",
+          "basis": "自身已发生经历；来源文字明确回顾，未由感受泛化。"
+        }
+      ],
+      "topics": [
+        "performance",
+        "表演"
+      ],
+      "entities": [
+        "furina",
+        "芙宁娜"
+      ],
+      "aliases": [
+        "重返舞台",
+        "return to stage"
+      ],
+      "text": "芙宁娜在传说任务中重返舞台；不把这次重返演出提前到 aftermath。",
+      "editionBasis": "4.2 角色文本/语音；官方托管游戏文本，非 direct-game primary。",
+      "timeBasis": "About the Vision 完成 The Little Oceanid 解锁；仅此前退出意向是回顾前段，重返事件 performer 限定。",
+      "sourceUnlock": "About the Vision 语音本身在完成 The Little Oceanid 后解锁；解锁时点和回顾事件时点分别记录。"
     }
   ]
 }

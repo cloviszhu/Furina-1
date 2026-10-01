@@ -8,7 +8,7 @@
 
 - 新增版本化 4.2 小知识包，逐条记录 sourceStatus，未核实剧情保持 disabled/pending。
 - 新增纯函数 resolver，先过滤 edition、事件时间、获知时间及 perspective，再按 topic/entity/alias 相关度排序和预算装包。
-- 分离 canonicalfact、characterinterpretation、userinteraction；专门输出有界 modelPrompt，不输出排除内容或剧透诊断。
+- 分离 canonicalfact、characterinterpretation、userinteraction；角色 modelPrompt 与互动 interactionPrompt 各自受字节/字符/记录预算限制，不挤占互动资料。仅显式相关匹配注入，空或短噪声零注入。
 - 增加独立测试及来源/adapter 交接，生产入口保持现状。
 
 ## Capabilities
