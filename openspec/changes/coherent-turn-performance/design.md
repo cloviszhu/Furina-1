@@ -15,6 +15,12 @@
 
 ## Open Questions
 
+## Sourced nod and restricted greeting gate
+
+nod只使用官方Overte headnod的Spine2/Neck/Head源世界旋转，source/target肩轴与头颈轴建立参考基，world delta共轭转换后结合真实PMX父级/grant生成局部偏移。0.18秒准备和0.4秒收势放入既有2秒生命周期；保留旋转速率上限、取消及重入guards、原世界视线/表情/口型。运行时没有FBX请求或额外引擎，约10.5KB采样附Apache2版权/许可/修改说明，留本机ignored、不随代码分发。只读同源可选character-assets JSON，32KiB/2秒/形状验证，缺失或坏数据回退旧nod，未改server。既有nod回归阈值从旧正弦动作经验值改为已存在的2rad/s局部速率合同，配合双PMX前后截图与取消重启检查，不以角度范围当自然度验收。
+
+音街ウナ官方VMD包已安全只读核实。readme允许换模型必要修改，但另有使用前同意全部条款要求；按此次明确任务边界停在此确认，资源留ignored，本次不演出/改造/分发。元数据206骨轨仅102在两PMX匹配，原动作310帧，不能据骨名匹配直接宣布可用；授权继续后先完整序列定位走动root与wave窗口，再决定合法裁取/脚底适配。nod不受该候选协议阻断。
+
 ## Resting motion adapter
 
 仅idle复用Quaternius CC0 Standard的Idle_Loop与A_TPose参考，源rig数据小型离线采样后分发，目标PMX适配只在加载时计算。实际PMX手臂为A-pose，按上臂→肘、肘→腕及掌轴补参考轴，不能只rename轨道或用世界四元数差。source/target腿长换算髋部位移，几何两段腿链固定脚踝世界位置与脚底朝向，避免膝过伸及CCD残差。

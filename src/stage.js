@@ -4,6 +4,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { MMDAnimationHelper } from 'three/addons/animation/MMDAnimationHelper.js';
 import { motionFrame, gestureWeight, ease } from './motion.js';
 import { MotionIdle } from './motion-idle.js';
+import { MotionNod, loadNodSource } from './motion-nod.js';
 
 // Deliberate, held upper-body poses, with gaze leading the body. Both PMX rigs
 // have these controls; the sourced idle layer additionally solves planted legs.
@@ -107,6 +108,8 @@ export class CharacterStage {
     this.element = element; this.onState = onState; this.mouth = 0; this.action = null; this.expression = 'neutral';
     this.mode = 'idle'; this.lastVoiceAt = -Infinity; this.smoothed = new Map();
     this.idleVariant = 'auto';
+    this.nodSourceEnabled = true; // Dual-PMX visual/interrupt gate; missing chains keep the procedural fallback.
+    this.nodSourcePromise = loadNodSource('/character-assets/animations/overte-headnod.json');
     this.idleSourceEnabled = true; // Dual-PMX visual/interrupt gate; explicit variants keep their original poses.
     this.offset = new THREE.Quaternion(); this.euler = new THREE.Euler();
     this.scene = new THREE.Scene();
@@ -142,6 +145,7 @@ export class CharacterStage {
     const loader = new MMDLoader(manager);
     try {
       const mesh = await loader.loadAsync(url);
+      const nodSource=await this.nodSourcePromise;
       if (sequence !== this.loadSequence) { this.disposeMesh(mesh); return; }
       if (this.mesh) { this.motionIdle?.dispose(); this.scene.remove(this.mesh); this.disposeMesh(this.mesh); }
       this.mesh = mesh;
@@ -157,6 +161,7 @@ export class CharacterStage {
       // those grants are applied. Use Three's PMX solver, without physics/Ammo.
       this.grantSolver = new MMDAnimationHelper().createGrantSolver(mesh);
       this.motionIdle = new MotionIdle(mesh, this.grantSolver);
+      this.motionNod = new MotionNod(mesh, this.grantSolver,nodSource);
       this.scene.add(mesh); this.resetCamera();
       this.onState(`模型已就绪 · ${mesh.skeleton.bones.length} 骨骼${missingTexture ? ' · 贴图异常' : ''}`);
       window.__exoStage = this; // Local inspection/test hook, contains no credentials.
@@ -175,6 +180,7 @@ export class CharacterStage {
   }
   cancelAction() { const active = Boolean(this.action); this.action = null; return active; }
   setIdleSourceEnabled(value) { this.idleSourceEnabled = Boolean(value); }
+  setNodSourceEnabled(value) { this.nodSourceEnabled = Boolean(value); }
   setIdleVariant(value) { this.idleVariant = ['auto', 'settled', 'glance', 'attentive'].includes(value) ? value : 'auto'; }
   setMode(value) { this.mode = ['idle', 'thinking', 'preparing', 'speaking', 'error'].includes(value) ? value : 'idle'; }
   setExpression(value) { this.expression = ['neutral', 'calm', 'happy', 'sad', 'angry', 'surprised'].includes(value) ? value : 'neutral'; }
@@ -187,8 +193,9 @@ export class CharacterStage {
       const mode = this.mode;
       if (mode !== this.motionMode) { this.motionMode = mode; this.modeStartedAt = now; }
       const elapsed = this.action ? (now - this.action.start) / 1000 : 0;
+      const nodPose=this.nodSourceEnabled&&this.action?.name==='nod'?this.motionNod?.sample(elapsed):null;
       const direction = this.camera.position.clone().sub(this.controls.target);
-      const frame = motionFrame({ time: t, mode, modeElapsed: (now - this.modeStartedAt) / 1000, expression: this.expression, action: this.action?.name, elapsed, mouth: this.mouth,
+      const frame = motionFrame({ time: t, mode, modeElapsed: (now - this.modeStartedAt) / 1000, expression: this.expression, action: nodPose ? undefined : this.action?.name, elapsed, mouth: this.mouth,
         gazeYaw: Math.atan2(direction.x, direction.z), gazePitch: -Math.atan2(direction.y, Math.hypot(direction.x, direction.z)) * .25 });
       softenStageFrame(frame, { time: t, mode, expression: this.expression, action: this.action?.name, elapsed });
       const poseVariant=this.idleSourceEnabled&&this.motionIdle?.available&&this.idleVariant==='auto'?'source':this.idleVariant;
@@ -198,7 +205,7 @@ export class CharacterStage {
       if(idleWeight > 1e-6) {
         // Preserve the existing gaze/expression target in world space while the
         // sourced torso settles underneath it. Source clips never own morphs.
-        for(const [name,angles] of Object.entries(frame.bones))this.pose(name,...angles);
+        for(const [name,angles] of Object.entries(frame.bones)){this.pose(name,...angles);if(nodPose?.[name])this.bones[name]?.quaternion.multiply(nodPose[name]);}
         this.mesh.updateMatrixWorld(true);headWorld=this.bones['頭']?.getWorldQuaternion(new THREE.Quaternion());
         for(const [bone,quaternion] of this.base)bone.quaternion.copy(quaternion);
         this.motionIdle.center.position.addScaledVector(this.motionIdle.centerOffset,idleWeight);
@@ -208,6 +215,7 @@ export class CharacterStage {
         const bone = this.bones[name]; if (!bone) continue;
         if(headWorld && name === '頭')continue;
         const target = this.offset.setFromEuler(this.euler.set(...angles));
+        if(nodPose?.[name])target.multiply(nodPose[name]);
         const sourced=this.motionIdle?.targets.get(name);
         if(sourced && idleWeight > 0)target.slerp(this.base.get(bone).clone().invert().multiply(sourced),idleWeight*this.motionIdle.mask(name));
         let current = this.smoothed.get(name);

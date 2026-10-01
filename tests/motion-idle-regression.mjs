@@ -13,6 +13,7 @@ const baseline = execFileSync('git', ['show', `${process.env.EXO_MOTION_BASELINE
 const server = createServer(async (req, res) => {
   try {
     const url = new URL(req.url, 'http://localhost');
+    if(url.pathname==='/character-assets/animations/overte-headnod.json' && process.env.EXO_NOD_SOURCE){res.setHeader('Content-Type','application/json');res.end(await readFile(process.env.EXO_NOD_SOURCE));return;}
     if (url.pathname === '/') {
       res.setHeader('Content-Type', 'text/html');
       res.end(`<style>body{margin:0;background:#132033}#stage{width:900px;height:900px}</style><div id="stage"></div><script type="importmap">{"imports":{"three":"/node_modules/three/build/three.module.js","three/addons/":"/node_modules/three/examples/jsm/"}}</script><script type="module">import {CharacterStage} from '/src/${url.searchParams.has('before') ? 'baseline-stage' : 'stage'}.js'; window.reviewStage=new CharacterStage(document.querySelector('#stage'),state=>window.reviewState=state); reviewStage.renderer.setAnimationLoop(null);</script>`);
@@ -141,7 +142,10 @@ try {
   }
   await writeFile(`${output}/evidence.json`,JSON.stringify(results,null,2));
   for (const r of results) {
-    assert.deepEqual(r.errors, []); assert(r.refused && r.finished && r.restored && r.nodFinished && r.switched); assert(r.nodStep<.02);
+    assert.deepEqual(r.errors, []); assert(r.refused && r.finished && r.restored && r.nodFinished && r.switched);
+    // Sourced nod is larger than the prior sine nod, but each local rotation
+    // remains bounded by the existing 2 rad/s settle limit at 60Hz.
+    assert(r.nodStep<2/60+1e-6);
     assert(r.maxStep < .01); assert(r.maxWristStep < .35); assert(r.cancelStep < .4);
     assert(Math.abs(r.mouth-.3)<.001); assert(Math.abs(r.smile-.28)<.002);
     for (const sample of r.idle) for (const bone of Object.values(sample.bones)) assert([...bone.q,...bone.p].every(Number.isFinite));

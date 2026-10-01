@@ -47,3 +47,9 @@ stage SHALL 用明确许可的本地待机动作源适配实际 PMX reference po
 #### Scenario: Visual acceptance
 - **WHEN** 两形态完成至少30秒idle及至少10秒idle→greet→cancel→idle隔离序列
 - **THEN** 分别检查倒置、脚漂/脚底朝向、膝过伸、手/衣摆穿模及过渡；数值与测试只作对应工程证据，不宣布自然度或角色活人感完成
+
+### Requirement: Traceable nod reference-pose adaptation
+stage SHALL 仅在来源/许可明确且所需骨链存在时用本地动作源替换nod的原正弦通道。source world rotations MUST 经源/目标身体参考轴、目标父级与grant关系转换，不能只替换骨名。派生源数据 SHALL 附完整许可、版权与变更说明，不包含目标PMX数据。
+#### Scenario: Nod interrupt and fallback
+- **WHEN** nod演出中取消、重复触发、停止说话或更换模型
+- **THEN** 既有2秒生命周期、重入拒绝及局部旋转速率边界保持，根/腿/口型/表情不归nod clip负责；缺必要骨链时回退原点头
