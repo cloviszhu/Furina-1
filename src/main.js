@@ -7,6 +7,7 @@ import { loadSettings, saveSettings } from './settings.js';
 import { resolveVoicePreference } from './voice-preference.js';
 import { completedSegments } from './turn-lifecycle.js';
 import { NaturalMemoryControls, mountNaturalMemoryControls } from './natural-memory-controls.js';
+import { mountRecording } from './recording.js';
 
 const $ = id => document.getElementById(id);
 let savedSettings;
@@ -37,6 +38,14 @@ const speech = new SpeechController({
 });
 let status, memorySourceId, providers = [], busy = false, batchRunner;
 let realChat = false, chatController;
+const recording = mountRecording({ input: $('chat-input'), start: $('record-start'), stop: $('record-stop'), cancel: $('record-cancel'), status: $('record-state'),
+  stopPlayback: () => { speech.stop(); $('reference-preview')?.pause(); }, canStart: () => (!busy || ['preparing', 'speaking'].includes(speech.lifecycle.phase)) && !batchRunner?.running });
+// Explicit playback actions end microphone capture before sound can start.
+document.addEventListener('click', event => {
+  if (recording.active && event.target.closest('#voice-test, #remote-test, #batch-start, #reference-preview')) recording.cancel();
+}, true);
+$('reference-preview').addEventListener('play', () => { if (recording.active) { recording.cancel(); $('reference-preview').pause(); } });
+for (const id of ['provider', 'model-name', 'base-url', 'credential-source', 'character-timeline', 'character-style']) $(id).addEventListener('change', () => recording.cancel());
 function renderChatMode() {
   $('mode-status').textContent = realChat ? '真实聊天 · DeepSeek · 发送会收费' : '演示模式 · 不调用远程模型';
   $('provider-note').textContent = realChat ? '真实 DeepSeek · ' + ($('model-name').value || '未配置模型') + '。每次发送调用一次，无自动重试。' : '当前为本地规则演示；快捷提示只填文字。';
@@ -56,6 +65,7 @@ function resetMemorySource(clearText = false) {
   $('memory-source').textContent = '来源：你的手动记录';
 }
 function invalidateConversation(clearText = true) {
+  recording.cancel();
   if (busy) cancelChat();
   ++contextGeneration;
   speech.stop();
@@ -157,6 +167,7 @@ function updateBudget(budget) {
   $('budget-state').textContent = `累计 ${budget.limits.cny} 元硬上限 · 已调用 ${budget.usedCalls} 次（无固定次数限制） · 保守预留 ¥${budget.reservedCny.toFixed(4)} · 剩余预留预算 ¥${budget.remainingCny.toFixed(4)}。每次最多 ${budget.limits.outputTokens} 输出 token / ${budget.limits.inputBytes} 输入字节；失败预留不退。${budget.pricingCurrent ? '' : '价格核实已过期，远程调用禁用。'}`;
 }
 async function send(text, remoteTest = false) {
+  if (recording.active) { fail(new Error('请先停止录音并校对草稿，或取消录音后发送。')); return; }
   const remoteChat = realChat && !remoteTest;
   if (busy || ((remoteTest || remoteChat) && batchRunner?.running) || !text.trim()) return;
   const startedAt = Date.now();
@@ -206,10 +217,11 @@ async function send(text, remoteTest = false) {
 }
 $('chat-form').onsubmit = event => { event.preventDefault(); void send($('chat-input').value); };
 $('chat-input').onkeydown = event => { if (event.key === 'Enter' && !event.shiftKey && !event.isComposing) { event.preventDefault(); void send($('chat-input').value); } };
-document.querySelectorAll('[data-prompt]').forEach(node => node.onclick = () => { $('chat-input').value = node.dataset.prompt; $('chat-input').focus(); });
+document.querySelectorAll('[data-prompt]').forEach(node => node.onclick = () => { recording.edited(); $('chat-input').value = node.dataset.prompt; $('chat-input').focus(); });
 $('cancel-chat').onclick = cancelChat;
 $('chat-settings').onclick = () => { $('settings').showModal(); void refreshCredentialStatus(); };
 $('enable-real-chat').onclick = () => {
+  recording.cancel();
   if (busy) cancelChat(); else speech.stop();
   if (realChat) { realChat = false; renderChatMode(); return; }
   const chosen = config();

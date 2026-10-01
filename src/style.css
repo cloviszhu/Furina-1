@@ -17,3 +17,6 @@
 #memory-panel.active { display: block; overflow-y: auto; }
 #memory-panel .memory-list { flex: none; overflow: visible; }
 #natural-memory-list { padding-bottom: 12px; }
+.recording-controls { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; margin: .65rem 0; }
+.recording-controls [role="status"] { flex-basis: 100%; font-size: .85rem; line-height: 1.5; }
+.recording-controls [data-state="recording"] { color: #a63f40; font-weight: 600; }

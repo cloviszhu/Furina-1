@@ -20,7 +20,7 @@
           <p id="chat-budget-state" role="status"></p>
           <div id="messages" class="messages" role="log" aria-live="polite"></div>
           <div class="quick-prompts"><button data-prompt="你好，芙宁娜。">打个招呼</button><button data-prompt="你还记得我们的共同经历吗？">聊聊回忆</button><button data-prompt="我今天有点累。">说说今天</button></div>
-          <form id="chat-form"><label class="sr-only" for="chat-input">对芙宁娜说的话</label><textarea id="chat-input" placeholder="告诉她，你今天的故事…" maxlength="1500" rows="2"></textarea><div class="composer-footer"><label><input id="auto-speak" type="checkbox" checked> 朗读回复</label><button id="cancel-chat" type="button" disabled>取消等待</button><button id="send" type="submit" class="primary">开场 →</button></div></form>
+          <form id="chat-form"><label class="sr-only" for="chat-input">对芙宁娜说的话</label><textarea id="chat-input" placeholder="告诉她，你今天的故事…" maxlength="1500" rows="2"></textarea><div class="recording-controls"><button id="record-start" type="button">录音</button><button id="record-stop" type="button" disabled>停止并转写</button><button id="record-cancel" type="button" disabled>取消录音</button><span id="record-state" role="status" aria-live="polite"></span></div><div class="composer-footer"><label><input id="auto-speak" type="checkbox" checked> 朗读回复</label><button id="cancel-chat" type="button" disabled>取消等待</button><button id="send" type="submit" class="primary">开场 →</button></div></form>
         </section>
         <p id="app-error" class="error app-error" role="alert"></p>
         <section id="memory-panel" class="panel">

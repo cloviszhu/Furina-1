@@ -35,11 +35,12 @@ async function ui() {
   let history = [{ ...event }], memories = [{ ...memory }];
   const posts = [], spoken = []; let stops = 0;
   const pending = deferred();
-  const document = { getElementById: id => nodes[id], createElement: tag => new Element(tag), querySelectorAll: () => [] };
+  const document = { getElementById: id => nodes[id], createElement: tag => new Element(tag), querySelectorAll: () => [], addEventListener() {} };
   const context = vm.createContext({
     loadSettings, saveSettings, resolveVoicePreference, completedSegments, NaturalMemoryControls, mountNaturalMemoryControls() {}, AbortController, crypto: globalThis.crypto,
     document, console, confirm: () => true, addEventListener() {},
     initReferences() {},
+    mountRecording() { return { active: false, cancel() {}, edited() {} }; },
     mountRemoteTests() {},
     CharacterStage: class { trigger() {} resetCamera() {} },
     SpeechController: class { constructor() { this.voices = []; this.lifecycle = new TurnLifecycle(); } stop() { ++stops; this.lifecycle.cancel(); } beginTurn() { this.stop(); return this.lifecycle.begin(); } async listVoices() { return []; } async speak(text) { spoken.push(text); } },
