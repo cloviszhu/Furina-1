@@ -1,5 +1,7 @@
 # 当前交接
 
+2026-10-01最新：经用户具体确认及自动审批认可，来源化角色知识最小adapter与HEADER资格修正已main/app-only发布。运行时代码 `fb74ffa7d65fccb02d7261bb0c3426a321fe0d53`，app PID63800/ready；TTS PID67988、dist、声线配置、用户数据与50次/reserve5.10934元保持。详见 [角色知识发布核验](docs/character-context-deployment.md)。ASR仍并行开发，未发布；真实角色/声线/动作感知仍未验收。下面连续交互里程碑为上一发布记录。
+
 2026-10-01：连贯 turn/segment 说话与自然互动记忆里程碑已独立复审并 app-only 发布；运行时代码 `6bbed5e787847c79b192e905e58e42716db8b2ae`，app PID101352/ready，TTS PID67988 保留。Node169/169、浏览器9/9、构建、OpenSpec14/14为隔离工程证据；真实模型、声线和动作自然度仍待集中验收。预算50次/reserve5.10934元、25条事件与1条确认记忆保持，无新增收费调用、无用户页面操作。详见 [本机发布核验](docs/coherent-milestone-deployment.md) 与 [完整里程碑证据](docs/coherent-milestone-evidence.md)。以下为历史阶段，不以旧PID作为当前状态。
 
 声线首选可靠性修复及同值确认 **已复审通过并部署**，运行时代码 `1e66a88a6286b92caed31f6e41fa3ce96148dd5e`、app PID77220，TTS PID67988 保留；served hash/health/44条台账与数据保留均通过。临时缺失保留首选，明确删除/主动改选尊重用户，临时回退可点“将当前声线设为首选”；入口只作轻提示。详见 [修复及部署证据](docs/voice-preference-reliability-handoff.md)。没有剩余开发阻断，不再扩展或主动付费，等待用户真实体验；下面价格维护记录为上一部署阶段。
