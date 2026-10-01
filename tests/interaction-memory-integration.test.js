@@ -97,3 +97,22 @@ test('failed/secret-revised sources do not persist, and event + episode commit r
   assert.deepEqual(f.context.interaction.list({ contextKey: 'aftermath' }).items, []);
   assert.deepEqual(f.context.store.history(), []);
 }));
+
+test('integrated plan, fiction, negation and contradictions retain their evidence boundaries', async () => fixture(async f => {
+  const plan = await f.chat('我计划明天去海边。');
+  const fiction = await f.chat('虚构故事：我去过海边。');
+  let recall = await f.chat('海边的计划呢？');
+  let item = recall.value.memoryEvidence.items.find(e => e.sourceId === plan.value.user.id);
+  assert(item); assert.equal(item.claims[0].type, 'plan'); assert.equal(item.claims[0].epistemic, 'user_reported');
+  assert(!recall.value.memoryEvidence.items.some(e => e.sourceId === fiction.value.user.id));
+  await f.chat('我取消了去海边的计划。');
+  recall = await f.chat('海边计划还在吗？');
+  item = recall.value.memoryEvidence.items.find(e => e.sourceId === plan.value.user.id);
+  assert(item); assert.equal(item.claims[0].conflictStatus, 'cancelled'); assert.equal(item.claims[0].type, 'plan');
+  const likes = await f.chat('我喜欢咖啡。'); await f.chat('我不喜欢咖啡。');
+  recall = await f.chat('你记得咖啡吗？');
+  item = recall.value.memoryEvidence.items.find(e => e.sourceId === likes.value.user.id);
+  assert(item); assert.equal(item.claims[0].conflictStatus, 'unresolved');
+  assert(f.requests.at(-1).messages[0].content.includes('unresolved 冲突须自然询问'));
+  assert(f.context.interaction.list({ contextKey: 'aftermath' }).items.some(e => e.domain === 'fiction'));
+}));
