@@ -29,3 +29,7 @@
 ## Migration Plan
 
 独立分支提交供 owner review。未部署；旧包保留作回退/兼容性测试。默认切换 v2 的一行 import 可单独回退，不触及 history/memory。
+
+## Trial source increment
+
+原 HoYoDex Apocalypse 路由继续 pending。独立 Fandom 搜索索引仅支持五窄命题，保留 verificationMethod/directPageVerified/audioVerified，不将 search index 升为直接页面/primary。指定控诉否认、trap 构造与道歉未完整返回仍待核；当庭自称身份不等于真实神性，浓度披露为 reported，裁决不授予秘密计划机制。

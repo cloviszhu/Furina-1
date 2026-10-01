@@ -10,3 +10,5 @@
 
 ## 3. 交接
 - [x] 3.1 记录 actual enabled/pending/sourceStatus、覆盖限度和测试范围，OpenSpec strict/diff 检查后独立提交。
+
+- [x] 3.2 独立 Fandom search-index 审判补证；保留原错误路由，启用五窄命题，缺失段落保持 pending，新增说法/听闻/机制边界回归。

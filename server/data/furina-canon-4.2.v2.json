@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "packVersion": "furina-4.2-core-story-v1",
+  "packVersion": "furina-4.2-core-story-v2",
   "canonEdition": "4.2",
   "sources": [
     {
@@ -391,6 +391,31 @@
         "adaptationNotice": "自行中文改写；保留上游来源署名。HoYoDex 是改编自 Fandom 的非官方粉丝站，非独立 primary。",
         "underlyingGameRights": "Genshin Impact game text/audio rights remain with HoYoverse and respective rights holders; no asset redistribution."
       }
+    },
+    {
+      "id": "aq5-trial-search",
+      "url": "https://genshin-impact.fandom.com/wiki/Apocalypse",
+      "sourceStatus": "secondary_game_dialogue_transcription",
+      "publisher": "Genshin Impact Wiki / Fandom",
+      "authorship": "community-transcription",
+      "checkedAt": "2026-10-01",
+      "publication": null,
+      "locator": "Chapter IV Act V / Apocalypse / Dialogue scenes cs2,4,5,8",
+      "verificationMethod": "search_index_inspected",
+      "directPageVerified": false,
+      "audioVerified": false,
+      "evidence": "本轮 web 搜索返回真实 quest 元数据、Travel Log 及部分连续对白正文；直接页面 robots/restricted，未读取页面或播放音频。只启用返回正文足以支持的窄命题。",
+      "retrievalQueries": [
+        "Genshin Apocalypse Furina \"you have the right\" water trial",
+        "Genshin Apocalypse Furina \"concentration\" Sigewinne Navia",
+        "Genshin Apocalypse Furina \"Hydro Archon\" \"death sentence\""
+      ],
+      "attributionUrl": "https://genshin-impact.fandom.com/wiki/Apocalypse",
+      "rights": {
+        "contentLicense": "CC-BY-SA-4.0",
+        "adaptationNotice": "自行简短摘要；署名 Genshin Impact Wiki contributors，保持原条目链接；游戏内容权利另属原权利人。"
+      },
+      "qualificationLimit": "索引正文可能不完整或过时，不代表所有指定 asset 均已返回。"
     }
   ],
   "records": [
@@ -2714,9 +2739,9 @@
       ],
       "summaryAuthorship": "本项目自行中文改写",
       "causalLinks": [],
-      "scopeNotes": "父研究提供此资产定位，但本路 URL 返回同名后续 NPC；需正确页面/原始片段核验后再启用。",
+      "scopeNotes": "保留错误 HoYoDex 路由的历史记录；不追溯验证。新的窄审判事实使用独立 Fandom search-index source。",
       "editionBasis": "明确选择 4.0–4.2 主线/个人任务/原角色段落；页面后更新日不是世界内时间。",
-      "verificationTodo": "父研究提供此资产定位，但本路 URL 返回同名后续 NPC；需正确页面/原始片段核验后再启用。",
+      "verificationTodo": "旧 URL 仍指向错误 NPC，保持 disabled；本轮审判补充另见 act5-trial-*，不得把此源改成已验证。",
       "adaptationLicense": "CC-BY-SA-4.0",
       "knowledgeScope": "本条明确涉及的信息；概述性质不授权全部场景/对手内心/同名人物背景"
     },
@@ -3426,6 +3451,372 @@
       "editionBasis": "明确选择 4.0–4.2 主线/个人任务/原角色段落；页面后更新日不是世界内时间。",
       "adaptationLicense": "CC-BY-SA-4.0",
       "knowledgeScope": "本条明确涉及的信息；概述性质不授权全部场景/对手内心/同名人物背景"
+    },
+    {
+      "id": "act5-trial-stage",
+      "kind": "canonicalfact",
+      "enabled": true,
+      "sourceStatus": "secondary_game_dialogue_transcription",
+      "sourceRefs": [
+        "aq5-trial-search"
+      ],
+      "canonEdition": "4.2",
+      "eventAt": "before-aftermath",
+      "validFrom": "before-aftermath",
+      "knownFrom": "before-aftermath",
+      "visibility": "public",
+      "knowledge": [
+        {
+          "owner": "furina",
+          "knownFrom": "before-aftermath",
+          "mode": "experienced",
+          "basis": "本人参与/听到此法院场景；不推导其他人的事前计划。"
+        }
+      ],
+      "arc": "aq-act5",
+      "scene": "cs2 Travel Log / scene 4 opening",
+      "eventPoint": "aq-act5-apocalypse",
+      "knowledgePoint": "aq-act5-apocalypse-court",
+      "topics": [
+        "trial",
+        "审判舞台"
+      ],
+      "entities": [
+        "furina",
+        "芙宁娜"
+      ],
+      "aliases": [
+        "审判舞台"
+      ],
+      "text": "房间墙壁退去，芙宁娜发现自己在欧庇克莱歌剧院舞台。",
+      "evidence": [
+        {
+          "sourceRef": "aq5-trial-search",
+          "section": "cs2 Travel Log / scene 4 opening",
+          "assetIds": [
+            "vo_fdaq304_cs2_furina_01",
+            "vo_fdaq304_4_furina_01",
+            "vo_fdaq304_4_furina_02"
+          ],
+          "verificationMethod": "search_index_inspected"
+        }
+      ],
+      "summaryAuthorship": "本项目自行中文改写",
+      "causalLinks": [
+        "act5-traveler-confiding"
+      ],
+      "scopeNotes": "索引证据限定上述窄命题；未验证页面/音频。",
+      "editionBasis": "4.2 Chapter IV Act V 任务；索引抓取时间不是事件时间。",
+      "knowledgeScope": "当庭经历/听闻，不包含芙卡洛斯私密机制。",
+      "adaptationLicense": "CC-BY-SA-4.0"
+    },
+    {
+      "id": "act5-trial-acceptance",
+      "kind": "canonicalfact",
+      "enabled": true,
+      "sourceStatus": "secondary_game_dialogue_transcription",
+      "sourceRefs": [
+        "aq5-trial-search"
+      ],
+      "canonEdition": "4.2",
+      "eventAt": "before-aftermath",
+      "validFrom": "before-aftermath",
+      "knownFrom": "before-aftermath",
+      "visibility": "public",
+      "knowledge": [
+        {
+          "owner": "furina",
+          "knownFrom": "before-aftermath",
+          "mode": "experienced",
+          "basis": "本人参与/听到此法院场景；不推导其他人的事前计划。"
+        }
+      ],
+      "arc": "aq-act5",
+      "scene": "scene 4 duel option / acceptance",
+      "eventPoint": "aq-act5-apocalypse",
+      "knowledgePoint": "aq-act5-apocalypse-court",
+      "topics": [
+        "trial",
+        "接受审判"
+      ],
+      "entities": [
+        "furina",
+        "芙宁娜"
+      ],
+      "aliases": [
+        "接受审判"
+      ],
+      "text": "面对决斗选项及持剑登场的克洛琳德，芙宁娜随后接受审判，继续维持公开神明姿态。",
+      "evidence": [
+        {
+          "sourceRef": "aq5-trial-search",
+          "section": "scene 4 duel option / acceptance",
+          "assetIds": [
+            "vo_fdaq304_4_neuvillette_01",
+            "vo_fdaq304_4_neuvillette_02",
+            "vo_fdaq304_4_furina_10",
+            "vo_fdaq304_4_furina_11",
+            "vo_fdaq304_4_furina_12"
+          ],
+          "verificationMethod": "search_index_inspected"
+        }
+      ],
+      "summaryAuthorship": "本项目自行中文改写",
+      "causalLinks": [
+        "act5-trial-stage"
+      ],
+      "scopeNotes": "索引证据限定上述窄命题；未验证页面/音频。",
+      "editionBasis": "4.2 Chapter IV Act V 任务；索引抓取时间不是事件时间。",
+      "knowledgeScope": "当庭经历/听闻，不包含芙卡洛斯私密机制。",
+      "adaptationLicense": "CC-BY-SA-4.0"
+    },
+    {
+      "id": "act5-trial-charge-pending",
+      "kind": "canonicalfact",
+      "enabled": false,
+      "sourceStatus": "pending",
+      "sourceRefs": [
+        "aq5-trial-search"
+      ],
+      "canonEdition": "4.2",
+      "eventAt": "before-aftermath",
+      "validFrom": "before-aftermath",
+      "knownFrom": "before-aftermath",
+      "visibility": "public",
+      "knowledge": [
+        {
+          "owner": "furina",
+          "knownFrom": "before-aftermath",
+          "mode": "experienced",
+          "basis": "本人参与/听到此法院场景；不推导其他人的事前计划。"
+        }
+      ],
+      "arc": "aq-act5",
+      "scene": "scene 5 charge / denial (parent locators, not inspected)",
+      "eventPoint": "aq-act5-apocalypse",
+      "knowledgePoint": "aq-act5-apocalypse-court",
+      "topics": [
+        "trial",
+        "假扮控诉"
+      ],
+      "entities": [
+        "furina",
+        "芙宁娜"
+      ],
+      "aliases": [
+        "假扮控诉"
+      ],
+      "text": "旅行者控诉她假扮水神，她否认；指定控诉与否认段落尚未完整返回，保留待核。",
+      "evidence": [
+        {
+          "sourceRef": "aq5-trial-search",
+          "section": "scene 5 charge / denial (parent locators, not inspected)",
+          "assetIds": [
+            "vo_fdaq304_5_hero_02",
+            "vo_fdaq304_5_heroine_02",
+            "vo_fdaq304_5_furina_05",
+            "vo_fdaq304_5_furina_06"
+          ],
+          "verificationMethod": "parent_locator_pending"
+        }
+      ],
+      "summaryAuthorship": "本项目自行中文改写",
+      "causalLinks": [
+        "act5-trial-acceptance"
+      ],
+      "scopeNotes": "索引证据限定上述窄命题；未验证页面/音频。",
+      "editionBasis": "4.2 Chapter IV Act V 任务；索引抓取时间不是事件时间。",
+      "knowledgeScope": "当庭经历/听闻，不包含芙卡洛斯私密机制。",
+      "adaptationLicense": "CC-BY-SA-4.0",
+      "verificationTodo": "指定 5_hero/heroine_02 与 5_furina_05/06 尚未从本轮索引完整取得。"
+    },
+    {
+      "id": "act5-trial-water-test",
+      "kind": "canonicalfact",
+      "enabled": true,
+      "sourceStatus": "secondary_game_dialogue_transcription",
+      "sourceRefs": [
+        "aq5-trial-search"
+      ],
+      "canonEdition": "4.2",
+      "eventAt": "before-aftermath",
+      "validFrom": "before-aftermath",
+      "knownFrom": "before-aftermath",
+      "visibility": "public",
+      "knowledge": [
+        {
+          "owner": "furina",
+          "knownFrom": "before-aftermath",
+          "mode": "experienced",
+          "basis": "本人参与/听到此法院场景；不推导其他人的事前计划。"
+        }
+      ],
+      "arc": "aq-act5",
+      "scene": "scene 8 water test / defendant claim",
+      "eventPoint": "aq-act5-apocalypse",
+      "knowledgePoint": "aq-act5-apocalypse-court",
+      "topics": [
+        "trial",
+        "审判水测试"
+      ],
+      "entities": [
+        "furina",
+        "芙宁娜"
+      ],
+      "aliases": [
+        "审判水测试"
+      ],
+      "text": "那维莱特说明可拒绝测试，芙宁娜仍将手伸入水中；她随后以未溶解为由继续声称自己是神。此为当庭说法。",
+      "evidence": [
+        {
+          "sourceRef": "aq5-trial-search",
+          "section": "scene 8 water test / defendant claim",
+          "assetIds": [
+            "vo_fdaq304_8_neuvillette_02",
+            "vo_fdaq304_8_neuvillette_03",
+            "vo_fdaq304_8_furina_04",
+            "vo_fdaq304_8_furina_06",
+            "vo_fdaq304_8_furina_07"
+          ],
+          "verificationMethod": "search_index_inspected"
+        }
+      ],
+      "summaryAuthorship": "本项目自行中文改写",
+      "causalLinks": [
+        "act5-trial-acceptance"
+      ],
+      "scopeNotes": "索引证据限定上述窄命题；未验证页面/音频。",
+      "editionBasis": "4.2 Chapter IV Act V 任务；索引抓取时间不是事件时间。",
+      "knowledgeScope": "当庭经历/听闻，不包含芙卡洛斯私密机制。",
+      "adaptationLicense": "CC-BY-SA-4.0"
+    },
+    {
+      "id": "act5-trial-dilution-report",
+      "kind": "canonicalfact",
+      "enabled": true,
+      "sourceStatus": "secondary_game_dialogue_transcription",
+      "sourceRefs": [
+        "aq5-trial-search"
+      ],
+      "canonEdition": "4.2",
+      "eventAt": "before-aftermath",
+      "validFrom": "before-aftermath",
+      "knownFrom": "before-aftermath",
+      "visibility": "public",
+      "knowledge": [
+        {
+          "owner": "furina",
+          "knownFrom": "before-aftermath",
+          "mode": "reported",
+          "basis": "本人当庭听到样本安排的披露；只归属转述所得，不称参与事前策划。",
+          "sourceStatus": "secondary_game_dialogue_transcription",
+          "sourceRefs": [
+            "aq5-trial-search"
+          ]
+        }
+      ],
+      "arc": "aq-act5",
+      "scene": "scene 8 examination paragraph / dilution disclosure",
+      "eventPoint": "aq-act5-apocalypse",
+      "knowledgePoint": "aq-act5-apocalypse-court",
+      "topics": [
+        "trial",
+        "测试水浓度"
+      ],
+      "entities": [
+        "furina",
+        "芙宁娜"
+      ],
+      "aliases": [
+        "测试水浓度"
+      ],
+      "text": "芙宁娜当庭听到样本已换成不足以溶解人的浓度，检测结果与人类受影响相符；她事前未获知此安排。",
+      "evidence": [
+        {
+          "sourceRef": "aq5-trial-search",
+          "section": "scene 8 examination paragraph / dilution disclosure",
+          "assetIds": [
+            "vo_fdaq304_8_neuvillette_06",
+            "vo_fdaq304_8_furina_09",
+            "vo_fdaq304_8_navia_12",
+            "vo_fdaq304_8_navia_13",
+            "vo_fdaq304_8_navia_14"
+          ],
+          "verificationMethod": "search_index_inspected"
+        }
+      ],
+      "summaryAuthorship": "本项目自行中文改写",
+      "causalLinks": [
+        "act5-trial-water-test"
+      ],
+      "scopeNotes": "索引证据限定上述窄命题；未验证页面/音频。",
+      "editionBasis": "4.2 Chapter IV Act V 任务；索引抓取时间不是事件时间。",
+      "knowledgeScope": "当庭经历/听闻，不包含芙卡洛斯私密机制。",
+      "adaptationLicense": "CC-BY-SA-4.0"
+    },
+    {
+      "id": "act5-trial-verdicts",
+      "kind": "canonicalfact",
+      "enabled": true,
+      "sourceStatus": "secondary_game_dialogue_transcription",
+      "sourceRefs": [
+        "aq5-trial-search"
+      ],
+      "canonEdition": "4.2",
+      "eventAt": "before-aftermath",
+      "validFrom": "before-aftermath",
+      "knownFrom": "before-aftermath",
+      "visibility": "public",
+      "knowledge": [
+        {
+          "owner": "furina",
+          "knownFrom": "before-aftermath",
+          "mode": "experienced",
+          "basis": "本人参与/听到此法院场景；不推导其他人的事前计划。"
+        }
+      ],
+      "arc": "aq-act5",
+      "scene": "scene 8 two verdicts",
+      "eventPoint": "aq-act5-apocalypse",
+      "knowledgePoint": "aq-act5-apocalypse-court",
+      "topics": [
+        "trial",
+        "审判双重判决"
+      ],
+      "entities": [
+        "furina",
+        "芙宁娜",
+        "neuvillette",
+        "那维莱特"
+      ],
+      "aliases": [
+        "审判双重判决"
+      ],
+      "text": "那维莱特判芙宁娜假扮神明有罪；谕示机却对水神作出死刑判决。她听到判决，不因此预知执行机制。",
+      "evidence": [
+        {
+          "sourceRef": "aq5-trial-search",
+          "section": "scene 8 two verdicts",
+          "assetIds": [
+            "vo_fdaq304_8_neuvillette_08",
+            "vo_fdaq304_8_neuvillette_09",
+            "vo_fdaq304_8_neuvillette_13",
+            "vo_fdaq304_8_neuvillette_14",
+            "vo_fdaq304_8_neuvillette_15",
+            "vo_fdaq304_8_neuvillette_18",
+            "vo_fdaq304_8_neuvillette_19"
+          ],
+          "verificationMethod": "search_index_inspected"
+        }
+      ],
+      "summaryAuthorship": "本项目自行中文改写",
+      "causalLinks": [
+        "act5-trial-dilution-report"
+      ],
+      "scopeNotes": "索引证据限定上述窄命题；未验证页面/音频。",
+      "editionBasis": "4.2 Chapter IV Act V 任务；索引抓取时间不是事件时间。",
+      "knowledgeScope": "当庭经历/听闻，不包含芙卡洛斯私密机制。",
+      "adaptationLicense": "CC-BY-SA-4.0"
     }
   ],
   "importPolicy": {

@@ -1,5 +1,5 @@
 {
-  "packVersion": "furina-4.2-core-story-v1",
+  "packVersion": "furina-4.2-core-story-v2",
   "canonEdition": "4.2",
   "coverage": [
     {
@@ -78,10 +78,16 @@
         "act5-origin-author",
         "act5-plan-reported",
         "act5-flood-survivors",
-        "act5-trial-pending"
+        "act5-trial-pending",
+        "act5-trial-stage",
+        "act5-trial-acceptance",
+        "act5-trial-charge-pending",
+        "act5-trial-water-test",
+        "act5-trial-dilution-report",
+        "act5-trial-verdicts"
       ],
       "status": "partial",
-      "notes": "自身审判完整转写入口冲突待解；其余关键出场/回忆/结果有核查，不等于本幕全部剧情。"
+      "notes": "Fandom 检索索引支持五个窄审判命题；控诉/否认指定段落、陷阱说明与道歉细节未完整返回。保留错误路由历史，不等于全幕全集。"
     },
     {
       "arc": "sq-opening",
@@ -131,14 +137,20 @@
   "pendingRecordIds": [
     "teaser-stage-choice",
     "profile-clorinde-social-pending",
-    "act5-trial-pending"
+    "act5-trial-pending",
+    "act5-trial-charge-pending"
   ],
   "sourceConflicts": [
     {
       "sourceRef": "aq5-trial-pending",
-      "resolution": "pending until correct trial page or captured original scene is verified",
+      "resolution": "Original HoYoDex route remains wrong/disabled; independent Fandom search-index source supports selected narrow claims only.",
       "providedByParent": "vo_fdaq304 scene4/8 trial details",
       "observedByResearch": "URL routes to unrelated later NPC"
     }
+  ],
+  "remainingTrialGaps": [
+    "scene 4 trap construction explanation (Lyney/Lynette)",
+    "scene 4 Furina Poisson apology",
+    "scene 5 specified prosecutor accusation and denial"
   ]
 }

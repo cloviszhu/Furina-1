@@ -10,9 +10,9 @@ const ids = r => rows(r).map(r => r.id);
 const wide = { maxRecords: 12, maxBytes: 4096, maxChars: 6000 };
 
 test('expanded real pack has qualified evidence and a complete coverage inventory', () => {
-  assert.equal(pack.records.length, 54);
-  assert.equal(pack.records.filter(r => r.enabled).length, 51);
-  assert.equal(pack.records.filter(r => !r.enabled).length, 3);
+  assert.equal(pack.records.length, 60);
+  assert.equal(pack.records.filter(r => r.enabled).length, 56);
+  assert.equal(pack.records.filter(r => !r.enabled).length, 4);
   assert.equal(pack.records.filter(r => r.sourceStatus === 'primary-verified').length, 0);
   const sources = new Map(pack.sources.map(s => [s.id, s]));
   for (const r of pack.records) {
@@ -31,6 +31,35 @@ test('expanded real pack has qualified evidence and a complete coverage inventor
   assert.equal(new Set(covered).size, covered.length);
   assert.deepEqual([...covered, 'teaser-stage-choice'].sort(), pack.records.map(r => r.id).sort());
   assert.deepEqual(coverage.pendingRecordIds.sort(), pack.records.filter(r => !r.enabled).map(r => r.id).sort());
+});
+
+test('trial alternative source does not retroactively verify the wrong route or missing indexed passages', () => {
+  const s = pack.sources.find(s => s.id === 'aq5-trial-search');
+  assert.equal(s.sourceStatus, 'secondary_game_dialogue_transcription');
+  assert.equal(s.verificationMethod, 'search_index_inspected');
+  assert.equal(s.directPageVerified, false);
+  assert.equal(s.audioVerified, false);
+  assert.equal(pack.sources.find(s => s.id === 'aq5-trial-pending').sourceStatus, 'pending');
+  for (const timeline of ['aftermath', 'performer']) {
+    for (const [query, id] of [['审判舞台', 'act5-trial-stage'], ['接受审判', 'act5-trial-acceptance'],
+      ['审判水测试', 'act5-trial-water-test'], ['测试水浓度', 'act5-trial-dilution-report'], ['审判双重判决', 'act5-trial-verdicts']]) {
+      const r = rows(resolve({ ...wide, query, timeline })).find(r => r.id === id);
+      assert(r, query);
+      assert.deepEqual(r.sourceRefs, ['aq5-trial-search']);
+      assert.equal(r.sourceStatus, 'secondary_game_dialogue_transcription');
+      assert.equal(r.knowledgeMode, id.endsWith('report') ? 'reported' : 'experienced');
+    }
+    const claim = rows(resolve({ query: '审判水测试', timeline }))[0];
+    assert.match(claim.text, /声称.*当庭说法/);
+    const learned = rows(resolve({ query: '测试水浓度', timeline }))[0];
+    assert.equal(learned.knowledgeMode, 'reported');
+    assert.deepEqual(learned.knowledgeSourceRefs, ['aq5-trial-search']);
+    assert.match(learned.text, /事前未获知/);
+    const verdict = resolve({ query: '审判双重判决', timeline });
+    assert(!verdict.modelPrompt.includes('毁掉水神神座'));
+    assert(!verdict.modelPrompt.includes('假扮控诉'));
+    assert(!verdict.modelPrompt.includes('verificationTodo'));
+  }
 });
 
 test('each main act and personal arc retrieves its own scenes rather than dessert defaults', () => {
